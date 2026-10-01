@@ -10,6 +10,7 @@ import SwiftUI
 struct HLChip: View {
     let title: String
     let isSelected: Bool
+    var horizontalPadding: CGFloat = 14
     let action: () -> Void
     @Environment(\.isEnabled) private var isEnabled
 
@@ -18,7 +19,7 @@ struct HLChip: View {
             Text(title)
                 .font(isSelected ? .headline : .body)
                 .foregroundStyle(isSelected ? HerLiftTheme.onPrimary : HerLiftTheme.text)
-                .padding(.horizontal, 14)
+                .padding(.horizontal, horizontalPadding)
                 .padding(.vertical, 8)
                 .frame(maxWidth: .infinity, minHeight: 44)
                 .background(isSelected ? HerLiftTheme.primary : HerLiftTheme.surface,
@@ -70,6 +71,7 @@ struct HLDayCheckbox: View {
                         if isChecked {
                             Image(systemName: "checkmark")
                                 .font(.caption.weight(.semibold))
+                                .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
                                 .foregroundStyle(HerLiftTheme.onPrimary)
                         } else {
                             RoundedRectangle(cornerRadius: 6)
@@ -92,7 +94,7 @@ struct HLDayCheckbox: View {
 
 struct HLDayPicker: View {
     @Binding var selection: Set<Int>
-    var allowed: ClosedRange<Int> = 2...4
+    var allowed: ClosedRange<Int> = 2...7
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     private let dayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
@@ -106,7 +108,7 @@ struct HLDayPicker: View {
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: 44))]) { dayButtons }
                 }
             }
-            Text("\(selection.count) selected · Choose \(allowed.lowerBound)-\(allowed.upperBound) days")
+            Text("Pick \(allowed.lowerBound)–\(allowed.upperBound) days · \(selection.count) selected")
                 .font(.footnote).foregroundStyle(HerLiftTheme.secondaryText)
         }
     }
