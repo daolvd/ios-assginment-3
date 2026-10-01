@@ -45,6 +45,7 @@ struct HerLiftApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .tint(HerLiftTheme.primary)
         }
         .modelContainer(sharedModelContainer)
     }
