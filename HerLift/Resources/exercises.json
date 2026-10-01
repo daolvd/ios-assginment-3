@@ -1,0 +1,943 @@
+{
+  "_about": "HerLift exercise catalogue: 20 beginner exercises covering every muscle group. Text (shortDescription, instructions, coachingCues, commonMistakes, breathing, secondaryMuscles) is from free-exercise-db-api, MIT License, Copyright (c) 2026 Arham Wani. Other fields are HerLift's own. Female demo videos are bundled from the same dataset; their licence is unknown (see docs/data/EXERCISE_SOURCES.md).",
+  "generatedOn": "2026-10-01",
+  "exercises": [
+    {
+      "id": "leg-press",
+      "name": "Leg Press",
+      "muscleGroup": "Legs",
+      "primaryMuscle": "Quads",
+      "secondaryMuscles": [
+        "gluteus maximus",
+        "hamstrings",
+        "adductors"
+      ],
+      "equipment": "machine",
+      "level": "beginner",
+      "loadType": "external",
+      "position": "seated",
+      "impact": "low",
+      "minimumReps": 10,
+      "maximumReps": 12,
+      "defaultRestSeconds": 90,
+      "shortDescription": "A horizontal plate-loaded machine exercise targeting the entire thigh, especially the quadriceps.",
+      "instructions": [
+        "Sit on the leg press and adjust seat as needed.",
+        "Place feet shoulder-width apart on platform.",
+        "Push platform away by extending legs.",
+        "Do not lock knees at the top position.",
+        "Lower platform under control to start position."
+      ],
+      "coachingCues": [
+        "Keep lower back pressed into seat",
+        "Do not lock knees",
+        "Feet flat and even pressure",
+        "Control the descent"
+      ],
+      "commonMistakes": [
+        "Letting knees cave in/out",
+        "Lifting hips off seat",
+        "Locking out knees",
+        "Using too much weight"
+      ],
+      "breathing": "Exhale as you press up, inhale as you lower down.",
+      "alternativeExerciseIDs": [
+        "goblet-squat",
+        "leg-extension"
+      ],
+      "videoFile": "leg-press.mp4",
+      "source": {
+        "id": "2611",
+        "name": "Lever Horizontal Leg Press"
+      }
+    },
+    {
+      "id": "goblet-squat",
+      "name": "Goblet Squat",
+      "muscleGroup": "Legs",
+      "primaryMuscle": "Quads",
+      "secondaryMuscles": [
+        "glutes",
+        "hamstrings",
+        "calves"
+      ],
+      "equipment": "dumbbell",
+      "level": "beginner",
+      "loadType": "external",
+      "position": "standing",
+      "impact": "low",
+      "minimumReps": 8,
+      "maximumReps": 12,
+      "defaultRestSeconds": 90,
+      "shortDescription": "A front-loaded squat holding one dumbbell at the chest to train the quads, glutes, and legs through a controlled deep squat.",
+      "instructions": [
+        "Stand tall with your feet about shoulder-width apart and hold one dumbbell vertically at your chest with both hands.",
+        "Brace your midsection and keep your elbows pointed down close to your body.",
+        "Sit your hips down and back while bending your knees, and lower until your thighs are parallel to the floor or slightly lower.",
+        "Keep the dumbbell tight to your chest and your feet flat as your knees track over your toes.",
+        "Drive through your whole foot to stand back up until your hips and knees are fully extended.",
+        "Reset your stance and repeat the next rep."
+      ],
+      "coachingCues": [
+        "Chest up",
+        "Keep heels down",
+        "Knees track over toes",
+        "Hold the bell close"
+      ],
+      "commonMistakes": [
+        "Letting the dumbbell drift away from the chest",
+        "Heels lifting off the floor at the bottom",
+        "Knees collapsing inward during the squat",
+        "Folding the chest forward instead of staying upright"
+      ],
+      "breathing": "Inhale as you lower into the squat, and exhale as you stand back up.",
+      "alternativeExerciseIDs": [
+        "leg-press"
+      ],
+      "videoFile": "goblet-squat.mp4",
+      "source": {
+        "id": "1760",
+        "name": "Dumbbell Goblet Squat"
+      }
+    },
+    {
+      "id": "leg-extension",
+      "name": "Leg Extension",
+      "muscleGroup": "Legs",
+      "primaryMuscle": "Quads",
+      "secondaryMuscles": [
+        "hamstrings"
+      ],
+      "equipment": "machine",
+      "level": "beginner",
+      "loadType": "external",
+      "position": "seated",
+      "impact": "low",
+      "minimumReps": 10,
+      "maximumReps": 15,
+      "defaultRestSeconds": 60,
+      "shortDescription": "A seated machine exercise that strengthens the quadriceps by extending the knees against a padded lever.",
+      "instructions": [
+        "Adjust the seat and backrest so your knees line up with the machine's pivot point.",
+        "Sit back against the pad and place your shins behind the lower roller pad.",
+        "Grip the handles and start with your knees bent and feet pointed forward.",
+        "Straighten your knees to lift the pad until your legs are nearly straight.",
+        "Pause briefly while keeping your thighs pressed into the seat.",
+        "Lower the pad with control until your knees are bent again."
+      ],
+      "coachingCues": [
+        "Line up knees with pivot",
+        "Lift with your quads",
+        "Keep hips on the seat",
+        "Lower under control"
+      ],
+      "commonMistakes": [
+        "Knees sit too far forward or behind the machine pivot.",
+        "Swinging the weight up with momentum.",
+        "Locking the knees hard at the top.",
+        "Lifting the hips or lower back off the seat."
+      ],
+      "breathing": "Exhale as you straighten your knees, and inhale as you lower the pad back down.",
+      "alternativeExerciseIDs": [
+        "leg-press"
+      ],
+      "videoFile": "leg-extension.mp4",
+      "source": {
+        "id": "0585",
+        "name": "Lever Leg Extension"
+      }
+    },
+    {
+      "id": "romanian-deadlift",
+      "name": "Romanian Deadlift",
+      "muscleGroup": "Legs",
+      "primaryMuscle": "Hamstrings",
+      "secondaryMuscles": [
+        "glutes",
+        "lower back",
+        "erector spinae"
+      ],
+      "equipment": "dumbbell",
+      "level": "beginner",
+      "loadType": "external",
+      "position": "standing",
+      "impact": "low",
+      "minimumReps": 8,
+      "maximumReps": 12,
+      "defaultRestSeconds": 90,
+      "shortDescription": "A stiff-legged deadlift variation using a single dumbbell to target the hamstrings and lower back.",
+      "instructions": [
+        "Stand upright holding a dumbbell with both hands at your thighs.",
+        "Keep a slight bend in your knees and your back flat.",
+        "Hinge forward at the hips, lowering the dumbbell towards the floor.",
+        "Pause at the bottom while feeling a stretch in your hamstrings.",
+        "Return to the upright position by driving hips forward."
+      ],
+      "coachingCues": [
+        "Hips back",
+        "Flat back",
+        "Feel hamstring stretch",
+        "No rounding"
+      ],
+      "commonMistakes": [
+        "Rounding back",
+        "Excessive knee bend",
+        "Bouncing at bottom"
+      ],
+      "breathing": "Inhale lowering, exhale as you stand back up.",
+      "alternativeExerciseIDs": [
+        "seated-leg-curl"
+      ],
+      "videoFile": "romanian-deadlift.mp4",
+      "source": {
+        "id": "1757",
+        "name": "Single Dumbbell Stiff-Leg Deadlift"
+      }
+    },
+    {
+      "id": "seated-leg-curl",
+      "name": "Seated Leg Curl",
+      "muscleGroup": "Legs",
+      "primaryMuscle": "Hamstrings",
+      "secondaryMuscles": [
+        "calves"
+      ],
+      "equipment": "machine",
+      "level": "beginner",
+      "loadType": "external",
+      "position": "seated",
+      "impact": "low",
+      "minimumReps": 10,
+      "maximumReps": 15,
+      "defaultRestSeconds": 60,
+      "shortDescription": "A seated machine hamstring exercise where you bend your knees to pull a padded lever downward.",
+      "instructions": [
+        "Adjust the seat and pad so your knees line up with the machine’s pivot point.",
+        "Sit back against the pad and place your lower legs under the roller just above your ankles.",
+        "Grip the handles and keep your thighs pressed into the seat.",
+        "Curl the pad down by bending your knees until your heels move toward the floor.",
+        "Pause briefly and squeeze your hamstrings at the bottom.",
+        "Lower the pad back up with control until your knees are nearly straight."
+      ],
+      "coachingCues": [
+        "Keep hips glued down",
+        "Curl through the heels",
+        "Move only at knees",
+        "Lower with control"
+      ],
+      "commonMistakes": [
+        "Lifting the hips off the seat during the curl.",
+        "Using momentum and swinging the pad through the rep.",
+        "Letting the knees fully lock out at the top.",
+        "Setting the pad too high on the calves instead of above the ankles."
+      ],
+      "breathing": "Exhale as you curl the pad down, and inhale as you return it to the starting position.",
+      "alternativeExerciseIDs": [
+        "romanian-deadlift"
+      ],
+      "videoFile": "seated-leg-curl.mp4",
+      "source": {
+        "id": "0599",
+        "name": "Lever Seated Leg Curl"
+      }
+    },
+    {
+      "id": "standing-calf-raise",
+      "name": "Standing Calf Raise",
+      "muscleGroup": "Legs",
+      "primaryMuscle": "Calves",
+      "secondaryMuscles": [
+        "soleus",
+        "ankle stabilizers"
+      ],
+      "equipment": "machine",
+      "level": "beginner",
+      "loadType": "external",
+      "position": "standing",
+      "impact": "low",
+      "minimumReps": 12,
+      "maximumReps": 15,
+      "defaultRestSeconds": 60,
+      "shortDescription": "A machine calf exercise where you raise and lower your heels under shoulder pads to train the calves through ankle movement.",
+      "instructions": [
+        "Adjust the shoulder pads so they rest comfortably on your shoulders when you stand on the platform.",
+        "Place the balls of your feet on the edge of the platform with your heels hanging off and grip the handles.",
+        "Straighten your legs, brace your torso, and let your heels lower until you feel a stretch in your calves.",
+        "Press through the balls of your feet to raise your heels as high as you can.",
+        "Pause briefly at the top while staying balanced under the pads.",
+        "Lower your heels under control back to the stretched start position."
+      ],
+      "coachingCues": [
+        "Drive through big toe",
+        "Lift heels straight up",
+        "Use full ankle range",
+        "Control the lowering"
+      ],
+      "commonMistakes": [
+        "Bouncing out of the bottom instead of lowering under control.",
+        "Bending the knees noticeably during the raise.",
+        "Rolling the ankles inward or outward as the heels lift.",
+        "Using a short range and stopping before the heels fully lower."
+      ],
+      "breathing": "Inhale as you lower your heels, and exhale as you press up onto the balls of your feet.",
+      "alternativeExerciseIDs": [],
+      "videoFile": "standing-calf-raise.mp4",
+      "source": {
+        "id": "0605",
+        "name": "Lever Standing Calf Raise"
+      }
+    },
+    {
+      "id": "glute-bridge",
+      "name": "Glute Bridge",
+      "muscleGroup": "Glutes",
+      "primaryMuscle": "Glutes",
+      "secondaryMuscles": [
+        "hamstrings",
+        "lower back"
+      ],
+      "equipment": "bodyweight",
+      "level": "beginner",
+      "loadType": "bodyweight",
+      "position": "floor",
+      "impact": "low",
+      "minimumReps": 12,
+      "maximumReps": 15,
+      "defaultRestSeconds": 60,
+      "shortDescription": "A floor-based exercise that strengthens the glutes and hamstrings by lifting the hips.",
+      "instructions": [
+        "Start lying on back with knees bent, feet hip-width apart.",
+        "Arms rest at sides, palms down.",
+        "Push through heels, lifting hips toward ceiling.",
+        "Pause and squeeze glutes at top.",
+        "Lower hips back to floor."
+      ],
+      "coachingCues": [
+        "Drive through heels",
+        "Squeeze glutes",
+        "Don't overarch back",
+        "Keep knees in line"
+      ],
+      "commonMistakes": [
+        "Pushing through toes",
+        "Flaring ribs",
+        "Rushing movement"
+      ],
+      "breathing": "Exhale as you lift hips, inhale as you lower down.",
+      "alternativeExerciseIDs": [
+        "glute-kickback"
+      ],
+      "videoFile": "glute-bridge.mp4",
+      "source": {
+        "id": "drv-hip-raise-bridge",
+        "name": "Glute Bridge"
+      }
+    },
+    {
+      "id": "glute-kickback",
+      "name": "Glute Kickback Machine",
+      "muscleGroup": "Glutes",
+      "primaryMuscle": "Glutes",
+      "secondaryMuscles": [
+        "hamstrings",
+        "erector spinae"
+      ],
+      "equipment": "machine",
+      "level": "beginner",
+      "loadType": "external",
+      "position": "standing",
+      "impact": "low",
+      "minimumReps": 10,
+      "maximumReps": 15,
+      "defaultRestSeconds": 60,
+      "shortDescription": "A leverage machine exercise that isolates the glutes with a hip extension rear kick motion.",
+      "instructions": [
+        "Adjust the lever machine pad to chest height and select weight.",
+        "Place working foot on the platform.",
+        "Hold handles and brace core.",
+        "Extend hip by pushing foot backward as far as comfortable.",
+        "Return slowly to starting position and repeat."
+      ],
+      "coachingCues": [
+        "Lead with heel",
+        "Keep core tight",
+        "Avoid arching the back",
+        "Squeeze glute at top"
+      ],
+      "commonMistakes": [
+        "Using lower back to lift",
+        "Swinging leg with momentum",
+        "Not controlling the negative"
+      ],
+      "breathing": "Exhale as you kick back, inhale as you return.",
+      "alternativeExerciseIDs": [
+        "glute-bridge"
+      ],
+      "videoFile": "glute-kickback.mp4",
+      "source": {
+        "id": "drv-lever-standing-rear-kick",
+        "name": "Lever Standing Rear Kick"
+      }
+    },
+    {
+      "id": "hip-abduction",
+      "name": "Hip Abduction",
+      "muscleGroup": "Glutes",
+      "primaryMuscle": "Glute medius",
+      "secondaryMuscles": [
+        "glutes",
+        "hamstrings"
+      ],
+      "equipment": "machine",
+      "level": "beginner",
+      "loadType": "external",
+      "position": "seated",
+      "impact": "low",
+      "minimumReps": 12,
+      "maximumReps": 15,
+      "defaultRestSeconds": 60,
+      "shortDescription": "A seated machine exercise where you press your legs outward against pads to train the hip abductors and outer glutes.",
+      "instructions": [
+        "Adjust the seat so your knees bend about 90 degrees and the thigh pads rest against the outside of your legs.",
+        "Sit tall with your back against the pad, place your feet on the footrests, and grip the handles.",
+        "Start with your legs together and your knees aligned with the machine's pivot.",
+        "Drive your knees outward against the pads until your legs are as wide as your comfortable range allows.",
+        "Pause briefly with your hips still on the seat.",
+        "Bring your legs back together slowly until the pads nearly touch, then repeat."
+      ],
+      "coachingCues": [
+        "Sit tall",
+        "Drive knees out",
+        "Control the return",
+        "Keep hips on seat"
+      ],
+      "commonMistakes": [
+        "Leaning the torso forward or rocking back to move the weight.",
+        "Letting the legs snap back together on the return.",
+        "Lifting the hips off the seat at the widest point.",
+        "Turning the feet excessively to cheat the movement."
+      ],
+      "breathing": "Exhale as you press your knees outward, and inhale as you return to the starting position.",
+      "alternativeExerciseIDs": [],
+      "videoFile": "hip-abduction.mp4",
+      "source": {
+        "id": "0597",
+        "name": "Lever Seated Hip Abduction"
+      }
+    },
+    {
+      "id": "lat-pulldown",
+      "name": "Lat Pulldown",
+      "muscleGroup": "Back",
+      "primaryMuscle": "Lats",
+      "secondaryMuscles": [
+        "biceps brachii",
+        "trapezius",
+        "rhomboids",
+        "rear deltoids"
+      ],
+      "equipment": "cable",
+      "level": "beginner",
+      "loadType": "external",
+      "position": "seated",
+      "impact": "low",
+      "minimumReps": 10,
+      "maximumReps": 12,
+      "defaultRestSeconds": 90,
+      "shortDescription": "A cable exercise performed with a wide grip that primarily targets the latissimus dorsi to build back width and upper body strength.",
+      "instructions": [
+        "Adjust the thigh pad and sit at the cable pulldown machine.",
+        "Grip the wide bar overhead with a pronated (overhand) grip, hands wider than shoulders.",
+        "Lean back slightly, brace your core, and retract your shoulder blades.",
+        "Pull the bar down to your upper chest, driving elbows down and out.",
+        "Pause briefly, then slowly release the bar back to the starting position."
+      ],
+      "coachingCues": [
+        "Pull elbows down",
+        "Keep chest up",
+        "Don't swing",
+        "Control the weight"
+      ],
+      "commonMistakes": [
+        "Using momentum or body swing",
+        "Allowing shoulders to shrug up",
+        "Not fully extending arms",
+        "Pulling bar behind neck"
+      ],
+      "breathing": "Exhale as you pull the bar down, inhale as you return to start.",
+      "alternativeExerciseIDs": [
+        "seated-cable-row"
+      ],
+      "videoFile": "lat-pulldown.mp4",
+      "source": {
+        "id": "drv-cable-bar-lateral-pulldown-wide-shoulder-grip",
+        "name": "Wide Grip Cable Lat Pulldown"
+      }
+    },
+    {
+      "id": "seated-cable-row",
+      "name": "Seated Cable Row",
+      "muscleGroup": "Back",
+      "primaryMuscle": "Mid back",
+      "secondaryMuscles": [
+        "rhomboids",
+        "middle trapezius",
+        "biceps brachii",
+        "posterior deltoids"
+      ],
+      "equipment": "cable",
+      "level": "beginner",
+      "loadType": "external",
+      "position": "seated",
+      "impact": "low",
+      "minimumReps": 10,
+      "maximumReps": 12,
+      "defaultRestSeconds": 90,
+      "shortDescription": "A compound cable exercise targeting the mid-back and lats using a V-grip handle.",
+      "instructions": [
+        "Sit on the cable row machine and place feet on the foot platform.",
+        "Grab the V-grip handle with both hands, arms extended.",
+        "Maintain a straight back and slight knee bend.",
+        "Pull the handle toward your abdomen, retracting your shoulder blades.",
+        "Slowly extend arms to return to the starting position."
+      ],
+      "coachingCues": [
+        "Keep back straight",
+        "Drive elbows back",
+        "Retract shoulder blades",
+        "Don’t lean or round spine"
+      ],
+      "commonMistakes": [
+        "Hunching the back",
+        "Using momentum",
+        "Allowing elbows to flare out"
+      ],
+      "breathing": "Exhale as you row back, inhale as you extend forward.",
+      "alternativeExerciseIDs": [
+        "chest-supported-row"
+      ],
+      "videoFile": "seated-cable-row.mp4",
+      "source": {
+        "id": "0208",
+        "name": "Seated Cable Row (V-Grip)"
+      }
+    },
+    {
+      "id": "chest-supported-row",
+      "name": "Chest-Supported Row",
+      "muscleGroup": "Back",
+      "primaryMuscle": "Upper back",
+      "secondaryMuscles": [
+        "biceps",
+        "shoulders"
+      ],
+      "equipment": "dumbbell",
+      "level": "beginner",
+      "loadType": "external",
+      "position": "lying",
+      "impact": "low",
+      "minimumReps": 10,
+      "maximumReps": 12,
+      "defaultRestSeconds": 90,
+      "shortDescription": "A chest-supported dumbbell row on an incline bench that targets the upper back while limiting body momentum.",
+      "instructions": [
+        "Set an incline bench to a moderate angle and lie face down with your chest supported and feet planted on the floor.",
+        "Hold a dumbbell in each hand with your arms hanging straight down and palms facing each other.",
+        "Brace your midline and pull your shoulders down and back.",
+        "Row the dumbbells up toward your lower ribs by bending your elbows and driving them back.",
+        "Squeeze your upper back at the top without lifting your chest off the bench.",
+        "Lower the dumbbells under control until your arms are fully extended again."
+      ],
+      "coachingCues": [
+        "Lead with the elbows",
+        "Keep chest on the pad",
+        "Squeeze shoulder blades together",
+        "Lower with control"
+      ],
+      "commonMistakes": [
+        "Shrugging the shoulders up toward the ears",
+        "Yanking the dumbbells with body momentum",
+        "Flaring the elbows straight out to the sides",
+        "Lifting the chest off the bench at the top"
+      ],
+      "breathing": "Inhale as you lower the dumbbells, and exhale as you row them up toward your ribs.",
+      "alternativeExerciseIDs": [
+        "seated-cable-row"
+      ],
+      "videoFile": "chest-supported-row.mp4",
+      "source": {
+        "id": "0327",
+        "name": "Dumbbell Incline Row"
+      }
+    },
+    {
+      "id": "machine-chest-press",
+      "name": "Machine Chest Press",
+      "muscleGroup": "Chest",
+      "primaryMuscle": "Chest",
+      "secondaryMuscles": [
+        "triceps brachii",
+        "anterior deltoids"
+      ],
+      "equipment": "machine",
+      "level": "beginner",
+      "loadType": "external",
+      "position": "lying",
+      "impact": "low",
+      "minimumReps": 10,
+      "maximumReps": 12,
+      "defaultRestSeconds": 90,
+      "shortDescription": "A plate-loaded machine press mimicking the bench press to target the entire chest safely.",
+      "instructions": [
+        "Lie supine on the machine bench.",
+        "Grip the handles firmly, elbows bent.",
+        "Engage chest and press handles forward and up.",
+        "Fully extend arms without locking out elbows.",
+        "Slowly return to starting position."
+      ],
+      "coachingCues": [
+        "Keep feet flat on floor",
+        "Don't overextend elbows",
+        "Press evenly with both arms",
+        "Squeeze chest at top"
+      ],
+      "commonMistakes": [
+        "Letting shoulders roll forward",
+        "Lifting lower back off bench",
+        "Using too much weight",
+        "Allowing wrists to bend"
+      ],
+      "breathing": "Exhale as you press up, inhale as you lower down.",
+      "alternativeExerciseIDs": [],
+      "videoFile": "machine-chest-press.mp4",
+      "source": {
+        "id": "0577",
+        "name": "Lever Lying Chest Press"
+      }
+    },
+    {
+      "id": "seated-dumbbell-shoulder-press",
+      "name": "Seated Dumbbell Shoulder Press",
+      "muscleGroup": "Shoulders",
+      "primaryMuscle": "Front delts",
+      "secondaryMuscles": [
+        "triceps brachii",
+        "trapezius",
+        "upper chest"
+      ],
+      "equipment": "dumbbell",
+      "level": "beginner",
+      "loadType": "external",
+      "position": "seated",
+      "impact": "low",
+      "minimumReps": 8,
+      "maximumReps": 12,
+      "defaultRestSeconds": 90,
+      "shortDescription": "A pressing movement targeting the shoulders, performed seated with dumbbells.",
+      "instructions": [
+        "Sit on a bench with back support and feet flat.",
+        "Hold dumbbells at shoulder height, elbows bent.",
+        "Press dumbbells overhead until arms are extended.",
+        "Pause briefly at the top.",
+        "Lower dumbbells to starting position."
+      ],
+      "coachingCues": [
+        "Keep back pressed to pad",
+        "Do not arch lower back",
+        "Press overhead",
+        "Elbows under wrists"
+      ],
+      "commonMistakes": [
+        "Arching back excessively",
+        "Lowering weights too fast",
+        "Letting elbows drop too low",
+        "Pressing weights out in front"
+      ],
+      "breathing": "Exhale as you press up, inhale as you lower down.",
+      "alternativeExerciseIDs": [
+        "dumbbell-lateral-raise"
+      ],
+      "videoFile": "seated-dumbbell-shoulder-press.mp4",
+      "source": {
+        "id": "0289",
+        "name": "Seated Dumbbell Shoulder Press"
+      }
+    },
+    {
+      "id": "dumbbell-lateral-raise",
+      "name": "Dumbbell Lateral Raise",
+      "muscleGroup": "Shoulders",
+      "primaryMuscle": "Side delts",
+      "secondaryMuscles": [
+        "traps"
+      ],
+      "equipment": "dumbbell",
+      "level": "beginner",
+      "loadType": "external",
+      "position": "standing",
+      "impact": "low",
+      "minimumReps": 12,
+      "maximumReps": 15,
+      "defaultRestSeconds": 60,
+      "shortDescription": "A shoulder isolation exercise where you lift dumbbells out to the sides to target the lateral delts.",
+      "instructions": [
+        "Stand tall with a dumbbell in each hand at your sides, palms facing in.",
+        "Set your shoulders down and brace your midsection.",
+        "Raise both arms out to the sides until your hands reach about shoulder height, keeping a soft bend in your elbows.",
+        "Pause briefly at the top without shrugging your shoulders.",
+        "Lower the dumbbells back to your sides with control."
+      ],
+      "coachingCues": [
+        "Lead with your elbows",
+        "Stop at shoulder height",
+        "Keep shoulders down",
+        "Soft bend in elbows"
+      ],
+      "commonMistakes": [
+        "Shrugging the shoulders up toward the ears",
+        "Swinging the torso to heave the dumbbells upward",
+        "Lifting the hands well above shoulder height",
+        "Straightening the elbows and turning it into a front swing"
+      ],
+      "breathing": "Exhale as you raise the dumbbells to the sides, and inhale as you lower them back down under control.",
+      "alternativeExerciseIDs": [
+        "seated-dumbbell-shoulder-press"
+      ],
+      "videoFile": "dumbbell-lateral-raise.mp4",
+      "source": {
+        "id": "0334",
+        "name": "Dumbbell Lateral Raise"
+      }
+    },
+    {
+      "id": "rope-rear-delt-row",
+      "name": "Rope Rear Delt Row",
+      "muscleGroup": "Shoulders",
+      "primaryMuscle": "Rear delts",
+      "secondaryMuscles": [
+        "trapezius",
+        "rhomboids",
+        "biceps"
+      ],
+      "equipment": "cable",
+      "level": "beginner",
+      "loadType": "external",
+      "position": "standing",
+      "impact": "low",
+      "minimumReps": 12,
+      "maximumReps": 15,
+      "defaultRestSeconds": 60,
+      "shortDescription": "A cable rowing variation with a rope that targets the rear delts by pulling the elbows out and back.",
+      "instructions": [
+        "Attach a rope to a low cable pulley and stand facing the machine.",
+        "Grab the rope with both hands, step back to create tension, and set your feet about hip-width apart.",
+        "Soften your knees and hinge forward slightly with a flat back and arms extended in front of you.",
+        "Lead with your elbows and row the rope up toward your upper chest while letting the rope ends separate.",
+        "Pause briefly as your elbows travel out and back and your shoulder blades squeeze together.",
+        "Lower the rope under control until your arms are extended again without rounding your shoulders."
+      ],
+      "coachingCues": [
+        "Lead with the elbows",
+        "Chest up, back flat",
+        "Pull shoulders back",
+        "Control the return"
+      ],
+      "commonMistakes": [
+        "Standing fully upright and turning it into a regular cable row",
+        "Shrugging the shoulders up toward the ears during the pull",
+        "Pulling mostly with the hands and curling the rope in",
+        "Rounding the upper back as the rope returns forward"
+      ],
+      "breathing": "Inhale as you lower the rope forward, and exhale as you row the rope toward your upper chest.",
+      "alternativeExerciseIDs": [
+        "chest-supported-row"
+      ],
+      "videoFile": "rope-rear-delt-row.mp4",
+      "source": {
+        "id": "0203",
+        "name": "Cable Rear Delt Row (with rope)"
+      }
+    },
+    {
+      "id": "biceps-curl",
+      "name": "Biceps Curl",
+      "muscleGroup": "Arms",
+      "primaryMuscle": "Biceps",
+      "secondaryMuscles": [
+        "forearms"
+      ],
+      "equipment": "dumbbell",
+      "level": "beginner",
+      "loadType": "external",
+      "position": "standing",
+      "impact": "low",
+      "minimumReps": 10,
+      "maximumReps": 12,
+      "defaultRestSeconds": 60,
+      "shortDescription": "A standing arm exercise where you curl dumbbells from your sides to your shoulders to train the biceps.",
+      "instructions": [
+        "Stand tall with a dumbbell in each hand, arms at your sides, and palms facing forward.",
+        "Brace your torso and keep your elbows close to your ribs.",
+        "Curl both dumbbells up toward your shoulders without letting your upper arms swing forward.",
+        "Pause briefly at the top and squeeze your biceps.",
+        "Lower the dumbbells back down under control until your arms are straight."
+      ],
+      "coachingCues": [
+        "Elbows pinned to sides",
+        "Curl, don't swing",
+        "Squeeze at the top",
+        "Lower with control"
+      ],
+      "commonMistakes": [
+        "Swinging the torso to start the curl",
+        "Letting the elbows drift forward as the weights rise",
+        "Using partial range and not lowering fully",
+        "Bending the wrists back instead of keeping them neutral"
+      ],
+      "breathing": "Exhale as you curl the dumbbells up, and inhale as you lower them back down.",
+      "alternativeExerciseIDs": [],
+      "videoFile": "biceps-curl.mp4",
+      "source": {
+        "id": "0294",
+        "name": "Dumbbell Biceps Curl"
+      }
+    },
+    {
+      "id": "triceps-pushdown",
+      "name": "Triceps Pushdown",
+      "muscleGroup": "Arms",
+      "primaryMuscle": "Triceps",
+      "secondaryMuscles": [
+        "anconeus",
+        "forearms"
+      ],
+      "equipment": "cable",
+      "level": "beginner",
+      "loadType": "external",
+      "position": "standing",
+      "impact": "low",
+      "minimumReps": 10,
+      "maximumReps": 12,
+      "defaultRestSeconds": 60,
+      "shortDescription": "An isolation cable exercise targeting the triceps by extending the arm downward against resistance.",
+      "instructions": [
+        "Stand facing the cable stack with attachment at high position.",
+        "Grip the bar or rope with both hands.",
+        "Keep elbows tight to your body.",
+        "Push the attachment down until arms are fully extended.",
+        "Return slowly to starting position."
+      ],
+      "coachingCues": [
+        "Lock elbows at sides",
+        "Control the movement",
+        "Don’t let elbows drift",
+        "Squeeze triceps at the bottom"
+      ],
+      "commonMistakes": [
+        "Using too much weight",
+        "Letting elbows flare out",
+        "Leaning over the bar"
+      ],
+      "breathing": "Exhale as you push down, inhale as you return up.",
+      "alternativeExerciseIDs": [],
+      "videoFile": "triceps-pushdown.mp4",
+      "source": {
+        "id": "1723",
+        "name": "Cable Triceps Pushdown"
+      }
+    },
+    {
+      "id": "reverse-crunch",
+      "name": "Reverse Crunch",
+      "muscleGroup": "Core",
+      "primaryMuscle": "Lower abs",
+      "secondaryMuscles": [
+        "obliques",
+        "hip flexors"
+      ],
+      "equipment": "bodyweight",
+      "level": "beginner",
+      "loadType": "bodyweight",
+      "position": "floor",
+      "impact": "low",
+      "minimumReps": 10,
+      "maximumReps": 15,
+      "defaultRestSeconds": 45,
+      "shortDescription": "A bodyweight abs exercise lifting the hips toward the chest to target the lower abdominals.",
+      "instructions": [
+        "Lie on your back, arms at your sides, knees bent, and feet off the ground.",
+        "Engage your core and lift your legs, bringing knees toward your chest.",
+        "Lift hips off the floor in a curling motion.",
+        "Pause and squeeze your abs at the top.",
+        "Lower your hips back down slowly, keeping control."
+      ],
+      "coachingCues": [
+        "Move slowly",
+        "Don't swing legs",
+        "Keep core braced",
+        "Avoid arching lower back"
+      ],
+      "commonMistakes": [
+        "Using momentum to swing legs",
+        "Not controlling the descent",
+        "Letting lower back arch off the floor"
+      ],
+      "breathing": "Exhale as you lift hips, inhale as you lower down.",
+      "alternativeExerciseIDs": [
+        "cable-kneeling-crunch"
+      ],
+      "videoFile": "reverse-crunch.mp4",
+      "source": {
+        "id": "0872",
+        "name": "Reverse Crunch"
+      }
+    },
+    {
+      "id": "cable-kneeling-crunch",
+      "name": "Cable Kneeling Crunch",
+      "muscleGroup": "Core",
+      "primaryMuscle": "Abs",
+      "secondaryMuscles": [
+        "obliques"
+      ],
+      "equipment": "cable",
+      "level": "beginner",
+      "loadType": "external",
+      "position": "kneeling",
+      "impact": "low",
+      "minimumReps": 10,
+      "maximumReps": 15,
+      "defaultRestSeconds": 60,
+      "shortDescription": "A kneeling cable ab exercise where you curl your torso downward against a high pulley to train the abs and obliques.",
+      "instructions": [
+        "Attach a rope handle to the high pulley and kneel facing the machine.",
+        "Grab the rope ends and bring your hands beside your head with your elbows slightly forward.",
+        "Brace your midsection and keep your hips stacked over your knees.",
+        "Curl your ribcage toward your pelvis and bring your elbows down toward your thighs.",
+        "Pause briefly in the bottom position while keeping tension on the rope.",
+        "Slowly uncurl your spine and return to the start without letting the weight stack slam."
+      ],
+      "coachingCues": [
+        "Ribs to hips",
+        "Hips stay still",
+        "Curl, don't hinge",
+        "Keep neck neutral"
+      ],
+      "commonMistakes": [
+        "Pulling the rope down with the arms instead of curling the torso",
+        "Sitting hips back and turning it into a hip hinge",
+        "Jerking up and letting the weight stack drop between reps",
+        "Lifting the chest too high and losing abdominal tension at the top"
+      ],
+      "breathing": "Exhale as you curl down into the crunch, and inhale as you slowly return to the starting position.",
+      "alternativeExerciseIDs": [
+        "reverse-crunch"
+      ],
+      "videoFile": "cable-kneeling-crunch.mp4",
+      "source": {
+        "id": "0175",
+        "name": "Cable Kneeling Crunch"
+      }
+    }
+  ]
+}
