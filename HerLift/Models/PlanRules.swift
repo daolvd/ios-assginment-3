@@ -6,8 +6,8 @@ nonisolated enum PlanRules {
     /// BMI = kg / m². Nil when either metric is not a positive finite number.
     static func bmi(weightKg: Double, heightCm: Double) -> Double? {
         guard weightKg.isFinite, weightKg > 0, heightCm.isFinite, heightCm > 0 else { return nil }
-        let metres = heightCm / 100
-        return weightKg / (metres * metres)
+        let result = weightKg * 10_000 / (heightCm * heightCm)
+        return result.isFinite && result > 0 ? result : nil
     }
 
     /// A Lose-fat target must keep her BMI at 18.5 or above, else `unsafeTargetWeight`.

@@ -7,6 +7,15 @@ struct PlanRuleEngineTests {
     @Test func generatedWeeksRespectSelectedDaysAndCombinedLimits() throws {
         let catalogue = try JSONExerciseRepository().exercises
         let engine = PlanRuleEngine()
+        let configuration = try PlanRuleConfiguration.load()
+        #expect(Set(configuration.exerciseRoles.keys) == Set(catalogue.map(\.id)))
+        #expect(configuration.muscleAliases["quadriceps"] == .quads)
+        #expect(PlanRuleMath.sessionSeconds([(sets: 2, rest: 60), (sets: 2, rest: 60)]) == 660)
+        #expect(PlanRuleMath.adjacent(7, 1))
+        #expect(engine.milestones(for: "buildStrength") == engine.milestones(for: "buildMuscle"))
+        #expect(engine.milestones(for: "buildStrength").count == 4)
+        #expect(engine.milestones(for: "increaseGymConfidence").count == 1)
+        #expect(engine.milestones(for: "loseFat").isEmpty)
         for (days, restricted) in [([7, 1], false), ([1, 3, 6], false), ([1, 2, 4, 5], false),
                                    ([1, 2, 3, 5, 6], false), ([7, 1, 2, 4, 5, 6], false),
                                    (Array(1...7), false), (Array(1...7), true)] {

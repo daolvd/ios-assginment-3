@@ -1,13 +1,13 @@
 import Foundation
 
-/// Group 1 of the FITT-VP rule engine: screening, strategy and weekly limits.
+/// Screens health clearance and combines the applicable training limits.
 /// It reads a value profile only; it does not select exercises or write SwiftData.
 nonisolated struct TrainingStrategyRule {
     func evaluate(_ profile: OnboardingProfile) -> PlanScreeningResult {
         let hasHealthNote = !(profile.healthNote?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true)
         guard !hasHealthNote || profile.clearedByDoctor else { return .medicalClearanceRequired }
 
-        let bmi = profile.weightKg * 10_000 / (profile.heightCm * profile.heightCm)
+        let bmi = PlanRules.bmi(weightKg: profile.weightKg, heightCm: profile.heightCm) ?? 0
         return .ready(TrainingStrategy(
             isConservative: hasHealthNote,
             isLowImpact: bmi >= 30,
@@ -27,13 +27,21 @@ nonisolated struct TrainingStrategy: Equatable, Sendable {
     let isLowImpact: Bool
     let isOlderBeginner: Bool
 
+    var rawValue: String {
+        var flags: [String] = []
+        if isConservative { flags.append("conservative") }
+        if isLowImpact { flags.append("lowImpact") }
+        if isOlderBeginner { flags.append("olderBeginner") }
+        return flags.isEmpty ? "standard" : flags.joined(separator: "+")
+    }
+
     var needsLongerRest: Bool { isConservative || isLowImpact || isOlderBeginner }
     var requiresGuidedEquipment: Bool { isConservative }
     var prefersMachineFirst: Bool { isLowImpact || isOlderBeginner }
     var maximumSetsPerExercise: Int { isConservative || isOlderBeginner ? 2 : 3 }
 }
 
-/// Hard ceilings and soft weekly targets used by the scheduler in the next group.
+/// Hard ceilings and soft targets for the initial training week.
 nonisolated struct WeeklyVolumePolicy: Equatable, Sendable {
     let desiredSets: Int
     let maximumSets: Int

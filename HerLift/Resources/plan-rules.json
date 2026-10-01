@@ -1,0 +1,166 @@
+{
+  "version": 1,
+  "exerciseRoles": {
+    "leg-press": {
+      "muscle": "quads",
+      "movement": "knee",
+      "compound": true
+    },
+    "goblet-squat": {
+      "muscle": "quads",
+      "movement": "knee",
+      "compound": true
+    },
+    "leg-extension": {
+      "muscle": "quads",
+      "movement": "accessory",
+      "compound": false
+    },
+    "romanian-deadlift": {
+      "muscle": "hamstrings",
+      "movement": "hip",
+      "compound": true
+    },
+    "seated-leg-curl": {
+      "muscle": "hamstrings",
+      "movement": "accessory",
+      "compound": false
+    },
+    "standing-calf-raise": {
+      "muscle": "calves",
+      "movement": "accessory",
+      "compound": false
+    },
+    "glute-bridge": {
+      "muscle": "glutes",
+      "movement": "hip",
+      "compound": true
+    },
+    "glute-kickback": {
+      "muscle": "glutes",
+      "movement": "hip",
+      "compound": false
+    },
+    "hip-abduction": {
+      "muscle": "glutes",
+      "movement": "accessory",
+      "compound": false
+    },
+    "lat-pulldown": {
+      "muscle": "back",
+      "movement": "pull",
+      "compound": true
+    },
+    "seated-cable-row": {
+      "muscle": "back",
+      "movement": "pull",
+      "compound": true
+    },
+    "chest-supported-row": {
+      "muscle": "back",
+      "movement": "pull",
+      "compound": true
+    },
+    "machine-chest-press": {
+      "muscle": "chest",
+      "movement": "push",
+      "compound": true
+    },
+    "seated-dumbbell-shoulder-press": {
+      "muscle": "shoulders",
+      "movement": "push",
+      "compound": true
+    },
+    "dumbbell-lateral-raise": {
+      "muscle": "shoulders",
+      "movement": "accessory",
+      "compound": false
+    },
+    "rope-rear-delt-row": {
+      "muscle": "shoulders",
+      "movement": "accessory",
+      "compound": false
+    },
+    "biceps-curl": {
+      "muscle": "arms",
+      "movement": "accessory",
+      "compound": false
+    },
+    "triceps-pushdown": {
+      "muscle": "arms",
+      "movement": "accessory",
+      "compound": false
+    },
+    "reverse-crunch": {
+      "muscle": "core",
+      "movement": "core",
+      "compound": false
+    },
+    "cable-kneeling-crunch": {
+      "muscle": "core",
+      "movement": "core",
+      "compound": false
+    }
+  },
+  "muscleAliases": {
+    "quads": "quads",
+    "quadriceps": "quads",
+    "adductors": "quads",
+    "hamstrings": "hamstrings",
+    "glutes": "glutes",
+    "gluteus maximus": "glutes",
+    "glute medius": "glutes",
+    "chest": "chest",
+    "upper chest": "chest",
+    "pectoralis major": "chest",
+    "lats": "back",
+    "mid back": "back",
+    "upper back": "back",
+    "lower back": "back",
+    "erector spinae": "back",
+    "traps": "back",
+    "trapezius": "back",
+    "rhomboids": "back",
+    "middle trapezius": "back",
+    "front delts": "shoulders",
+    "side delts": "shoulders",
+    "rear delts": "shoulders",
+    "shoulders": "shoulders",
+    "rear deltoids": "shoulders",
+    "posterior deltoids": "shoulders",
+    "anterior deltoids": "shoulders",
+    "biceps": "arms",
+    "biceps brachii": "arms",
+    "triceps": "arms",
+    "triceps brachii": "arms",
+    "anconeus": "arms",
+    "forearms": "arms",
+    "calves": "calves",
+    "soleus": "calves",
+    "abs": "core",
+    "lower abs": "core",
+    "obliques": "core"
+  },
+  "coachMessages": {
+    "conservative": "Start gently. Find comfortable starting weights and keep your effort at Good during your first two weeks.",
+    "standard": "Practise your technique and find comfortable starting weights. Changes to your weights need your approval."
+  },
+  "milestones": {
+    "buildStrength": [
+      "Weeks 1–2: learn technique and find starting weights.",
+      "Weeks 3–6: progress gradually with changes you approve.",
+      "Week 8: strength check.",
+      "Week 12: review your goal."
+    ],
+    "buildMuscle": [
+      "Weeks 1–2: learn technique and find starting weights.",
+      "Weeks 3–6: progress gradually with changes you approve.",
+      "Week 8: strength check.",
+      "Week 12: review your goal."
+    ],
+    "increaseGymConfidence": [
+      "Week 4: practise doing all your plan exercises on your own."
+    ],
+    "loseFat": []
+  }
+}
