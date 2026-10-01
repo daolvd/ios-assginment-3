@@ -36,6 +36,11 @@ struct AIPlanGeneratorTests {
         let allowed = try PlanRuleEngine().eligibleExercises(for: request, catalogue: catalogue)
         #expect(Set(exercises.compactMap { $0["id"] as? String }) == Set(allowed.map(\.id)))
         #expect(recorder.prompts.count == 1)
+        _ = try await generator.generate(request, validationFeedback: .invalidTrainingPlan)
+        let retryPrompt = try #require(recorder.prompts.last)
+        let retryPayload = try #require(JSONSerialization.jsonObject(with: Data(retryPrompt.utf8)) as? [String: Any])
+        #expect((retryPayload["validationFeedback"] as? String)?.contains("Previous attempt failed validation") == true)
+        #expect(!retryPrompt.contains("PRIVATE_HEALTH_NOTE"))
     }
 
     @Test func invalidAIOutputAndModelFailuresAreRejectedAndScreeningRunsFirst() async throws {
