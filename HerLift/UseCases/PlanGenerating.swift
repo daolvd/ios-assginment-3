@@ -5,8 +5,7 @@ nonisolated protocol PlanGenerating: Sendable {
     func generate(_ request: PlanRequest) async throws(CreatePersonalisedPlanError) -> TrainingPlan
 }
 
-/// Error copy follows HERLIFT_USE_CASES.md UC1 and the approved draft copy in
-/// UI_DESIGN.md §10; the frequency and duration wording matches amendment A8.
+/// Reports input, plan-generation and persistence failures with recovery guidance.
 nonisolated enum CreatePersonalisedPlanError: Error, LocalizedError, Equatable {
     case missingGoal
     case unsupportedTrainingFrequency
@@ -15,7 +14,7 @@ nonisolated enum CreatePersonalisedPlanError: Error, LocalizedError, Equatable {
     case unsafeTargetWeight
     case noSuitableExercises
     case couldNotSavePlan
-    case planDraftInvalid
+    case invalidTrainingPlan
 
     var errorDescription: String? {
         switch self {
@@ -26,7 +25,7 @@ nonisolated enum CreatePersonalisedPlanError: Error, LocalizedError, Equatable {
         case .unsafeTargetWeight: "This target is below a healthy weight for your height."
         case .noSuitableExercises: "We couldn't find enough beginner exercises for this goal."
         case .couldNotSavePlan: "We couldn't save your new plan."
-        case .planDraftInvalid: "We couldn't build your plan. Your answers are saved."
+        case .invalidTrainingPlan: "We couldn't build your plan. Your answers are saved."
         }
     }
 
@@ -38,7 +37,7 @@ nonisolated enum CreatePersonalisedPlanError: Error, LocalizedError, Equatable {
         case .unsafeTargetWeight: "Choose a target that keeps you above a healthy weight for your height."
         case .noSuitableExercises: "Try a different goal or add a training day."
         case .couldNotSavePlan: "Your answers are still here — tap Build my plan again."
-        case .planDraftInvalid: "Try again or change my answers."
+        case .invalidTrainingPlan: "Try again or change my answers."
         }
     }
 }

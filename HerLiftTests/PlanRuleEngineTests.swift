@@ -7,7 +7,9 @@ struct PlanRuleEngineTests {
     @Test func generatedWeeksRespectSelectedDaysAndCombinedLimits() throws {
         let catalogue = try JSONExerciseRepository().exercises
         let engine = PlanRuleEngine()
-        for (days, restricted) in [([7, 1], false), ([1, 3, 6], false), (Array(1...7), false), (Array(1...7), true)] {
+        for (days, restricted) in [([7, 1], false), ([1, 3, 6], false), ([1, 2, 4, 5], false),
+                                   ([1, 2, 3, 5, 6], false), ([7, 1, 2, 4, 5, 6], false),
+                                   (Array(1...7), false), (Array(1...7), true)] {
             let request = request(days: days, restricted: restricted)
             let plan = try engine.generate(request, catalogue: catalogue)
             try engine.validate(plan, request: request, catalogue: catalogue)
@@ -50,16 +52,24 @@ struct PlanRuleEngineTests {
         let plan = try engine.generate(input, catalogue: catalogue)
         let target = try #require(plan.days.first?.exercises.first)
         target.targetWeightKg = 50
-        #expect(throws: CreatePersonalisedPlanError.planDraftInvalid) { try engine.validate(plan, request: input, catalogue: catalogue) }
+        #expect(throws: CreatePersonalisedPlanError.invalidTrainingPlan) { try engine.validate(plan, request: input, catalogue: catalogue) }
         target.targetWeightKg = nil
         plan.days[0].estimatedMinutes = 1
-        #expect(throws: CreatePersonalisedPlanError.planDraftInvalid) { try engine.validate(plan, request: input, catalogue: catalogue) }
+        #expect(throws: CreatePersonalisedPlanError.invalidTrainingPlan) { try engine.validate(plan, request: input, catalogue: catalogue) }
         plan.generatorRaw = "onDeviceAI"
         try engine.applyRules(to: plan, request: input, catalogue: catalogue)
         #expect(plan.generatorRaw == "onDeviceAI")
         try engine.validate(plan, request: input, catalogue: catalogue)
         target.exerciseID = "unknown"
-        #expect(throws: CreatePersonalisedPlanError.planDraftInvalid) { try engine.validate(plan, request: input, catalogue: catalogue) }
+        #expect(throws: CreatePersonalisedPlanError.invalidTrainingPlan) { try engine.validate(plan, request: input, catalogue: catalogue) }
+        let adjacentRequest = request(days: [7, 1])
+        let adjacentPlan = try engine.generate(adjacentRequest, catalogue: catalogue)
+        let firstDay = adjacentPlan.days.sorted { $0.weekday < $1.weekday }[0]
+        let lastDay = adjacentPlan.days.sorted { $0.weekday < $1.weekday }[1]
+        lastDay.exercises[0].exerciseID = firstDay.exercises[0].exerciseID
+        #expect(throws: CreatePersonalisedPlanError.invalidTrainingPlan) {
+            try engine.applyRules(to: adjacentPlan, request: adjacentRequest, catalogue: catalogue)
+        }
         let boundary = PlanRequest(experience: .beginner, goalID: "loseFat", targetWeightKg: 47.36,
                                    trainingWeekdays: [1, 3, 6], sessionMinutes: 30, age: 29,
                                    heightCm: 160, weightKg: 76.8, healthNote: nil, clearedByDoctor: false)
