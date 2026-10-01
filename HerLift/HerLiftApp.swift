@@ -11,12 +11,14 @@ import SwiftData
 @main
 struct HerLiftApp: App {
     private let exerciseRepository: JSONExerciseRepository
+    private let goalRepository: JSONGoalRepository
 
     init() {
         do {
             exerciseRepository = try JSONExerciseRepository()
+            goalRepository = try JSONGoalRepository()
         } catch {
-            fatalError("Could not load exercise catalogue: \(error)")
+            fatalError("Could not load bundled catalogues: \(error)")
         }
     }
 
@@ -45,6 +47,7 @@ struct HerLiftApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .tint(HerLiftTheme.primary)
         }
         .modelContainer(sharedModelContainer)
     }
