@@ -1,12 +1,14 @@
 import Foundation
 import FoundationModels
 
-/// EN: A temporary model response: days and ordered IDs only. It is not a saved plan model.
-/// VI: Kết quả tạm từ model: chỉ ngày và ID theo thứ tự. Đây không phải model plan để lưu.
+/// EN: Temporary AI response: schedule choices and a motivational coach message.
+/// VI: Kết quả AI tạm thời: lựa chọn lịch tập và lời coach động viên.
 @Generable
 nonisolated struct AIWorkoutSchedule {
     @Guide(description: "Training days for one week", .count(2...6))
     var days: [AIWorkoutDay]
+    @Guide(description: "One or two short encouraging English sentences about this schedule, at most 600 characters. No medical advice, promised results or invented training targets.")
+    var coachText: String
 }
 
 @Generable
@@ -83,7 +85,9 @@ final class FoundationModelPlanGenerator: PlanGenerating {
     /// EN: Copy the AI's choices into existing models. Rules replace zero placeholders before returning.
     /// VI: Chép lựa chọn AI vào model hiện có. Rule thay các số tạm bằng 0 trước khi trả kết quả.
     private func makePlan(_ schedule: AIWorkoutSchedule, context: PlanRuleEngine.Context) throws(CreatePersonalisedPlanError) -> TrainingPlan {
-        guard (2...6).contains(schedule.days.count), schedule.days.allSatisfy({ day in
+        let coachText = schedule.coachText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !coachText.isEmpty, coachText.count <= 600,
+              (2...6).contains(schedule.days.count), schedule.days.allSatisfy({ day in
             !day.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && day.title.count <= 80
                 && (1...16).contains(day.exerciseIDs.count)
         }) else { throw .invalidTrainingPlan }
@@ -93,7 +97,7 @@ final class FoundationModelPlanGenerator: PlanGenerating {
                                   sessionMinutes: request.sessionMinutes, healthNote: request.healthNote,
                                   clearedByDoctor: request.clearedByDoctor)
         let plan = TrainingPlan(profile: profile, goalRaw: request.goalID, strategyRaw: context.strategy.rawValue,
-                                generatorRaw: kind.rawValue, coachText: "")
+                                generatorRaw: kind.rawValue, coachText: coachText)
         plan.days = schedule.days.enumerated().map { index, choice in
             let day = WorkoutDay(plan: plan, sortIndex: index, weekday: choice.weekday,
                                  title: choice.title.trimmingCharacters(in: .whitespacesAndNewlines), estimatedMinutes: 0)

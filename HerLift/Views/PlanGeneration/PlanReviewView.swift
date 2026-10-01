@@ -6,13 +6,18 @@ struct PlanReviewView: View {
     var exercises: [Exercise] = []
     var milestones: [String] = []
     var onStartOver: (() -> Void)?
+    var canAccept = false
+    var acceptanceError: AcceptTrainingPlanError?
+    var onAccept: (() -> Void)?
+    var onDismissError: (() -> Void)?
     private let weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    private var isActive: Bool { plan?.statusRaw == "active" }
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    Text("\(plan?.targetWeeks ?? 12)-week plan · Ready for review")
+                    Text("\(plan?.targetWeeks ?? 12)-week plan · \(isActive ? "Active" : "Ready for review")")
                         .font(.subheadline).foregroundStyle(HerLiftTheme.secondaryText)
                     HLListRow(title: "Goal", accessory: .value(goalTitle ?? "—"))
                         .clipShape(RoundedRectangle(cornerRadius: 14))
@@ -27,7 +32,7 @@ struct PlanReviewView: View {
                     week
                     forecast
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Coach").font(.headline)
+                        Text(plan?.generatorRaw == PlanGeneratorKind.onDeviceAI.rawValue ? "Coach" : "HerLift guidance").font(.headline)
                         HLListRow(title: plan?.coachText ?? "—").clipShape(RoundedRectangle(cornerRadius: 14))
                     }
                 }
@@ -39,14 +44,28 @@ struct PlanReviewView: View {
             .navigationBarTitleDisplayMode(.large)
             .safeAreaInset(edge: .bottom) {
                 VStack(spacing: 8) {
-                    OnboardingStyle.primaryButton("Accept plan") {}.disabled(true)
-                    Button("Start over") { onStartOver?() }.frame(minHeight: 44).disabled(onStartOver == nil)
+                    if isActive {
+                        Label("Plan accepted", systemImage: "checkmark.circle.fill")
+                            .font(.headline).foregroundStyle(HerLiftTheme.primary).frame(minHeight: 44)
+                    } else {
+                        OnboardingStyle.primaryButton("Accept plan") { onAccept?() }
+                            .disabled(!canAccept || onAccept == nil)
+                        Button("Start over") { onStartOver?() }.frame(minHeight: 44).disabled(onStartOver == nil)
+                    }
                 }
                 .padding(.horizontal, 20).padding(.bottom, 12)
                 .background(HerLiftTheme.background)
             }
         }
         .tint(HerLiftTheme.primary)
+        .alert("Couldn't accept plan", isPresented: Binding(
+            get: { acceptanceError != nil },
+            set: { if !$0 { onDismissError?() } }
+        )) {
+            Button("OK") { onDismissError?() }
+        } message: {
+            Text(acceptanceError?.localizedDescription ?? "")
+        }
     }
 
     private var week: some View {

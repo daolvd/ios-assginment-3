@@ -32,6 +32,16 @@ nonisolated enum PlanRuleMath {
             + max(0, targets.count - 1) * transitionSeconds
     }
 
+    /// EN: Upper bound on sets fitting ONE session at 2 initial sets per exercise, using the fastest eligible rest.
+    /// VI: Trần sets vừa MỘT buổi với 2 sets ban đầu mỗi bài, dựa trên thời gian nghỉ hợp lệ ngắn nhất.
+    /// EN: This is a time bound, not a prescribed weekly training volume.
+    /// VI: Đây là giới hạn tính từ thời gian, không phải lượng tập cả tuần được kê sẵn.
+    static func maximumSessionSets(minutes: Int, minimumRestSeconds: Int, exerciseCount: Int) -> Int {
+        let exerciseSeconds = initialSets * secondsPerSet + (initialSets - 1) * minimumRestSeconds + transitionSeconds
+        let availableSeconds = max(0, minutes * 60 - warmupSeconds + transitionSeconds)
+        return min(exerciseCount, availableSeconds / exerciseSeconds) * initialSets
+    }
+
     @MainActor
     static func estimatedMinutes(_ exercises: [PlannedExercise]) throws(CreatePersonalisedPlanError) -> Int {
         guard !exercises.isEmpty, exercises.count <= 32,

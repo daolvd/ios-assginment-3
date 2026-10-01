@@ -61,11 +61,14 @@ struct CreatePersonalisedPlanUseCase {
         return plan
     }
 
-    /// EN: Restore the latest plan awaiting acceptance, checking it before showing it again.
-    /// VI: Khôi phục plan mới nhất đang chờ chấp nhận, kiểm tra trước khi hiển thị lại.
+    /// EN: Restore the latest draft, or the active plan when no draft is waiting for review.
+    /// VI: Khôi phục draft mới nhất, hoặc plan active khi không còn draft chờ review.
     func loadSavedPlan() throws(CreatePersonalisedPlanError) -> TrainingPlan? {
         let plan: TrainingPlan?
-        do { plan = try repository?.load().last { $0.statusRaw == "draft" } }
+        do {
+            let plans = try repository?.load() ?? []
+            plan = plans.last { $0.statusRaw == "draft" } ?? plans.last { $0.statusRaw == "active" }
+        }
         catch { throw .invalidTrainingPlan }
         guard let plan, let experience = ExperienceLevel(rawValue: plan.profile.experienceRaw) else { return nil }
         let profile = plan.profile
@@ -73,7 +76,9 @@ struct CreatePersonalisedPlanUseCase {
                                   trainingWeekdays: profile.trainingWeekdays, sessionMinutes: profile.sessionMinutes,
                                   age: profile.age, heightCm: profile.heightCm, weightKg: profile.weightKg,
                                   healthNote: profile.healthNote, clearedByDoctor: profile.clearedByDoctor)
-        try PlanRuleEngine().validate(plan, request: request, catalogue: catalogue)
+        // EN: Keep existing saved plans readable; the fuller-session rule applies to newly generated plans.
+        // VI: Vẫn đọc được plan đã lưu; luật tận dụng thời gian áp dụng cho plan vừa tạo mới.
+        try PlanRuleEngine().validate(plan, request: request, catalogue: catalogue, requireFullSessions: false)
         return plan
     }
 

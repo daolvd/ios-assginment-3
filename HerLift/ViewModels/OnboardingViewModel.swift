@@ -20,18 +20,22 @@ final class OnboardingViewModel {
     private(set) var plannerLabel: String?
     private(set) var generationError: CreatePersonalisedPlanError?
     @ObservationIgnored private let createPlan: CreatePersonalisedPlanUseCase?
+    @ObservationIgnored private let acceptTrainingPlan: AcceptTrainingPlanUseCase?
+    private(set) var acceptanceError: AcceptTrainingPlanError?
     @ObservationIgnored private var generationID: UUID?
 
     /// Omit the use cases only for view previews; saving and generating require
     /// dependencies supplied by the app.
     init(goals: [Goal], exercises: [Exercise] = [], input: OnboardingInput = OnboardingInput(),
          saveProfile: SaveOnboardingProfileUseCase? = nil,
-         createPlan: CreatePersonalisedPlanUseCase? = nil) {
+         createPlan: CreatePersonalisedPlanUseCase? = nil,
+         acceptPlan: AcceptTrainingPlanUseCase? = nil) {
         self.goals = goals
         self.exercises = exercises
         self.input = input
         self.saveProfile = saveProfile
         self.createPlan = createPlan
+        self.acceptTrainingPlan = acceptPlan
     }
 
     var canSave: Bool { saveProfile != nil }
@@ -156,6 +160,7 @@ final class OnboardingViewModel {
     /// EN: Discard the unaccepted plan and ignore any late result from a cancelled build.
     /// VI: Bỏ plan chưa chấp nhận và bỏ qua kết quả đến muộn của lần tạo đã hủy.
     func changeAnswers() {
+        guard plan?.statusRaw != "active" else { return }
         generationID = nil
         if let plan {
             do { try createPlan?.discard(plan) }
@@ -169,7 +174,26 @@ final class OnboardingViewModel {
         plan = nil
         plannerLabel = nil
         generationError = nil
+        acceptanceError = nil
     }
+
+    var canAcceptPlan: Bool {
+        acceptTrainingPlan != nil && generationPhase == .ready && plan?.statusRaw == "draft"
+    }
+
+    /// EN: Update the screen only after acceptance is saved; leave the draft available for retry on error.
+    /// VI: Chỉ cập nhật màn hình sau khi lưu Accept thành công; giữ draft để thử lại khi lỗi.
+    func acceptPlan() {
+        guard canAcceptPlan, let plan, let acceptTrainingPlan else { return }
+        do {
+            self.plan = try acceptTrainingPlan.execute(planID: plan.id)
+            acceptanceError = nil
+        } catch {
+            acceptanceError = error
+        }
+    }
+
+    func dismissAcceptanceError() { acceptanceError = nil }
 
     func loadSavedPlan() {
         guard let createPlan else { return }

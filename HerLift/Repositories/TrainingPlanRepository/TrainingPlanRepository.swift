@@ -14,6 +14,7 @@ protocol TrainingPlanRepository {
     func load() throws -> [TrainingPlan]
     func add(_ trainingPlan: TrainingPlan) throws
     func update(_ trainingPlan: TrainingPlan) throws
+    func activateDraft(planID: UUID, startedOn: Date) throws -> TrainingPlan
     func delete(_ trainingPlan: TrainingPlan) throws
 }
 
@@ -52,8 +53,8 @@ final class SwiftDataTrainingPlanRepository: TrainingPlanRepository {
                 $0.statusRaw == "draft" && $0.profile.id == trainingPlan.profile.id && $0.id != trainingPlan.id
             }
             modelContext.insert(trainingPlan)
-            // EN: Replace only previous unaccepted plans; keep active plans until Accept is implemented.
-            // VI: Chỉ thay plan chưa chấp nhận; giữ plan active cho đến luồng Accept.
+            // EN: Replace only previous drafts; keep the active plan until a new draft is accepted.
+            // VI: Chỉ thay draft cũ; giữ plan active cho đến khi draft mới được chấp nhận.
             previous.forEach { modelContext.delete($0) }
             try save()
         } catch {
@@ -78,6 +79,24 @@ final class SwiftDataTrainingPlanRepository: TrainingPlanRepository {
         stored.profile = trainingPlan.profile
         stored.days = trainingPlan.days
         try save()
+    }
+
+    /// EN: Archive every previous active plan and activate the draft in one save; rollback on failure.
+    /// VI: Lưu trữ các plan active cũ và kích hoạt draft trong một lần lưu; hoàn tác khi lỗi.
+    func activateDraft(planID: UUID, startedOn: Date) throws -> TrainingPlan {
+        let storedPlans = try load()
+        guard let draft = storedPlans.first(where: { $0.id == planID }) else { throw AcceptTrainingPlanError.planNotFound }
+        guard draft.statusRaw == "draft" else { throw AcceptTrainingPlanError.planAlreadyAccepted }
+        do {
+            storedPlans.filter { $0.statusRaw == "active" }.forEach { $0.statusRaw = "archived" }
+            draft.statusRaw = "active"
+            draft.startedOn = startedOn
+            try modelContext.save()
+            return draft
+        } catch {
+            modelContext.rollback()
+            throw error
+        }
     }
 
     func delete(_ trainingPlan: TrainingPlan) throws {

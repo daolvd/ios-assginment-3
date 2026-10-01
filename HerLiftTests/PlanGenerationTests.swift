@@ -5,6 +5,62 @@ import SwiftData
 
 @MainActor
 struct PlanGenerationTests {
+    @Test func acceptDraftActivatesItArchivesPreviousPlanAndSurvivesReopen() throws {
+        let schema = Schema([UserProfile.self, TrainingPlan.self, WorkoutDay.self, PlannedExercise.self])
+        let container = try ModelContainer(for: schema, configurations: ModelConfiguration(schema: schema, isStoredInMemoryOnly: true))
+        let repository = try SwiftDataTrainingPlanRepository(modelContext: ModelContext(container))
+        let first = try PlanRuleEngine().generate(integrationRequest(), catalogue: testCatalogue)
+        try repository.add(first)
+        let now = Date(timeIntervalSince1970: 1_790_896_500)
+        let accept = AcceptTrainingPlanUseCase(repository: repository, now: { now })
+        _ = try accept.execute(planID: first.id)
+        #expect(first.statusRaw == "active")
+        #expect(first.startedOn == Calendar.current.startOfDay(for: now))
+        let second = try PlanRuleEngine().generate(integrationRequest(), catalogue: testCatalogue)
+        second.generatorRaw = PlanGeneratorKind.onDeviceAI.rawValue
+        second.coachText = "Practise these movements at your own pace. Small steps build confidence."
+        try repository.add(second)
+        let create = CreatePersonalisedPlanUseCase(generator: RuleBasedPlanGenerator(catalogue: testCatalogue),
+                                                  catalogue: testCatalogue, repository: repository)
+        let viewModel = OnboardingViewModel(goals: [], createPlan: create, acceptPlan: accept)
+        viewModel.loadSavedPlan()
+        #expect(viewModel.canAcceptPlan)
+        viewModel.acceptPlan()
+        #expect(viewModel.plan?.statusRaw == "active")
+        #expect(!viewModel.canAcceptPlan)
+        #expect(viewModel.acceptanceError == nil)
+        #expect(first.statusRaw == "archived")
+        let reopened = try SwiftDataTrainingPlanRepository(modelContext: ModelContext(container))
+        #expect(try reopened.load().filter { $0.statusRaw == "active" }.map(\.id) == [second.id])
+        let restored = try CreatePersonalisedPlanUseCase(generator: RuleBasedPlanGenerator(catalogue: testCatalogue),
+                                                        catalogue: testCatalogue, repository: reopened).loadSavedPlan()
+        #expect(restored?.id == second.id)
+        #expect(restored?.startedOn == Calendar.current.startOfDay(for: now))
+        #expect(restored?.coachText == second.coachText)
+        viewModel.changeAnswers()
+        #expect(viewModel.plan?.id == second.id)
+        #expect(try repository.load().count == 2)
+    }
+
+    @Test func acceptRejectsMissingOrActivePlanAndSaveFailureKeepsDraftForRetry() throws {
+        let repository = FailingPlanRepository()
+        let accept = AcceptTrainingPlanUseCase(repository: repository)
+        #expect(throws: AcceptTrainingPlanError.planNotFound) { try accept.execute(planID: UUID()) }
+        let plan = try PlanRuleEngine().generate(integrationRequest(), catalogue: testCatalogue)
+        repository.plans = [plan]
+        let create = CreatePersonalisedPlanUseCase(generator: RuleBasedPlanGenerator(catalogue: testCatalogue),
+                                                  catalogue: testCatalogue, repository: repository)
+        let viewModel = OnboardingViewModel(goals: [], createPlan: create, acceptPlan: accept)
+        viewModel.loadSavedPlan()
+        viewModel.acceptPlan()
+        #expect(viewModel.acceptanceError == .couldNotSavePlan)
+        #expect(viewModel.generationPhase == .ready)
+        #expect(viewModel.canAcceptPlan)
+        #expect(plan.statusRaw == "draft" && plan.startedOn == nil)
+        plan.statusRaw = "active"
+        #expect(throws: AcceptTrainingPlanError.planAlreadyAccepted) { try accept.execute(planID: plan.id) }
+    }
+
     @Test func aiIntegrationRetriesInvalidScheduleAndReportsTheAcceptedSource() async throws {
         let catalogue = try JSONExerciseRepository().exercises
         let request = integrationRequest()
@@ -284,6 +340,7 @@ struct PlanGenerationTests {
             throw CocoaError(.fileWriteUnknown)
         }
         func update(_ trainingPlan: TrainingPlan) throws {}
+        func activateDraft(planID: UUID, startedOn: Date) throws -> TrainingPlan { throw CocoaError(.fileWriteUnknown) }
         func delete(_ trainingPlan: TrainingPlan) throws {}
     }
 

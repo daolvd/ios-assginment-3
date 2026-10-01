@@ -15,6 +15,7 @@ extension PlanRuleEngine {
         static let missingMovement = 10_000
         static let setDeficit = 1_000
         static let dayBalance = 100
+        static let sessionShortfall = 1_000
         static let candidateOverlap = 20
         static let familiarExercise = 10
         static let majorCoverage = 100
@@ -82,11 +83,11 @@ extension PlanRuleEngine {
             }) else { return nil }
             days[index].entries.append(entry)
         }
-        // EN: Each added exercise brings 2 sets. Stop when the weekly target is reached or nothing can be added.
-        // VI: Mỗi bài thêm vào có 2 sets. Dừng khi đủ mục tiêu tuần hoặc không còn bài nào thêm được.
-        // EN: Finishing below the target is allowed; exceeding a required limit is not.
-        // VI: Có thể kết thúc dưới mục tiêu; không được vượt giới hạn bắt buộc.
-        while days.flatMap(\.entries).count * PlanRuleMath.initialSets < context.volume.desiredSets {
+        // EN: Fill each session towards its own time budget. Stop only when no legal addition fits.
+        // VI: Thêm bài để từng buổi gần thời gian đã chọn. Chỉ dừng khi không còn bài hợp lệ nào vừa.
+        // EN: Never split sessionMinutes between training days or stop at a fixed weekly set target.
+        // VI: Không chia sessionMinutes cho số ngày tập hoặc dừng theo mục tiêu sets tuần cố định.
+        while true {
             var best: (day: Int, entry: Entry, score: Int)?
             for index in days.indices {
                 // EN: Compare every allowed (day, exercise) pair, add the highest-scoring pair, then compare again.
@@ -124,8 +125,8 @@ extension PlanRuleEngine {
     /// VI: So sánh hai bài được phép thêm: bài có điểm cao hơn được chọn.
     /// EN: Add points for the preferred muscle (+20000) and a movement still missing from the week (+10000).
     /// VI: Cộng điểm cho cơ đang ưu tiên (+20000) và kiểu chuyển động tuần còn thiếu (+10000).
-    /// EN: Add points for missing sets; subtract points when a day already has many exercises or shares muscles with adjacent days.
-    /// VI: Cộng điểm khi cơ còn thiếu sets; trừ điểm khi ngày đã nhiều bài hoặc dùng chung cơ với ngày liền kề.
+    /// EN: Add points for missing sets; subtract points when a session is already longer or shares muscles with adjacent days.
+    /// VI: Cộng điểm khi cơ còn thiếu sets; trừ điểm khi buổi đã dài hơn hoặc dùng chung cơ với ngày liền kề.
     /// EN: Include exercise-order points and +10 for repeating a familiar exercise when the goal is gym confidence.
     /// VI: Cộng điểm thứ tự bài và +10 cho bài đã có trong tuần khi mục tiêu là tự tin tập gym.
     func candidateScore(_ entry: Entry, at index: Int, days: [DaySelection], context: Context, preferred: MuscleGroup?) -> Int {
@@ -141,7 +142,7 @@ extension PlanRuleEngine {
         let muscles = entry.secondary.union([entry.muscle])
         let overlap = neighbours.reduce(0) { $0 + muscles.intersection($1.secondary.union([$1.muscle])).count }
         return (preferred == entry.muscle ? Score.preferredMuscle : 0) + (missing ? Score.missingMovement : 0) + deficit * Score.setDeficit
-            - days[index].entries.count * Score.dayBalance - overlap * Score.candidateOverlap + orderPriority(entry, context: context)
+            - sessionSeconds(days[index], context: context) / 60 * Score.dayBalance - overlap * Score.candidateOverlap + orderPriority(entry, context: context)
             + (context.goal == .increaseGymConfidence && all.contains { $0.exercise.id == entry.exercise.id } ? Score.familiarExercise : 0)
     }
 
@@ -151,8 +152,8 @@ extension PlanRuleEngine {
     /// VI: Với mỗi cơ chính: cộng 100 cho mỗi set thiếu so với 4, và 20 cho mỗi ngày thiếu so với 2.
     /// EN: Example: chest has 2 sets on 1 day → 2 × 100 + 1 × 20 = 220 penalty points.
     /// VI: Ví dụ: ngực có 2 sets trong 1 ngày → 2 × 100 + 1 × 20 = 220 điểm phạt.
-    /// EN: Also penalise shared muscles on consecutive days and sets missing from the weekly target.
-    /// VI: Cộng thêm phạt cho cơ trùng ở ngày liền nhau và số sets còn thiếu của cả tuần.
+    /// EN: Prefer layouts closer to the requested time, then compare muscle coverage and consecutive-day overlap.
+    /// VI: Ưu tiên lịch gần thời gian đã chọn, rồi so sánh độ phủ nhóm cơ và cơ trùng ở ngày liền nhau.
     /// EN: Secondary muscles affect the shared-muscle penalty, but do not receive additional direct sets.
     /// VI: Cơ phụ ảnh hưởng khoản phạt cơ trùng, nhưng không được cộng thêm sets trực tiếp.
     func layoutScore(_ days: [DaySelection], context: Context) -> Int {
@@ -166,7 +167,14 @@ extension PlanRuleEngine {
             let next = days.first { $0.weekday == day.weekday % 7 + 1 }
             return score + muscles.intersection(Set(next?.entries.flatMap { $0.secondary.union([$0.muscle]) } ?? [])).count
         }
-        return coverage + overlap * Score.layoutOverlap + max(0, context.volume.desiredSets - all.count * PlanRuleMath.initialSets)
+        let shortfall = days.reduce(0) { $0 + max(0, context.request.sessionMinutes * 60 - sessionSeconds($1, context: context)) }
+        return shortfall * Score.sessionShortfall + coverage + overlap * Score.layoutOverlap
+    }
+
+    private func sessionSeconds(_ day: DaySelection, context: Context) -> Int {
+        PlanRuleMath.sessionSeconds(day.entries.map {
+            (sets: PlanRuleMath.initialSets, rest: PlanRuleMath.rest($0.exercise, strategy: context.strategy))
+        })
     }
 
     /// EN: Decide which exercise to do earlier: machine/cable +30 when preferred, seated +5 for low impact.

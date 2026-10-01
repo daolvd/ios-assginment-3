@@ -19,7 +19,11 @@ struct ContentView: View {
                     PlanReviewView(plan: plan, goalTitle: onboardingViewModel.selectedGoal?.title,
                                    exercises: onboardingViewModel.exercises,
                                    milestones: onboardingViewModel.planMilestones,
-                                   onStartOver: changeAnswers)
+                                   onStartOver: changeAnswers,
+                                   canAccept: onboardingViewModel.canAcceptPlan,
+                                   acceptanceError: onboardingViewModel.acceptanceError,
+                                   onAccept: onboardingViewModel.acceptPlan,
+                                   onDismissError: onboardingViewModel.dismissAcceptanceError)
                 }
             }
         }

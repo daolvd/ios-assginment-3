@@ -83,15 +83,20 @@ struct PlanRuleEngine {
         let forecast = try PlanRuleMath.forecastWeeks(context.request)
         plan.forecastMinWeeks = forecast.min
         plan.forecastMaxWeeks = forecast.max
-        plan.coachText = context.strategy.isConservative
-            ? context.configuration.coachMessages.conservative
-            : context.configuration.coachMessages.standard
+        // EN: Keep AI's message. Only the rules fallback uses the built-in guidance.
+        // VI: Giữ lời AI sinh. Chỉ fallback bằng rule dùng lời hướng dẫn có sẵn.
+        if plan.generatorRaw == PlanGeneratorKind.ruleBased.rawValue {
+            plan.coachText = context.strategy.isConservative
+                ? context.configuration.coachMessages.conservative
+                : context.configuration.coachMessages.standard
+        }
     }
 
     /// EN: Check the plan without changing it. Use the same checks for rules and AI.
     /// VI: Kiểm tra plan mà không sửa nó. Lịch do rule và AI tạo đều qua cùng các kiểm tra.
-    func validate(_ plan: TrainingPlan, request: PlanRequest, catalogue: [Exercise]) throws(CreatePersonalisedPlanError) {
-        try validate(plan, context: prepare(request, catalogue: catalogue))
+    func validate(_ plan: TrainingPlan, request: PlanRequest, catalogue: [Exercise],
+                  requireFullSessions: Bool = true) throws(CreatePersonalisedPlanError) {
+        try validate(plan, context: prepare(request, catalogue: catalogue), requireFullSessions: requireFullSessions)
     }
 
     func milestones(for goalID: String) -> [String] {

@@ -11,7 +11,7 @@ struct AIPlanGeneratorTests {
         let answer = AIWorkoutSchedule(days: reference.days.reversed().map { day in
             AIWorkoutDay(weekday: day.weekday, title: "AI selected session",
                          exerciseIDs: day.exercises.reversed().map(\.exerciseID))
-        })
+        }, coachText: "Take your time learning these movements. Each session is a step forward.")
         let recorder = PromptRecorder()
         let generator = FoundationModelPlanGenerator(catalogue: catalogue) { prompt in
             recorder.prompts.append(prompt)
@@ -22,6 +22,7 @@ struct AIPlanGeneratorTests {
 
         #expect(generator.kind == .onDeviceAI)
         #expect(plan.generatorRaw == "onDeviceAI")
+        #expect(plan.coachText == answer.coachText)
         #expect(plan.profile.healthNote == request.healthNote)
         #expect(plan.days.map(\.weekday) == answer.days.map(\.weekday))
         #expect(plan.days.map { $0.exercises.map(\.exerciseID) } == answer.days.map(\.exerciseIDs))
@@ -50,7 +51,7 @@ struct AIPlanGeneratorTests {
             recorder.prompts.append(prompt)
             return AIWorkoutSchedule(days: [1, 3, 6].map {
                 AIWorkoutDay(weekday: $0, title: "Invalid", exerciseIDs: ["invented-exercise"])
-            })
+            }, coachText: "Keep practising at your own pace.")
         }
         await #expect(throws: CreatePersonalisedPlanError.medicalClearanceRequired) {
             try await generator.generate(request(cleared: false))
@@ -65,7 +66,7 @@ struct AIPlanGeneratorTests {
             AIWorkoutSchedule(days: reference.days.map { day in
                 AIWorkoutDay(weekday: day.weekday == 1 ? 2 : day.weekday, title: "Wrong day",
                              exerciseIDs: day.exercises.map(\.exerciseID))
-            })
+            }, coachText: "Keep practising at your own pace.")
         }
         await #expect(throws: CreatePersonalisedPlanError.invalidTrainingPlan) {
             try await wrongDays.generate(request(cleared: true))
@@ -75,6 +76,16 @@ struct AIPlanGeneratorTests {
         }
         await #expect(throws: CreatePersonalisedPlanError.invalidTrainingPlan) {
             try await failing.generate(request(cleared: true))
+        }
+        for text in ["   ", String(repeating: "a", count: 601)] {
+            let invalidCoach = FoundationModelPlanGenerator(catalogue: catalogue) { _ in
+                AIWorkoutSchedule(days: reference.days.map {
+                    AIWorkoutDay(weekday: $0.weekday, title: $0.title, exerciseIDs: $0.exercises.map(\.exerciseID))
+                }, coachText: text)
+            }
+            await #expect(throws: CreatePersonalisedPlanError.invalidTrainingPlan) {
+                try await invalidCoach.generate(request(cleared: true))
+            }
         }
     }
 

@@ -39,7 +39,10 @@ extension PlanRuleEngine {
         // EN: Examples: knee = leg press, hip = glute bridge, push = chest press, pull = cable row.
         // VI: Ví dụ: knee = đạp đùi, hip = nâng hông, push = đẩy ngực, pull = kéo cáp.
         guard requiredMovements.isSubset(of: Set(entries.map(\.movement))) else { throw .noSuitableExercises }
-        return Context(request: request, goal: goal, strategy: strategy, volume: WeeklyVolumePolicy(profile: profile, strategy: strategy), entries: entries, configuration: configuration)
+        let minimumRest = entries.map { PlanRuleMath.rest($0.exercise, strategy: strategy) }.min()!
+        let volume = WeeklyVolumePolicy(profile: profile, strategy: strategy,
+                                       minimumRestSeconds: minimumRest, exerciseCount: entries.count)
+        return Context(request: request, goal: goal, strategy: strategy, volume: volume, entries: entries, configuration: configuration)
     }
 
     /// EN: New users get beginner exercises; users with experience can also get intermediate exercises.

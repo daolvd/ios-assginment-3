@@ -4,7 +4,7 @@ import Foundation
 extension PlanRuleEngine {
     /// EN: Recheck the completed plan, even if the scheduler already checked each choice. AI uses these checks too.
     /// VI: Kiểm tra lại plan đã hoàn thành, dù từng lựa chọn đã được kiểm tra. Lịch AI cũng dùng các kiểm tra này.
-    func validate(_ plan: TrainingPlan, context: Context) throws(CreatePersonalisedPlanError) {
+    func validate(_ plan: TrainingPlan, context: Context, requireFullSessions: Bool = true) throws(CreatePersonalisedPlanError) {
         let request = context.request, days = plan.days
         try validateMetadata(plan, context: context)
         var total = 0, direct: [MuscleGroup: Int] = [:], muscles: [Int: Set<MuscleGroup>] = [:], movements: Set<MovementPattern> = []
@@ -33,8 +33,8 @@ extension PlanRuleEngine {
             }
             guard day.estimatedMinutes == (try PlanRuleMath.estimatedMinutes(day.exercises)), day.estimatedMinutes <= request.sessionMinutes else { throw .invalidTrainingPlan }
         }
-        // EN: Reject excessive weekly sets or missing movement types. Being below a preferred target is allowed.
-        // VI: Từ chối nếu vượt sets tuần hoặc thiếu kiểu chuyển động. Có thể thấp hơn mục tiêu ưu tiên.
+        // EN: Reject sets beyond the time-derived week capacity or the independent muscle limits.
+        // VI: Loại sets vượt sức chứa tuần tính từ thời gian hoặc vượt giới hạn riêng của nhóm cơ.
         guard total <= context.volume.maximumSets, requiredMovements.isSubset(of: movements),
               majorMuscles.allSatisfy({ direct[$0, default: 0] <= context.volume.maximumMajorMuscleSets }) else { throw .invalidTrainingPlan }
         for (weekday, primary) in muscles {
@@ -44,6 +44,29 @@ extension PlanRuleEngine {
         }
         let forecast = try PlanRuleMath.forecastWeeks(request)
         guard plan.forecastMinWeeks == forecast.min, plan.forecastMaxWeeks == forecast.max else { throw .invalidTrainingPlan }
+        if requireFullSessions {
+            try validateSessionUtilization(plan, context: context, totalSets: total, directSets: direct, muscles: muscles)
+        }
+    }
+
+    /// EN: Reject a NEW plan if a session still has room for another legal exercise; retry AI or use fallback.
+    /// VI: Loại plan MỚI nếu buổi vẫn còn chỗ thêm bài hợp lệ; thử lại AI hoặc dùng fallback.
+    /// EN: Use actual saved sets/rest. A shorter session is allowed when muscle limits, recovery or catalogue block additions.
+    /// VI: Dùng sets/nghỉ thực tế đã lưu. Cho phép buổi ngắn hơn khi giới hạn cơ, phục hồi hoặc catalogue chặn thêm bài.
+    private func validateSessionUtilization(_ plan: TrainingPlan, context: Context, totalSets: Int,
+                                           directSets: [MuscleGroup: Int], muscles: [Int: Set<MuscleGroup>]) throws(CreatePersonalisedPlanError) {
+        for day in plan.days {
+            let usedIDs = Set(day.exercises.map(\.exerciseID))
+            let neighboringMuscles = muscles.filter { PlanRuleMath.adjacent($0.key, day.weekday) }.values.reduce(into: Set<MuscleGroup>()) { $0.formUnion($1) }
+            for entry in context.entries {
+                guard !usedIDs.contains(entry.exercise.id), !neighboringMuscles.contains(entry.muscle),
+                      totalSets + PlanRuleMath.initialSets <= context.volume.maximumSets,
+                      !entry.major || directSets[entry.muscle, default: 0] + PlanRuleMath.initialSets <= context.volume.maximumMajorMuscleSets else { continue }
+                let expanded = day.exercises.map { (sets: $0.targetSets, rest: $0.restSeconds) }
+                    + [(sets: PlanRuleMath.initialSets, rest: PlanRuleMath.rest(entry.exercise, strategy: context.strategy))]
+                guard PlanRuleMath.sessionSeconds(expanded) > context.request.sessionMinutes * 60 else { throw .invalidTrainingPlan }
+            }
+        }
     }
 
     /// EN: Match the plan back to the original answers, generator type and expected number of training days.

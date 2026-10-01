@@ -25,7 +25,8 @@ struct HerLiftApp: App {
                 exercises: exerciseRepository.exercises,
                 saveProfile: SaveOnboardingProfileUseCase(repository: profiles),
                 createPlan: CreatePersonalisedPlanUseCase(generator: planner, catalogue: exerciseRepository.exercises,
-                                                         repository: plans)
+                                                         repository: plans),
+                acceptPlan: AcceptTrainingPlanUseCase(repository: plans)
             )
             onboardingViewModel.load(using: LoadOnboardingProfileUseCase(repository: profiles))
             onboardingViewModel.loadSavedPlan()

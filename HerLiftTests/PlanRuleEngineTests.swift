@@ -4,6 +4,35 @@ import Testing
 
 @MainActor
 struct PlanRuleEngineTests {
+    @Test func sessionTimeDrivesEachWorkoutAndUnderfilledNewPlansAreRejected() throws {
+        let catalogue = try JSONExerciseRepository().exercises
+        let engine = PlanRuleEngine()
+        for minutes in [30, 45] {
+            let input = request(days: [1, 3, 6], minutes: minutes)
+            let plan = try engine.generate(input, catalogue: catalogue)
+            print("Requested \(minutes) min/session; estimated minutes: \(plan.days.sorted { $0.weekday < $1.weekday }.map(\.estimatedMinutes))")
+            #expect(plan.days.allSatisfy { (minutes - 5...minutes).contains($0.estimatedMinutes) })
+            #expect(plan.days.flatMap(\.exercises).reduce(0) { $0 + $1.targetSets } > 32)
+            try engine.validate(plan, request: input, catalogue: catalogue)
+        }
+        let input = request(days: [1, 3, 6], minutes: 45)
+        let plan = try engine.generate(input, catalogue: catalogue)
+        let day = try #require(plan.days.first)
+        day.exercises.removeLast()
+        day.estimatedMinutes = try PlanRuleMath.estimatedMinutes(day.exercises)
+        // EN: Older saved plans remain readable, but a fresh plan with room for another legal exercise must retry.
+        // VI: Plan cũ vẫn đọc được, nhưng plan mới còn chỗ thêm bài hợp lệ phải thử xếp lại.
+        try engine.validate(plan, request: input, catalogue: catalogue, requireFullSessions: false)
+        #expect(throws: CreatePersonalisedPlanError.invalidTrainingPlan) {
+            try engine.validate(plan, request: input, catalogue: catalogue)
+        }
+        let restricted = request(days: [1, 3, 6], restricted: true, minutes: 45)
+        let cautious = try engine.generate(restricted, catalogue: catalogue)
+        #expect(cautious.days.allSatisfy { $0.estimatedMinutes <= 45 })
+        #expect(cautious.days.flatMap(\.exercises).allSatisfy { $0.targetSets == 2 })
+        try engine.validate(cautious, request: restricted, catalogue: catalogue)
+    }
+
     @Test func generatedWeeksRespectSelectedDaysAndCombinedLimits() throws {
         let catalogue = try JSONExerciseRepository().exercises
         let engine = PlanRuleEngine()
@@ -29,7 +58,7 @@ struct PlanRuleEngineTests {
             #expect(plan.days.allSatisfy { $0.estimatedMinutes <= 30 })
             #expect(plan.days.flatMap(\.exercises).allSatisfy { $0.targetWeightKg == nil })
             if days.count == 7 {
-                #expect(plan.days.flatMap(\.exercises).reduce(0) { $0 + $1.targetSets } <= 24)
+                #expect(plan.days.count == 6)
             }
             if restricted {
                 #expect(plan.strategyRaw == "conservative+lowImpact+olderBeginner")
@@ -87,9 +116,9 @@ struct PlanRuleEngineTests {
         #expect(try #require(forecast.forecastMaxWeeks) > 12)
     }
 
-    private func request(days: [Int], restricted: Bool = false, cleared: Bool = true) -> PlanRequest {
+    private func request(days: [Int], restricted: Bool = false, cleared: Bool = true, minutes: Int = 30) -> PlanRequest {
         PlanRequest(experience: .beginner, goalID: "buildStrength", targetWeightKg: nil,
-                    trainingWeekdays: days, sessionMinutes: 30, age: restricted ? 55 : 29,
+                    trainingWeekdays: days, sessionMinutes: minutes, age: restricted ? 55 : 29,
                     heightCm: 165, weightKg: restricted ? 95 : 62,
                     healthNote: restricted ? "Asthma" : nil, clearedByDoctor: restricted && cleared)
     }
