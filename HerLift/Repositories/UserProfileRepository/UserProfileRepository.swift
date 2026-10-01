@@ -65,3 +65,42 @@ final class SwiftDataUserProfileRepository: UserProfileRepository {
         try load()
     }
 }
+
+extension SwiftDataUserProfileRepository: OnboardingProfileRepository {
+    func loadOnboardingProfile() throws -> OnboardingProfile? {
+        guard let stored = try load().last else { return nil }
+        guard let experience = ExperienceLevel(rawValue: stored.experienceRaw) else {
+            throw CocoaError(.coderReadCorrupt)
+        }
+        return OnboardingProfile(
+            age: stored.age, heightCm: stored.heightCm, weightKg: stored.weightKg,
+            experience: experience, trainingWeekdays: stored.trainingWeekdays,
+            sessionMinutes: stored.sessionMinutes, healthNote: stored.healthNote,
+            clearedByDoctor: stored.clearedByDoctor
+        )
+    }
+
+    func saveOnboardingProfile(_ profile: OnboardingProfile) throws {
+        do {
+            // Reuse the current profile without replacing its identity or linked plans.
+            let stored = try load().last ?? UserProfile(
+                age: profile.age, heightCm: profile.heightCm, weightKg: profile.weightKg,
+                experienceRaw: profile.experience.rawValue,
+                trainingWeekdays: profile.trainingWeekdays, sessionMinutes: profile.sessionMinutes
+            )
+            if stored.modelContext == nil { modelContext.insert(stored) }
+            stored.age = profile.age
+            stored.heightCm = profile.heightCm
+            stored.weightKg = profile.weightKg
+            stored.experienceRaw = profile.experience.rawValue
+            stored.trainingWeekdays = profile.trainingWeekdays
+            stored.sessionMinutes = profile.sessionMinutes
+            stored.healthNote = profile.healthNote
+            stored.clearedByDoctor = profile.clearedByDoctor
+            try save()
+        } catch {
+            modelContext.rollback()
+            throw error
+        }
+    }
+}

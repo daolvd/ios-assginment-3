@@ -15,7 +15,7 @@ nonisolated final class UserProfile {
     var heightCm: Double
     var weightKg: Double
     var experienceRaw: String
-    /// Monday = 1, Sunday = 7. The use case validates 2–4 distinct days.
+    /// Monday = 1, Sunday = 7. The use case validates 2–7 distinct days.
     var trainingWeekdays: [Int]
     var sessionMinutes: Int
     var healthNote: String?

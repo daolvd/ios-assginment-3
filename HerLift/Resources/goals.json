@@ -1,0 +1,22 @@
+[
+  {
+    "id": "loseFat",
+    "title": "Lose fat",
+    "requiresTargetWeight": true
+  },
+  {
+    "id": "buildMuscle",
+    "title": "Build muscle",
+    "requiresTargetWeight": false
+  },
+  {
+    "id": "buildStrength",
+    "title": "Get stronger",
+    "requiresTargetWeight": false
+  },
+  {
+    "id": "increaseGymConfidence",
+    "title": "Feel confident in the gym",
+    "requiresTargetWeight": false
+  }
+]
