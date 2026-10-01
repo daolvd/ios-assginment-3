@@ -2,36 +2,54 @@ import Foundation
 
 @MainActor
 extension PlanRuleEngine {
+    /// EN: Recheck the completed plan, even if the scheduler already checked each choice. AI uses these checks too.
+    /// VI: Kiểm tra lại plan đã hoàn thành, dù từng lựa chọn đã được kiểm tra. Lịch AI cũng dùng các kiểm tra này.
     func validate(_ plan: TrainingPlan, context: Context) throws(CreatePersonalisedPlanError) {
         let request = context.request, days = plan.days
         try validateMetadata(plan, context: context)
         var total = 0, direct: [MuscleGroup: Int] = [:], muscles: [Int: Set<MuscleGroup>] = [:], movements: Set<MovementPattern> = []
         for day in days {
+            // EN: Each day must belong to this plan, contain exercises, have no duplicate exercises and have valid order numbers.
+            // VI: Mỗi ngày phải thuộc plan này, có bài tập, không trùng bài và có số thứ tự hợp lệ.
             guard day.plan.id == plan.id, !day.exercises.isEmpty,
                   Set(day.exercises.map(\.exerciseID)).count == day.exercises.count,
                   day.exercises.map(\.sortIndex).sorted() == Array(day.exercises.indices) else { throw .invalidTrainingPlan }
             for target in day.exercises {
+                // EN: Each exercise must be allowed, with the expected reps/rest and no guessed starting weight.
+                // VI: Mỗi bài phải được phép, có số lần lặp/nghỉ đúng và chưa bị đoán mức tạ ban đầu.
+                // EN: Standard allows 1–3 sets; a strategy limited to 2 sets requires exactly 2.
+                // VI: Standard cho phép 1–3 sets; chế độ giới hạn 2 sets yêu cầu đúng 2.
                 guard let entry = context.entries.first(where: { $0.exercise.id == target.exerciseID }),
                       target.workoutDay.id == day.id, (1...context.strategy.maximumSetsPerExercise).contains(target.targetSets),
                       context.strategy.maximumSetsPerExercise != 2 || target.targetSets == 2,
                       target.minimumReps == entry.exercise.minimumReps, target.maximumReps == entry.exercise.maximumReps,
                       target.restSeconds == PlanRuleMath.rest(entry.exercise, strategy: context.strategy), target.targetWeightKg == nil else { throw .invalidTrainingPlan }
                 total += target.targetSets
+                // EN: Add sets only to the primary muscle. Example: a chest exercise with 2 sets adds 2 chest sets, not extra arm sets.
+                // VI: Chỉ cộng sets cho cơ chính. Ví dụ: bài ngực 2 sets cộng 2 sets ngực, không cộng thêm sets tay.
                 direct[entry.muscle, default: 0] += target.targetSets
                 muscles[day.weekday, default: []].insert(entry.muscle)
                 movements.insert(entry.movement)
             }
             guard day.estimatedMinutes == (try PlanRuleMath.estimatedMinutes(day.exercises)), day.estimatedMinutes <= request.sessionMinutes else { throw .invalidTrainingPlan }
         }
+        // EN: Reject excessive weekly sets or missing movement types. Being below a preferred target is allowed.
+        // VI: Từ chối nếu vượt sets tuần hoặc thiếu kiểu chuyển động. Có thể thấp hơn mục tiêu ưu tiên.
         guard total <= context.volume.maximumSets, requiredMovements.isSubset(of: movements),
               majorMuscles.allSatisfy({ direct[$0, default: 0] <= context.volume.maximumMajorMuscleSets }) else { throw .invalidTrainingPlan }
         for (weekday, primary) in muscles {
+            // EN: Check the next day, including Sunday → Monday, for repeated primary muscles.
+            // VI: Kiểm tra cơ chính bị trùng với ngày tiếp theo, kể cả Chủ nhật → thứ Hai.
             guard primary.isDisjoint(with: muscles[weekday % 7 + 1, default: []]) else { throw .invalidTrainingPlan }
         }
         let forecast = try PlanRuleMath.forecastWeeks(request)
         guard plan.forecastMinWeeks == forecast.min, plan.forecastMaxWeeks == forecast.max else { throw .invalidTrainingPlan }
     }
 
+    /// EN: Match the plan back to the original answers, generator type and expected number of training days.
+    /// VI: Đối chiếu plan với câu trả lời ban đầu, nguồn tạo lịch và số ngày tập cần có.
+    /// EN: Selecting all 7 days keeps 7 in the profile but requires 6 actual training days.
+    /// VI: Chọn cả 7 ngày thì profile vẫn giữ 7 ngày, nhưng lịch phải có 6 ngày tập thực tế.
     private func validateMetadata(_ plan: TrainingPlan, context: Context) throws(CreatePersonalisedPlanError) {
         let request = context.request, days = plan.days
         let selected = Set(request.trainingWeekdays), actual = Set(days.map(\.weekday))
