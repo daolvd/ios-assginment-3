@@ -8,10 +8,7 @@
 import SwiftUI
 
 struct AboutYouView: View {
-    enum Experience: String, CaseIterable {
-        case beginner = "Beginner"
-        case some = "Some"
-    }
+    typealias Experience = ExperienceLevel
 
     @Binding var age: String
     @Binding var height: String
