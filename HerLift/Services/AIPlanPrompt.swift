@@ -27,9 +27,13 @@ nonisolated struct AIPlanPrompt: Encodable {
     let preferMachines: Bool
     let preferSeated: Bool
     let exercises: [ExerciseOption]
+    let validationFeedback: String?
 
     @MainActor
-    init(context: PlanRuleEngine.Context) {
+    init(context: PlanRuleEngine.Context, validationFeedback: CreatePersonalisedPlanError? = nil) {
+        self.validationFeedback = validationFeedback.map {
+            "Previous attempt failed validation: \($0.localizedDescription) Recheck weekdays, allowed IDs, movement coverage, set ceilings, recovery and duration."
+        }
         goal = context.goal.rawValue
         selectedWeekdays = context.request.trainingWeekdays.sorted()
         trainingDayCount = min(selectedWeekdays.count, 6)

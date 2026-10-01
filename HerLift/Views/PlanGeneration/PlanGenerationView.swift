@@ -1,9 +1,12 @@
 import SwiftUI
 
-/// Layout only. The phase is selected by the preview; no generation runs here.
 struct PlanGenerationView: View {
     enum Phase { case building, failed }
     var phase: Phase = .building
+    var plannerLabel: String?
+    var error: CreatePersonalisedPlanError?
+    var onRetry: (() -> Void)?
+    var onChangeAnswers: (() -> Void)?
 
     var body: some View {
         NavigationStack {
@@ -11,8 +14,11 @@ struct PlanGenerationView: View {
                 VStack(alignment: .leading, spacing: 20) {
                     if phase == .building { checklist }
                     else {
-                        HLInlineError(message: "We couldn't build your plan. Your answers are saved.")
-                        OnboardingStyle.primaryButton("Try again") {}.disabled(true)
+                        HLInlineError(message: error?.errorDescription ?? "We couldn't build your plan. Your answers are saved.")
+                        if let suggestion = error?.recoverySuggestion {
+                            Text(suggestion).foregroundStyle(HerLiftTheme.secondaryText)
+                        }
+                        OnboardingStyle.primaryButton("Try again") { onRetry?() }.disabled(onRetry == nil)
                     }
                 }
                 .padding(20)
@@ -23,7 +29,7 @@ struct PlanGenerationView: View {
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Change my answers") {}.disabled(true)
+                    Button("Change my answers") { onChangeAnswers?() }.disabled(onChangeAnswers == nil)
                 }
             }
         }
@@ -33,18 +39,13 @@ struct PlanGenerationView: View {
     private var checklist: some View {
         VStack(alignment: .leading, spacing: 20) {
             ProgressView("Creating your week")
-            VStack(spacing: 0) {
-                ForEach(["Checking your answers", "Choosing your training approach", "Building your week",
-                         "Checking your plan", "Saving your draft"], id: \.self) { title in
-                    HLListRow(title: title, accessory: .value("—"))
-                }
-            }
-            .clipShape(RoundedRectangle(cornerRadius: 14))
-            HLListRow(title: "Planner", accessory: .value("—"))
+            Text("Choosing your exercises and checking your weekly schedule.")
+                .foregroundStyle(HerLiftTheme.secondaryText)
+            HLListRow(title: "Planner", accessory: .value(plannerLabel ?? "—"))
                 .clipShape(RoundedRectangle(cornerRadius: 14))
         }
     }
 }
 
-#Preview("Building · UI only") { PlanGenerationView() }
-#Preview("Error · UI only") { PlanGenerationView(phase: .failed) }
+#Preview("Building") { PlanGenerationView() }
+#Preview("Error") { PlanGenerationView(phase: .failed) }

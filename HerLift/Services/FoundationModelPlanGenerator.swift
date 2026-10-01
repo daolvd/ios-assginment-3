@@ -22,6 +22,10 @@ nonisolated struct AIWorkoutDay {
 @MainActor
 final class FoundationModelPlanGenerator: PlanGenerating {
     nonisolated let kind = PlanGeneratorKind.onDeviceAI
+    nonisolated var isAvailable: Bool {
+        if case .available = SystemLanguageModel.default.availability { return true }
+        return false
+    }
     typealias ProposeSchedule = @MainActor @Sendable (String) async throws -> AIWorkoutSchedule
 
     private let catalogue: [Exercise]
@@ -37,15 +41,19 @@ final class FoundationModelPlanGenerator: PlanGenerating {
     /// EN: Screen first → ask AI once → build TrainingPlan → let rules fill numbers and check the schedule.
     /// VI: Kiểm tra trước → gọi AI một lần → tạo TrainingPlan → để rule điền số và kiểm tra lịch.
     nonisolated func generate(_ request: PlanRequest) async throws(CreatePersonalisedPlanError) -> TrainingPlan {
-        try await generateOnMainActor(request)
+        try await generate(request, validationFeedback: nil)
     }
 
-    private func generateOnMainActor(_ request: PlanRequest) async throws(CreatePersonalisedPlanError) -> TrainingPlan {
+    nonisolated func generate(_ request: PlanRequest, validationFeedback: CreatePersonalisedPlanError?) async throws(CreatePersonalisedPlanError) -> TrainingPlan {
+        try await generateOnMainActor(request, validationFeedback: validationFeedback)
+    }
+
+    private func generateOnMainActor(_ request: PlanRequest, validationFeedback: CreatePersonalisedPlanError?) async throws(CreatePersonalisedPlanError) -> TrainingPlan {
         let engine = PlanRuleEngine()
         let context = try engine.prepare(request, catalogue: catalogue)
         do {
             try Task.checkCancellation()
-            let prompt = try AIPlanPrompt(context: context).encoded()
+            let prompt = try AIPlanPrompt(context: context, validationFeedback: validationFeedback).encoded()
             let schedule = try await proposeSchedule(prompt)
             try Task.checkCancellation()
             let plan = try makePlan(schedule, context: context)

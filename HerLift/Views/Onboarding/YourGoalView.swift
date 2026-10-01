@@ -13,6 +13,8 @@ struct YourGoalView: View {
     @Binding var targetWeight: String
     var focusedField: FocusState<OnboardingField?>.Binding
     var actionTitle = "Build my plan"
+    var canBuildPlan = true
+    var targetWeightError: String?
     var onBuildPlan: (() -> Void)?
 
     var body: some View {
@@ -23,6 +25,7 @@ struct YourGoalView: View {
                 if goals.first(where: { $0.id == selectedGoalID })?.requiresTargetWeight == true {
                     OnboardingNumberField("Target weight (for Lose fat)", text: $targetWeight,
                                 prompt: "56", unit: "kg", focusedField: focusedField, field: .targetWeight)
+                    if let targetWeightError { HLInlineError(message: targetWeightError) }
                 }
             }
         }
@@ -40,7 +43,7 @@ struct YourGoalView: View {
                 focusedField.wrappedValue = nil
                 onBuildPlan?()
             }
-            .disabled(selectedGoalID == nil || onBuildPlan == nil)
+            .disabled(selectedGoalID == nil || onBuildPlan == nil || !canBuildPlan)
             .padding(.horizontal, 20).padding(.bottom, 12)
             .background(HerLiftTheme.background)
         }

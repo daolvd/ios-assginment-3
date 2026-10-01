@@ -81,6 +81,8 @@ struct OnboardingView: View {
                 YourGoalView(goals: viewModel.goals, selectedGoalID: $viewModel.input.selectedGoalID,
                              targetWeight: $viewModel.input.targetWeight, focusedField: $focusedField,
                              actionTitle: onBuildPlan == nil ? "Save profile" : "Build my plan",
+                             canBuildPlan: onBuildPlan == nil || viewModel.canBuildPlan,
+                             targetWeightError: viewModel.targetWeightMessage,
                              onBuildPlan: saveAction)
             }
             .onChange(of: page) { focusedField = nil }
@@ -100,6 +102,15 @@ struct OnboardingView: View {
         } message: {
             Text("Your profile is saved on your phone.")
         }
+        .alert("Check your plan answers", isPresented: Binding<Bool>(
+            get: { viewModel.generationPhase == .editing && viewModel.generationError != nil },
+            set: { if !$0 { viewModel.dismissGenerationError() } }
+        )) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text([viewModel.generationError?.errorDescription, viewModel.generationError?.recoverySuggestion]
+                .compactMap { $0 }.joined(separator: "\n"))
+        }
     }
 
     private var saveAction: (() -> Void)? {
@@ -108,9 +119,12 @@ struct OnboardingView: View {
     }
 
     private func saveProfile() {
+        if let onBuildPlan {
+            onBuildPlan()
+            return
+        }
         guard viewModel.save() else { return }
-        if let onBuildPlan { onBuildPlan() }
-        else { showsSavedProfile = true }
+        showsSavedProfile = true
     }
 
     private func stepCounter(_ step: Int) -> some View {

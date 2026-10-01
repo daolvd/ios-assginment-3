@@ -9,6 +9,7 @@ final class OnboardingViewModel {
     }
 
     let goals: [Goal]
+    let exercises: [Exercise]
     var input: OnboardingInput
     private(set) var savedProfile: OnboardingProfile?
     var error: OnboardingProfileError?
@@ -19,13 +20,15 @@ final class OnboardingViewModel {
     private(set) var plannerLabel: String?
     private(set) var generationError: CreatePersonalisedPlanError?
     @ObservationIgnored private let createPlan: CreatePersonalisedPlanUseCase?
+    @ObservationIgnored private var generationID: UUID?
 
     /// Omit the use cases only for view previews; saving and generating require
     /// dependencies supplied by the app.
-    init(goals: [Goal], input: OnboardingInput = OnboardingInput(),
+    init(goals: [Goal], exercises: [Exercise] = [], input: OnboardingInput = OnboardingInput(),
          saveProfile: SaveOnboardingProfileUseCase? = nil,
          createPlan: CreatePersonalisedPlanUseCase? = nil) {
         self.goals = goals
+        self.exercises = exercises
         self.input = input
         self.saveProfile = saveProfile
         self.createPlan = createPlan
@@ -47,12 +50,20 @@ final class OnboardingViewModel {
     }
 
     var canBuildPlan: Bool {
-        guard let goal = selectedGoal, generationPhase != .building else { return false }
+        guard createPlan != nil, let goal = selectedGoal, generationPhase != .building else { return false }
         if goal.requiresTargetWeight {
-            guard let target = parsedTargetWeight, let height = parsedHeightCm else { return false }
+            guard let target = parsedTargetWeight, let height = parsedHeightCm,
+                  let currentWeight = parsedPositiveNumber(input.weight), target < currentWeight else { return false }
             return PlanRules.isSafeTargetWeight(target, heightCm: height)
         }
         return true
+    }
+
+    var targetWeightMessage: String? {
+        if let targetWeightError { return targetWeightError.errorDescription }
+        guard selectedGoal?.requiresTargetWeight == true, let target = parsedTargetWeight,
+              let currentWeight = parsedPositiveNumber(input.weight), target >= currentWeight else { return nil }
+        return "Choose a target below your current weight."
     }
 
     func load(using useCase: LoadOnboardingProfileUseCase) {
@@ -89,12 +100,14 @@ final class OnboardingViewModel {
         }
     }
 
-    /// Screens K → L: save the answers, then let UC1 validate and draft the week.
-    /// Saving first is what lets the failure screen say "Your answers are saved."
+    /// EN: Save current edited answers before generation, so retries never use an outdated profile.
+    /// VI: Lưu câu trả lời vừa sửa trước khi tạo lịch, tránh retry dùng profile cũ.
     func buildPlan() async {
-        guard let createPlan, canBuildPlan else { return }
-        if savedProfile == nil {
-            guard save() else { return }
+        guard !Task.isCancelled, let createPlan, canBuildPlan else { return }
+        generationError = nil
+        guard save() else {
+            generationPhase = .editing
+            return
         }
         guard let profile = savedProfile else { return }
         let request = PlanRequest(
@@ -109,13 +122,20 @@ final class OnboardingViewModel {
             healthNote: profile.healthNote,
             clearedByDoctor: profile.clearedByDoctor
         )
+        let attemptID = UUID()
+        generationID = attemptID
+        plan = nil
+        plannerLabel = createPlan.plannerLabel
         generationError = nil
         generationPhase = .building
         do {
-            plan = try await createPlan.execute(request)
-            plannerLabel = createPlan.plannerLabel
+            let generated = try await createPlan.execute(request)
+            guard generationID == attemptID, !Task.isCancelled else { return }
+            plan = generated
+            plannerLabel = PlanGeneratorKind(rawValue: generated.generatorRaw)?.label
             generationPhase = .ready
         } catch {
+            guard generationID == attemptID, !Task.isCancelled else { return }
             generationError = error
             // Answer-level problems send her back to fix the form; the rest are
             // full-screen failures (R).
@@ -126,19 +146,52 @@ final class OnboardingViewModel {
         }
     }
 
-    /// The R screen's "Try again": same answers, same generator, bounded to one call.
+    /// EN: Retry a failed build; the use case owns the bounded AI retry and fallback.
+    /// VI: Tạo lại khi lỗi; use case quản lý giới hạn retry AI và fallback.
     func retryBuildPlan() async {
         guard generationPhase == .failed else { return }
         await buildPlan()
     }
 
-    /// "Change my answers" and "Start over": the plan is discarded, the answers stay.
+    /// EN: Discard the unaccepted plan and ignore any late result from a cancelled build.
+    /// VI: Bỏ plan chưa chấp nhận và bỏ qua kết quả đến muộn của lần tạo đã hủy.
     func changeAnswers() {
+        generationID = nil
+        if let plan {
+            do { try createPlan?.discard(plan) }
+            catch {
+                generationError = error
+                generationPhase = .failed
+                return
+            }
+        }
         generationPhase = .editing
         plan = nil
         plannerLabel = nil
         generationError = nil
     }
+
+    func loadSavedPlan() {
+        guard let createPlan else { return }
+        do {
+            guard let stored = try createPlan.loadSavedPlan() else { return }
+            plan = stored
+            input.selectedGoalID = stored.goalRaw
+            input.targetWeight = stored.targetWeightKg.map { String($0) } ?? ""
+            plannerLabel = PlanGeneratorKind(rawValue: stored.generatorRaw)?.label
+            generationPhase = .ready
+        } catch {
+            generationError = error
+            generationPhase = .failed
+        }
+    }
+
+    var planMilestones: [String] {
+        guard let plan else { return [] }
+        return createPlan?.milestones(for: plan.goalRaw) ?? []
+    }
+
+    func dismissGenerationError() { generationError = nil }
 
     private var parsedHeightCm: Double? {
         parsedPositiveNumber(input.height)

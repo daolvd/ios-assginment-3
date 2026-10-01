@@ -18,11 +18,17 @@ struct HerLiftApp: App {
             exerciseRepository = try JSONExerciseRepository()
             let goals = try JSONGoalRepository()
             let profiles = try SwiftDataUserProfileRepository(modelContext: sharedModelContainer.mainContext)
+            let plans = try SwiftDataTrainingPlanRepository(modelContext: sharedModelContainer.mainContext)
+            let planner = FoundationModelPlanGenerator(catalogue: exerciseRepository.exercises)
             onboardingViewModel = OnboardingViewModel(
                 goals: goals.goals,
-                saveProfile: SaveOnboardingProfileUseCase(repository: profiles)
+                exercises: exerciseRepository.exercises,
+                saveProfile: SaveOnboardingProfileUseCase(repository: profiles),
+                createPlan: CreatePersonalisedPlanUseCase(generator: planner, catalogue: exerciseRepository.exercises,
+                                                         repository: plans)
             )
             onboardingViewModel.load(using: LoadOnboardingProfileUseCase(repository: profiles))
+            onboardingViewModel.loadSavedPlan()
         } catch {
             fatalError("Could not prepare app repositories: \(error)")
         }

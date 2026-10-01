@@ -2,7 +2,17 @@ import Foundation
 
 nonisolated protocol PlanGenerating: Sendable {
     var kind: PlanGeneratorKind { get }
+    var isAvailable: Bool { get }
     func generate(_ request: PlanRequest) async throws(CreatePersonalisedPlanError) -> TrainingPlan
+    func generate(_ request: PlanRequest, validationFeedback: CreatePersonalisedPlanError?) async throws(CreatePersonalisedPlanError) -> TrainingPlan
+}
+
+nonisolated extension PlanGenerating {
+    var isAvailable: Bool { true }
+
+    func generate(_ request: PlanRequest, validationFeedback: CreatePersonalisedPlanError?) async throws(CreatePersonalisedPlanError) -> TrainingPlan {
+        try await generate(request)
+    }
 }
 
 /// Reports input, plan-generation and persistence failures with recovery guidance.
