@@ -10,46 +10,44 @@ import SwiftUI
 struct OnboardingView: View {
     enum Page { case about, training, goal }
 
-    let goals: [Goal]
+    @State private var viewModel: OnboardingViewModel
     var onBuildPlan: (() -> Void)?
-
     @State private var page: Int
     @State private var showsGoal: Bool
-    @State private var age: String
-    @State private var height: String
-    @State private var weight: String
-    @State private var experience = AboutYouView.Experience.beginner
-    @State private var trainingDays: Set<Int> = [1, 3, 6]
-    @State private var minutes = 45
-    @State private var healthNote: String
-    @State private var clearedByDoctor = false
-    @State private var selectedGoalID: Goal.ID?
-    @State private var targetWeight = ""
+    @State private var showsSavedProfile = false
     @FocusState private var focusedField: OnboardingField?
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    init(viewModel: OnboardingViewModel, initialPage: Page = .about,
+         onBuildPlan: (() -> Void)? = nil) {
+        _viewModel = State(initialValue: viewModel)
+        self.onBuildPlan = onBuildPlan
+        _page = State(initialValue: initialPage == .about ? 0 : 1)
+        _showsGoal = State(initialValue: initialPage == .goal)
+    }
 
     init(goals: [Goal], initialPage: Page = .about,
          age: String = "", height: String = "", weight: String = "",
          healthNote: String = "", selectedGoalID: Goal.ID? = nil,
          onBuildPlan: (() -> Void)? = nil) {
-        self.goals = goals
-        self.onBuildPlan = onBuildPlan
-        _page = State(initialValue: initialPage == .about ? 0 : 1)
-        _showsGoal = State(initialValue: initialPage == .goal)
-        _age = State(initialValue: age)
-        _height = State(initialValue: height)
-        _weight = State(initialValue: weight)
-        _healthNote = State(initialValue: healthNote)
-        _selectedGoalID = State(initialValue: selectedGoalID)
+        var input = OnboardingInput()
+        input.age = age
+        input.height = height
+        input.weight = weight
+        input.healthNote = healthNote
+        input.selectedGoalID = selectedGoalID
+        self.init(viewModel: OnboardingViewModel(goals: goals, input: input),
+                  initialPage: initialPage, onBuildPlan: onBuildPlan)
     }
 
     var body: some View {
+        @Bindable var viewModel = viewModel
         NavigationStack {
             TabView(selection: $page) {
-                AboutYouView(age: $age, height: $height, weight: $weight,
-                             experience: $experience, focusedField: $focusedField).tag(0)
-                YourTrainingView(trainingDays: $trainingDays, minutes: $minutes,
-                                 healthNote: $healthNote, clearedByDoctor: $clearedByDoctor,
+                AboutYouView(age: $viewModel.input.age, height: $viewModel.input.height, weight: $viewModel.input.weight,
+                             experience: $viewModel.input.experience, focusedField: $focusedField).tag(0)
+                YourTrainingView(trainingDays: $viewModel.input.trainingDays, minutes: $viewModel.input.minutes,
+                                 healthNote: $viewModel.input.healthNote, clearedByDoctor: $viewModel.input.clearedByDoctor,
                                  focusedField: $focusedField).tag(1)
             }
             .tabViewStyle(.page(indexDisplayMode: .always))
@@ -80,13 +78,39 @@ struct OnboardingView: View {
                 .background(HerLiftTheme.background)
             }
             .navigationDestination(isPresented: $showsGoal) {
-                YourGoalView(goals: goals, selectedGoalID: $selectedGoalID,
-                             targetWeight: $targetWeight, focusedField: $focusedField,
-                             onBuildPlan: onBuildPlan)
+                YourGoalView(goals: viewModel.goals, selectedGoalID: $viewModel.input.selectedGoalID,
+                             targetWeight: $viewModel.input.targetWeight, focusedField: $focusedField,
+                             actionTitle: onBuildPlan == nil ? "Save profile" : "Build my plan",
+                             onBuildPlan: saveAction)
             }
             .onChange(of: page) { focusedField = nil }
         }
         .tint(HerLiftTheme.primary)
+        .alert("Check your answers", isPresented: Binding<Bool>(
+            get: { viewModel.error != nil },
+            set: { if !$0 { viewModel.error = nil } }
+        )) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text([viewModel.error?.errorDescription, viewModel.error?.recoverySuggestion]
+                .compactMap { $0 }.joined(separator: "\n"))
+        }
+        .alert("Profile saved", isPresented: $showsSavedProfile) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Your profile is saved on your phone.")
+        }
+    }
+
+    private var saveAction: (() -> Void)? {
+        guard viewModel.canSave else { return nil }
+        return { saveProfile() }
+    }
+
+    private func saveProfile() {
+        guard viewModel.save() else { return }
+        if let onBuildPlan { onBuildPlan() }
+        else { showsSavedProfile = true }
     }
 
     private func stepCounter(_ step: Int) -> some View {

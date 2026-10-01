@@ -12,6 +12,7 @@ struct YourGoalView: View {
     @Binding var selectedGoalID: Goal.ID?
     @Binding var targetWeight: String
     var focusedField: FocusState<OnboardingField?>.Binding
+    var actionTitle = "Build my plan"
     var onBuildPlan: (() -> Void)?
 
     var body: some View {
@@ -35,7 +36,7 @@ struct YourGoalView: View {
                 .sharedBackgroundVisibility(.hidden)
         }
         .safeAreaInset(edge: .bottom) {
-            OnboardingStyle.primaryButton("Build my plan") {
+            OnboardingStyle.primaryButton(actionTitle) {
                 focusedField.wrappedValue = nil
                 onBuildPlan?()
             }

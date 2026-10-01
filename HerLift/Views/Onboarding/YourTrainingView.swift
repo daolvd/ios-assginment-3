@@ -61,6 +61,12 @@ struct YourTrainingView: View {
                 }
             }
         }
+        .onAppear {
+            if ![30, 45, 60, 90].contains(minutes) {
+                customMinutes = minutes
+                usesCustomMinutes = true
+            }
+        }
         .sheet(isPresented: $showsMinutes) {
             MinutesPickerView(selection: $pendingMinutes) {
                 minutes = pendingMinutes
