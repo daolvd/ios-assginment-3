@@ -14,19 +14,11 @@
 			remoteGlobalIDString = 5E9342FB306DDB6900CC9DC9;
 			remoteInfo = HerLift;
 		};
-		5E934316306DDB6B00CC9DC9 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 5E9342F4306DDB6900CC9DC9 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 5E9342FB306DDB6900CC9DC9;
-			remoteInfo = HerLift;
-		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		5E9342FC306DDB6A00CC9DC9 /* HerLift.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HerLift.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5E93430B306DDB6B00CC9DC9 /* HerLiftTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HerLiftTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		5E934315306DDB6B00CC9DC9 /* HerLiftUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HerLiftUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -38,11 +30,6 @@
 		5E93430E306DDB6B00CC9DC9 /* HerLiftTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = HerLiftTests;
-			sourceTree = "<group>";
-		};
-		5E934318306DDB6B00CC9DC9 /* HerLiftUITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = HerLiftUITests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -62,13 +49,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		5E934312306DDB6B00CC9DC9 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -77,7 +57,6 @@
 			children = (
 				5E9342FE306DDB6A00CC9DC9 /* HerLift */,
 				5E93430E306DDB6B00CC9DC9 /* HerLiftTests */,
-				5E934318306DDB6B00CC9DC9 /* HerLiftUITests */,
 				5E9342FD306DDB6A00CC9DC9 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -87,7 +66,6 @@
 			children = (
 				5E9342FC306DDB6A00CC9DC9 /* HerLift.app */,
 				5E93430B306DDB6B00CC9DC9 /* HerLiftTests.xctest */,
-				5E934315306DDB6B00CC9DC9 /* HerLiftUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -140,29 +118,6 @@
 			productReference = 5E93430B306DDB6B00CC9DC9 /* HerLiftTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		5E934314306DDB6B00CC9DC9 /* HerLiftUITests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 5E934325306DDB6B00CC9DC9 /* Build configuration list for PBXNativeTarget "HerLiftUITests" */;
-			buildPhases = (
-				5E934311306DDB6B00CC9DC9 /* Sources */,
-				5E934312306DDB6B00CC9DC9 /* Frameworks */,
-				5E934313306DDB6B00CC9DC9 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				5E934317306DDB6B00CC9DC9 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				5E934318306DDB6B00CC9DC9 /* HerLiftUITests */,
-			);
-			name = HerLiftUITests;
-			packageProductDependencies = (
-			);
-			productName = HerLiftUITests;
-			productReference = 5E934315306DDB6B00CC9DC9 /* HerLiftUITests.xctest */;
-			productType = "com.apple.product-type.bundle.ui-testing";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -177,10 +132,6 @@
 						CreatedOnToolsVersion = 26.5;
 					};
 					5E93430A306DDB6B00CC9DC9 = {
-						CreatedOnToolsVersion = 26.5;
-						TestTargetID = 5E9342FB306DDB6900CC9DC9;
-					};
-					5E934314306DDB6B00CC9DC9 = {
 						CreatedOnToolsVersion = 26.5;
 						TestTargetID = 5E9342FB306DDB6900CC9DC9;
 					};
@@ -202,7 +153,6 @@
 			targets = (
 				5E9342FB306DDB6900CC9DC9 /* HerLift */,
 				5E93430A306DDB6B00CC9DC9 /* HerLiftTests */,
-				5E934314306DDB6B00CC9DC9 /* HerLiftUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -216,13 +166,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		5E934309306DDB6B00CC9DC9 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		5E934313306DDB6B00CC9DC9 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -246,13 +189,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		5E934311306DDB6B00CC9DC9 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -260,11 +196,6 @@
 			isa = PBXTargetDependency;
 			target = 5E9342FB306DDB6900CC9DC9 /* HerLift */;
 			targetProxy = 5E93430C306DDB6B00CC9DC9 /* PBXContainerItemProxy */;
-		};
-		5E934317306DDB6B00CC9DC9 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 5E9342FB306DDB6900CC9DC9 /* HerLift */;
-			targetProxy = 5E934316306DDB6B00CC9DC9 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -492,44 +423,6 @@
 			};
 			name = Release;
 		};
-		5E934326306DDB6B00CC9DC9 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.van.assignment3.HerLiftUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = HerLift;
-			};
-			name = Debug;
-		};
-		5E934327306DDB6B00CC9DC9 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.van.assignment3.HerLiftUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = HerLift;
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -556,15 +449,6 @@
 			buildConfigurations = (
 				5E934323306DDB6B00CC9DC9 /* Debug */,
 				5E934324306DDB6B00CC9DC9 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		5E934325306DDB6B00CC9DC9 /* Build configuration list for PBXNativeTarget "HerLiftUITests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				5E934326306DDB6B00CC9DC9 /* Debug */,
-				5E934327306DDB6B00CC9DC9 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
