@@ -3,6 +3,7 @@ import Foundation
 nonisolated enum PlanningError: LocalizedError, Equatable {
     case unsupportedTrainingDays
     case unsupportedSessionMinutes
+    case medicalClearanceRequired
     case patternNotFound
     case emptyWorkout
     case invalidSessionCount
@@ -15,9 +16,11 @@ nonisolated enum PlanningError: LocalizedError, Equatable {
     var errorDescription: String? {
         switch self {
         case .unsupportedTrainingDays:
-            "Choose between 1 and 7 different training days."
+            "Choose between 2 and 7 different training days."
         case .unsupportedSessionMinutes:
             "Workouts can be between 20 and 120 minutes."
+        case .medicalClearanceRequired:
+            "Please check with your doctor before you start."
         case .patternNotFound, .emptyWorkout, .invalidSessionCount, .tooManyCategories,
              .sessionTooLong, .invalidExerciseCategory, .invalidExerciseLevel, .invalidSetCount:
             "We couldn't build your plan."
@@ -30,6 +33,8 @@ nonisolated enum PlanningError: LocalizedError, Equatable {
             "Pick your training days again."
         case .unsupportedSessionMinutes:
             "Pick a workout length in that range."
+        case .medicalClearanceRequired:
+            "Once a doctor has cleared you to exercise, turn on that answer and build your plan again."
         case .patternNotFound, .emptyWorkout, .invalidSessionCount, .tooManyCategories,
              .sessionTooLong, .invalidExerciseCategory, .invalidExerciseLevel, .invalidSetCount:
             "Your answers are saved."

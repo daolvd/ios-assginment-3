@@ -15,24 +15,30 @@ nonisolated extension TrainingLevel: Comparable {
 nonisolated struct UserPlanningProfile: Equatable, Sendable {
     let level: TrainingLevel
     let goalID: Goal.ID
-    /// Monday = 1 … Sunday = 7. Between 1 and 7 distinct days.
+    /// Monday = 1 … Sunday = 7. Between 2 and 7 distinct days.
     let trainingDays: [Int]
     let sessionMinutes: Int
     /// Only allow exercises tagged low impact.
     var requiresLowImpact = false
     /// Leave out exercises that start or end on the floor.
     var mustAvoidFloorExercises = false
+    /// She wrote something in the health box. The text itself never reaches the planner.
+    var reportsHealthConcern = false
+    var clearedByDoctor = false
 }
 
 nonisolated extension UserPlanningProfile {
     /// Builds the planner input from saved onboarding answers. The onboarding answers contain no
-    /// structured movement limits, so both hard constraints stay off.
+    /// structured movement limits, so both hard constraints stay off. Only whether a health note
+    /// exists is passed on, never its text.
     init(profile: OnboardingProfile, goalID: Goal.ID) {
         self.init(
             level: profile.experience == .beginner ? .beginner : .intermediate,
             goalID: goalID,
             trainingDays: profile.trainingWeekdays,
-            sessionMinutes: profile.sessionMinutes
+            sessionMinutes: profile.sessionMinutes,
+            reportsHealthConcern: !(profile.healthNote?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true),
+            clearedByDoctor: profile.clearedByDoctor
         )
     }
 }
