@@ -21,6 +21,15 @@ struct EditWorkoutPlanUseCase {
         return edited
     }
 
+    /// Sets the target weights of exercises, for example the starting weights a first workout shows or the
+    /// weights she applies after a workout.
+    func setTargetWeights(_ changes: [TargetWeightChange]) throws(WorkoutPlanError) -> WorkoutPlan {
+        guard let current = try currentPlan() else { throw .noPlan }
+        let updated = try WorkoutPlanEditor(catalogue: exercises.exercises).settingTargetWeights(changes, in: current)
+        do { try plans.savePlan(updated) } catch { throw .couldNotSavePlan }
+        return updated
+    }
+
     /// Makes the draft plan the active plan, counting its weeks from the start of `now`'s day.
     func acceptPlan(now: Date = Date()) throws(WorkoutPlanError) -> WorkoutPlan {
         guard var plan = try currentPlan() else { throw .noPlan }

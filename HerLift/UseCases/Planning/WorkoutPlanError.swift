@@ -14,6 +14,7 @@ nonisolated enum WorkoutPlanError: LocalizedError, Equatable {
     case exerciseNotAllowed
     case cannotRemoveLastExercise
     case invalidSetCount
+    case invalidWeight
     case invalidPosition
     case notEnoughTime
 
@@ -32,6 +33,7 @@ nonisolated enum WorkoutPlanError: LocalizedError, Equatable {
         case .exerciseNotAllowed: "That exercise doesn't suit this workout."
         case .cannotRemoveLastExercise: "A workout needs at least one exercise."
         case .invalidSetCount: "Choose between 1 and 5 sets."
+        case .invalidWeight: "That weight doesn't look right for this exercise."
         case .invalidPosition: "That position isn't in this workout."
         case .notEnoughTime: "There isn't enough time left in this workout."
         }
@@ -48,6 +50,7 @@ nonisolated enum WorkoutPlanError: LocalizedError, Equatable {
         case .exerciseAlreadyInWorkout, .exerciseNotAllowed: "Choose a different exercise."
         case .cannotRemoveLastExercise: "Add another exercise before removing this one."
         case .invalidSetCount: "Pick a number of sets in that range."
+        case .invalidWeight: "Enter the weight shown on the machine or dumbbell."
         case .notEnoughTime: "Remove an exercise or reduce the sets, then try again."
         }
     }

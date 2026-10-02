@@ -8,6 +8,13 @@ nonisolated enum WorkoutEdit: Equatable, Sendable {
     case addExercise(weekday: Int, exerciseID: Exercise.ID)
 }
 
+/// A new target weight for one exercise of one workout.
+nonisolated struct TargetWeightChange: Equatable, Sendable {
+    let weekday: Int
+    let exerciseID: Exercise.ID
+    let weightKg: Double
+}
+
 /// Applies one edit to a plan and returns the changed plan. Pure: nothing is loaded or saved here.
 nonisolated struct WorkoutPlanEditor {
     let catalogue: [Exercise]
@@ -58,6 +65,29 @@ nonisolated struct WorkoutPlanEditor {
         // Safety net: the edited plan must still pass every rule the planner's plans pass.
         do { try validator.validate(edited, for: user) } catch { throw .invalidPlan }
         return edited
+    }
+
+    /// Sets the target weights. They change neither the time nor the volume of a workout, so only the exercise and
+    /// the weight are checked.
+    func settingTargetWeights(_ changes: [TargetWeightChange], in plan: WorkoutPlan) throws(WorkoutPlanError)
+        -> WorkoutPlan
+    {
+        var workouts = plan.workouts
+        for change in changes {
+            guard let workoutIndex = workouts.firstIndex(where: { $0.weekday == change.weekday }) else {
+                throw .workoutNotFound
+            }
+            var exercises = workouts[workoutIndex].exercises
+            let index = try indexOf(change.exerciseID, in: exercises)
+            guard exercises[index].exercise.loadType != "bodyweight", change.weightKg.isFinite,
+                  change.weightKg > 0, change.weightKg <= WorkoutSessionUseCase.maximumWeightKg
+            else { throw .invalidWeight }
+            exercises[index].targetWeightKg = change.weightKg
+            workouts[workoutIndex] = PlannedWorkout(
+                weekday: workouts[workoutIndex].weekday, categoryIDs: workouts[workoutIndex].categoryIDs,
+                exercises: exercises)
+        }
+        return plan.replacingWorkouts(workouts)
     }
 
     private func indexOf(_ id: Exercise.ID, in exercises: [WorkoutExercise]) throws(WorkoutPlanError) -> Int {
