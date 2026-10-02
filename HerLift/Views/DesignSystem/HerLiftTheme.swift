@@ -16,4 +16,6 @@ enum HerLiftTheme {
     static let text = Color("HLText")
     static let secondaryText = Color("HLTextSecondary")
     static let border = Color("HLBorder")
+    /// The exercise demonstration clips are rendered on white, so their frame matches in every appearance.
+    static let mediaBackground = Color.white
 }

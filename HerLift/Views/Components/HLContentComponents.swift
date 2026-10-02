@@ -42,6 +42,26 @@ struct HLListRow: View {
     }
 }
 
+/// Grey rounded container that draws a divider between its children.
+struct HLGroup<Content: View>: View {
+    @ViewBuilder var content: () -> Content
+
+    var body: some View {
+        Group(subviews: content()) { subviews in
+            VStack(spacing: 0) {
+                ForEach(subviews) { subview in
+                    subview
+                    if subview.id != subviews.last?.id {
+                        Divider().overlay(HerLiftTheme.border).padding(.leading, 16)
+                    }
+                }
+            }
+        }
+        .background(HerLiftTheme.surface, in: RoundedRectangle(cornerRadius: 14))
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+    }
+}
+
 struct HLInlineError: View {
     let message: String
     var recovery: String? = nil

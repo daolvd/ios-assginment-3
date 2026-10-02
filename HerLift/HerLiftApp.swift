@@ -11,10 +11,15 @@ import SwiftData
 @main
 struct HerLiftApp: App {
     private let onboardingViewModel: OnboardingViewModel
+    private let exerciseGuideViewModel: ExerciseGuideViewModel
 
     init() {
         do {
             let goals = try JSONGoalRepository()
+            let exercises = try JSONExerciseRepository()
+            exerciseGuideViewModel = ExerciseGuideViewModel(
+                browse: BrowseExerciseGuideUseCase(repository: exercises)
+            )
             let profiles = try SwiftDataUserProfileRepository(modelContext: sharedModelContainer.mainContext)
             onboardingViewModel = OnboardingViewModel(
                 goals: goals.goals,
@@ -45,6 +50,7 @@ struct HerLiftApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView(onboardingViewModel: onboardingViewModel)
+                .environment(exerciseGuideViewModel)
                 .tint(HerLiftTheme.primary)
         }
         .modelContainer(sharedModelContainer)

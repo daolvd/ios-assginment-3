@@ -12,4 +12,5 @@ protocol ExerciseRepository {
     var exercises: [Exercise] { get }
     func load() throws -> [Exercise]
     func exercise(id: String) -> Exercise?
+    func videoURL(for exercise: Exercise) -> URL?
 }
