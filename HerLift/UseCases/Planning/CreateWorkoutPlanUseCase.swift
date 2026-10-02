@@ -1,0 +1,148 @@
+import Foundation
+
+/// Builds a week of workouts from the training pattern and the exercise catalogue:
+/// pattern → one muscle-group session per training day → cover every muscle group in the week →
+/// eligible exercises → fill the time with sets → validate.
+@MainActor
+struct CreateWorkoutPlanUseCase {
+    /// Between 1 and 7 distinct weekdays, where Monday = 1 and Sunday = 7.
+    static let supportedDays = 1...7
+    static let supportedSessionMinutes = 20...120
+
+    let patterns: any TrainingPatternRepository
+    let exercises: any ExerciseRepository
+    var validator = WorkoutPlanValidator()
+
+    func execute(for user: UserPlanningProfile) throws(PlanningError) -> WorkoutPlan {
+        try validateInput(user)
+        guard let pattern = pattern(for: user.level) else { throw .patternNotFound }
+
+        let eligible = exercises.exercises.filter { isAllowed($0, for: user) }
+        let days = user.trainingDays.sorted()
+
+        // The pattern is a cycle: with more training days than groups, start again from the first group.
+        let groups = days.indices.map { pattern.sessionGroups[$0 % pattern.sessionGroups.count].categoryIDs }
+
+        var workouts: [PlannedWorkout] = []
+        for (weekday, categoryIDs) in zip(days, coveringEveryMuscleGroup(groups, eligible: eligible)) {
+            workouts.append(makeWorkout(weekday: weekday, categoryIDs: categoryIDs, eligible: eligible,
+                                        maxMinutes: user.sessionMinutes))
+        }
+
+        let plan = WorkoutPlan(goalID: user.goalID, workouts: workouts)
+        try validator.validate(plan, for: user)
+        return plan
+    }
+
+    // MARK: Steps
+
+    private func validateInput(_ user: UserPlanningProfile) throws(PlanningError) {
+        let days = user.trainingDays
+        guard Self.supportedDays.contains(days.count),
+              Set(days).count == days.count,
+              days.allSatisfy({ Self.supportedDays.contains($0) })
+        else { throw .unsupportedTrainingDays }
+        guard Self.supportedSessionMinutes.contains(user.sessionMinutes) else { throw .unsupportedSessionMinutes }
+    }
+
+    /// The most advanced pattern that is not above the person's level.
+    private func pattern(for level: TrainingLevel) -> TrainingPattern? {
+        patterns.patterns
+            .filter { $0.level <= level && !$0.sessionGroups.isEmpty }
+            .max { $0.level < $1.level }
+    }
+
+    /// Level and hard constraints only; nothing else removes an exercise.
+    private func isAllowed(_ exercise: Exercise, for user: UserPlanningProfile) -> Bool {
+        guard let level = TrainingLevel(rawValue: exercise.level), level <= user.level else { return false }
+        if user.mustAvoidFloorExercises, exercise.tagIDs.contains(Tag.floorBasedID) { return false }
+        if user.requiresLowImpact, !exercise.tagIDs.contains(Tag.lowImpactID) { return false }
+        return true
+    }
+
+    /// A short week can leave core out of every group (three training days: six main categories).
+    /// Core may be added on top of a workout's two main categories, so it joins the last workout.
+    /// Other muscle groups are never added, so a week of one or two days can still miss some.
+    private func coveringEveryMuscleGroup(_ groups: [[Category.ID]], eligible: [Exercise]) -> [[Category.ID]] {
+        let coreIsEligible = eligible.contains { $0.categoryID == Category.coreID }
+        let coreIsPlanned = groups.contains { $0.contains(Category.coreID) }
+        guard coreIsEligible, !coreIsPlanned, !groups.isEmpty else { return groups }
+
+        var covered = groups
+        covered[covered.count - 1].append(Category.coreID)
+        return covered
+    }
+
+    private func makeWorkout(
+        weekday: Int, categoryIDs: [Category.ID], eligible: [Exercise], maxMinutes: Int
+    ) -> PlannedWorkout {
+        let candidates = eligible.filter { categoryIDs.contains($0.categoryID) }
+        let selected = fill(interleaved(candidates, categoryIDs: categoryIDs), categoryIDs: categoryIDs,
+                            maxSeconds: maxMinutes * 60)
+        let seconds = selected.reduce(0) { $0 + $1.seconds }
+        return PlannedWorkout(
+            weekday: weekday, categoryIDs: categoryIDs, exercises: selected,
+            estimatedMinutes: (seconds + 59) / 60
+        )
+    }
+
+    /// Catalogue order inside each category, then one exercise from each category in turn
+    /// (first of A, first of B, second of A, second of B, …).
+    private func interleaved(_ candidates: [Exercise], categoryIDs: [Category.ID]) -> [Exercise] {
+        let perCategory = categoryIDs.map { id in candidates.filter { $0.categoryID == id } }
+        let rounds = perCategory.map(\.count).max() ?? 0
+        return (0..<rounds).flatMap { round in
+            perCategory.compactMap { round < $0.count ? $0[round] : nil }
+        }
+    }
+
+    /// Fills the session in this order:
+    /// 1. the first exercise of every category, at the baseline number of sets;
+    /// 2. extra sets for those exercises, one at a time in turn, up to the maximum;
+    /// 3. each further exercise that still fits at the baseline sets, followed by extra sets again.
+    /// Anything that does not fit in the remaining time is skipped.
+    private func fill(_ ordered: [Exercise], categoryIDs: [Category.ID], maxSeconds: Int) -> [PlannedExercise] {
+        let firstOfEachCategory = categoryIDs.compactMap { id in ordered.first { $0.categoryID == id } }
+        let others = ordered.filter { !firstOfEachCategory.contains($0) }
+
+        var selected: [PlannedExercise] = []
+        for exercise in firstOfEachCategory {
+            addIfItFits(exercise, to: &selected, maxSeconds: maxSeconds)
+        }
+        addSets(to: &selected, maxSeconds: maxSeconds)
+
+        for exercise in others {
+            if addIfItFits(exercise, to: &selected, maxSeconds: maxSeconds) {
+                addSets(to: &selected, maxSeconds: maxSeconds)
+            }
+        }
+        return selected
+    }
+
+    @discardableResult
+    private func addIfItFits(_ exercise: Exercise, to selected: inout [PlannedExercise], maxSeconds: Int) -> Bool {
+        let planned = PlannedExercise(exercise: exercise, sets: PlannedExercise.baselineSets)
+        guard selected.reduce(0, { $0 + $1.seconds }) + planned.seconds <= maxSeconds else { return false }
+        selected.append(planned)
+        return true
+    }
+
+    private func addSets(to selected: inout [PlannedExercise], maxSeconds: Int) {
+        var added = true
+        while added {
+            added = false
+            for index in selected.indices where selected[index].sets < PlannedExercise.maximumSets {
+                let total = selected.reduce(0) { $0 + $1.seconds }
+                if total + selected[index].secondsPerSet <= maxSeconds {
+                    selected[index].sets += 1
+                    added = true
+                }
+            }
+        }
+    }
+}
+
+private extension Tag {
+    static let floorBasedID = "floor-based"
+    static let lowImpactID = "low-impact"
+}
