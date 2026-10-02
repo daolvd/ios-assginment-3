@@ -1,17 +1,28 @@
 import Foundation
 import Observation
 
-/// Doing one workout: where she is, what she types for the set, and moving to the next set.
+/// Doing one workout: where she is, what she types for the set, resting between sets and moving to the next set.
 @MainActor
 @Observable
 final class WorkoutSessionViewModel {
+    /// The pause after a set, until the next one.
+    struct RestState: Equatable {
+        let endsAt: Date
+        let next: WorkoutStep
+        /// A weight for the next set, until she uses it or keeps hers.
+        var suggestion: NextSetSuggestion?
+    }
+
     let workout: PlannedWorkout
     private(set) var log: WorkoutLog?
+    private(set) var rest: RestState?
     var weightText = ""
     var repsText = ""
     var effort = PerceivedEffort.good
     /// Why a set or the workout could not be saved; shown as an alert.
     var error: WorkoutSessionError?
+    /// The weight the next set aims for: the last set's weight, or the one she took from a suggestion.
+    private var targetKg: Double?
     @ObservationIgnored private let useCase: WorkoutSessionUseCase
     @ObservationIgnored private let now: () -> Date
 
@@ -70,8 +81,8 @@ final class WorkoutSessionViewModel {
         guard let current else { return nil }
         let reps = "\(current.exercise.minimumReps)–\(current.exercise.maximumReps)"
         guard showsWeightField else { return "Bodyweight × \(reps)" }
-        guard let last = lastSet(of: current) else { return "Find your weight × \(reps)" }
-        return "Target \(Self.text(last.weightKg)) kg × \(reps)"
+        guard let targetKg else { return "Find your weight × \(reps)" }
+        return "Target \(Self.text(targetKg)) kg × \(reps)"
     }
 
     var cue: String? { current?.exercise.coachingCues.first }
@@ -112,9 +123,49 @@ final class WorkoutSessionViewModel {
             self.log = try useCase.record(set, in: log, of: workout)
             error = nil
             prepareInputs()
+            startRest(after: set, of: current.exercise, from: step)
         } catch {
             self.error = error
         }
+    }
+
+    // MARK: Resting
+
+    /// "Next: Lat Pulldown · Set 3 of 3"
+    var restNextLine: String? {
+        guard let rest else { return nil }
+        let planned = workout.exercises[rest.next.exerciseIndex]
+        return "Next: \(planned.exercise.name) · Set \(rest.next.setNumber) of \(planned.sets)"
+    }
+
+    /// Puts the suggested weight into the next set.
+    func useSuggestion() {
+        guard let suggestion = rest?.suggestion else { return }
+        weightText = NextSetSuggestion.text(suggestion.suggestedKg)
+        targetKg = suggestion.suggestedKg
+        rest?.suggestion = nil
+    }
+
+    /// Keeps her own weight for the next set.
+    func keepWeight() {
+        rest?.suggestion = nil
+    }
+
+    func endRest() {
+        rest = nil
+    }
+
+    /// Rests for as long as the exercise says. There is no rest after the last set, and a suggestion is only made
+    /// when the next set is of the same exercise.
+    private func startRest(after set: LoggedSet, of exercise: Exercise, from step: WorkoutStep) {
+        guard let next = self.step else {
+            rest = nil
+            return
+        }
+        let sameExercise = next.exerciseIndex == step.exerciseIndex
+        rest = RestState(
+            endsAt: now().addingTimeInterval(Double(exercise.defaultRestSeconds)), next: next,
+            suggestion: sameExercise ? NextSetSuggestion.after(set, of: exercise) : nil)
     }
 
     /// Finishes the workout. Returns true once it is saved as done.
@@ -122,6 +173,7 @@ final class WorkoutSessionViewModel {
         guard let log else { return false }
         do {
             self.log = try useCase.finish(log)
+            rest = nil
             return true
         } catch {
             self.error = error
@@ -134,11 +186,13 @@ final class WorkoutSessionViewModel {
     /// Starts each set with the weight of the exercise's last set and the top of its rep range.
     private func prepareInputs() {
         guard let current else {
+            targetKg = nil
             weightText = ""
             repsText = ""
             return
         }
-        weightText = lastSet(of: current).map { Self.text($0.weightKg) } ?? ""
+        targetKg = lastSet(of: current)?.weightKg
+        weightText = targetKg.map(Self.text) ?? ""
         repsText = String(current.exercise.maximumReps)
         effort = .good
     }
