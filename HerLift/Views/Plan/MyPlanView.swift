@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Home: the week's seven days, with today's workout ready to start and the goal at the bottom.
-/// The caller supplies the NavigationStack.
+/// The caller supplies the NavigationStack; the Guide is a tab of its own.
 struct MyPlanView: View {
     let viewModel: MyPlanViewModel
 
@@ -18,11 +18,6 @@ struct MyPlanView: View {
         .background(HerLiftTheme.background)
         .navigationTitle("My Plan")
         .navigationBarTitleDisplayMode(.large)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                NavigationLink("Guide") { ExerciseGuideView() }
-            }
-        }
         .navigationDestination(isPresented: Binding(
             get: { openedWeekday != nil }, set: { if !$0 { openedWeekday = nil } }
         )) {

@@ -14,6 +14,7 @@ struct HerLiftApp: App {
     private let exerciseGuideViewModel: ExerciseGuideViewModel
     private let generatePlanViewModel: GeneratePlanViewModel
     private let myPlanViewModel: MyPlanViewModel
+    private let profileViewModel: ProfileViewModel
 
     init() {
         do {
@@ -38,7 +39,10 @@ struct HerLiftApp: App {
                 goals: goals.goals,
                 saveProfile: SaveOnboardingProfileUseCase(repository: profiles)
             )
-            onboardingViewModel.load(using: LoadOnboardingProfileUseCase(repository: profiles))
+            let loadProfile = LoadOnboardingProfileUseCase(repository: profiles)
+            onboardingViewModel.load(using: loadProfile)
+            profileViewModel = ProfileViewModel(editor: onboardingViewModel, loadProfile: loadProfile, editPlan: editPlan)
+            profileViewModel.refresh()
         } catch {
             fatalError("Could not prepare app repositories: \(error)")
         }
@@ -67,7 +71,7 @@ struct HerLiftApp: App {
         WindowGroup {
             ContentView(
                 onboardingViewModel: onboardingViewModel, generatePlanViewModel: generatePlanViewModel,
-                myPlanViewModel: myPlanViewModel)
+                myPlanViewModel: myPlanViewModel, profileViewModel: profileViewModel)
                 .environment(exerciseGuideViewModel)
                 .tint(HerLiftTheme.primary)
         }
