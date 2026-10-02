@@ -7,7 +7,7 @@
 
 import Foundation
 
-nonisolated struct Exercise: Codable, Identifiable, Sendable {
+nonisolated struct Exercise: Codable, Identifiable, Equatable, Sendable {
     let id: String
     let name: String
     let muscleGroup: String
