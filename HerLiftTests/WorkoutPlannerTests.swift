@@ -300,7 +300,9 @@ struct WorkoutPlannerTests {
 
         #expect(mapped == UserPlanningProfile(
             level: .intermediate, goalID: "loseFat", trainingDays: [2, 4], sessionMinutes: 60,
-            reportsHealthConcern: true, clearedByDoctor: false))
+            reportsHealthConcern: true, clearedByDoctor: false, weightKg: 60, heightCm: 165, targetWeightKg: nil))
+        #expect(UserPlanningProfile(profile: onboardingProfile(note: nil), goalID: "loseFat", targetWeightKg: 54)
+            .targetWeightKg == 54)
     }
 
     @Test func onlyWhetherAHealthNoteExistsIsPassedToThePlanner() {
