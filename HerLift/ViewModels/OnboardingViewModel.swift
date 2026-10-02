@@ -22,13 +22,25 @@ final class OnboardingViewModel {
     var canFinish: Bool {
         guard selectedGoal != nil else { return false }
         guard selectedGoal?.requiresTargetWeight == true else { return true }
-        return positiveNumber(input.targetWeight) != nil
+        return positiveNumber(input.targetWeight) != nil && targetWeightMessage == nil
+    }
+
+    /// The fat-loss target, or nil for goals without one or when nothing valid is typed yet.
+    var targetWeightKg: Double? {
+        selectedGoal?.requiresTargetWeight == true ? positiveNumber(input.targetWeight) : nil
     }
 
     var targetWeightMessage: String? {
-        guard selectedGoal?.requiresTargetWeight == true, !input.targetWeight.isEmpty,
-              positiveNumber(input.targetWeight) == nil else { return nil }
-        return "Enter a valid target weight."
+        guard selectedGoal?.requiresTargetWeight == true, !input.targetWeight.isEmpty else { return nil }
+        guard let target = positiveNumber(input.targetWeight) else { return "Enter a valid target weight." }
+        if let height = positiveNumber(input.height), !ForecastCalculator.isHealthyTarget(target, heightCm: height) {
+            return "This target is below a healthy weight for your height. "
+                + "Choose \(ForecastCalculator.minimumHealthyWeightKg(heightCm: height)) kg or more."
+        }
+        if let weight = positiveNumber(input.weight), target >= weight {
+            return "Choose a target below your current weight."
+        }
+        return nil
     }
 
     func load(using useCase: LoadOnboardingProfileUseCase) {
