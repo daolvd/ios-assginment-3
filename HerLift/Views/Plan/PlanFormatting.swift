@@ -18,6 +18,17 @@ enum PlanFormatting {
         "\(workout.exercises.count) exercises · \(workout.estimatedMinutes) min"
     }
 
+    /// "Today · 5 exercises · 45 min", or the weekday instead of "Today" on another day.
+    static func workoutHeader(of workout: PlannedWorkout, isToday: Bool) -> String {
+        let day = isToday ? "Today" : weekdayName(workout.weekday)
+        return "\(day) · \(meta(of: workout))"
+    }
+
+    /// "3 × 10–12 · find your weight". No starting weights are known yet, so every exercise asks her to find hers.
+    static func target(of planned: WorkoutExercise) -> String {
+        "\(planned.sets) × \(planned.exercise.minimumReps)–\(planned.exercise.maximumReps) · find your weight"
+    }
+
     /// "Target 56 kg · see forecast"
     static func goalSubtitle(of plan: WorkoutPlan) -> String {
         guard let forecast = plan.weightForecast else { return "See forecast and milestones" }
