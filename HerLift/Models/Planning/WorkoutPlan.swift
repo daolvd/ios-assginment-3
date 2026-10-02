@@ -44,6 +44,8 @@ nonisolated struct WorkoutExercise: Equatable, Identifiable, Sendable {
 
     let exercise: Exercise
     var sets: Int
+    /// The weight she aims for next time; nil until a workout shows her starting weight.
+    var targetWeightKg: Double?
 
     var id: Exercise.ID { exercise.id }
 

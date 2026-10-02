@@ -21,7 +21,7 @@ final class SwiftDataWorkoutPlanRepository: WorkoutPlanRepository {
                 guard let exercise = exercises.exercise(id: item.exerciseID) else {
                     throw CocoaError(.coderValueNotFound)
                 }
-                return WorkoutExercise(exercise: exercise, sets: item.sets)
+                return WorkoutExercise(exercise: exercise, sets: item.sets, targetWeightKg: item.targetWeightKg)
             }
             return PlannedWorkout(weekday: day.weekday, categoryIDs: day.categoryIDs, exercises: planned)
         }
@@ -50,7 +50,8 @@ final class SwiftDataWorkoutPlanRepository: WorkoutPlanRepository {
                 let day = WorkoutDay(sortIndex: dayIndex, weekday: workout.weekday, categoryIDs: workout.categoryIDs)
                 day.plan = stored
                 for (index, item) in workout.exercises.enumerated() {
-                    let planned = PlannedExercise(sortIndex: index, exerciseID: item.exercise.id, sets: item.sets)
+                    let planned = PlannedExercise(
+                        sortIndex: index, exerciseID: item.exercise.id, sets: item.sets, targetWeightKg: item.targetWeightKg)
                     planned.day = day
                 }
             }
