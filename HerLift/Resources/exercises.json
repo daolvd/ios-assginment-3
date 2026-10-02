@@ -49,7 +49,15 @@
       "source": {
         "id": "2611",
         "name": "Lever Horizontal Leg Press"
-      }
+      },
+      "categoryID": "legs",
+      "tagIDs": [
+        "low-impact",
+        "machine",
+        "seated",
+        "beginner"
+      ],
+      "estimatedMinutes": 12
     },
     {
       "id": "goblet-squat",
@@ -98,7 +106,15 @@
       "source": {
         "id": "1760",
         "name": "Dumbbell Goblet Squat"
-      }
+      },
+      "categoryID": "legs",
+      "tagIDs": [
+        "low-impact",
+        "dumbbell",
+        "standing",
+        "beginner"
+      ],
+      "estimatedMinutes": 12
     },
     {
       "id": "leg-extension",
@@ -145,7 +161,15 @@
       "source": {
         "id": "0585",
         "name": "Lever Leg Extension"
-      }
+      },
+      "categoryID": "legs",
+      "tagIDs": [
+        "low-impact",
+        "machine",
+        "seated",
+        "beginner"
+      ],
+      "estimatedMinutes": 10
     },
     {
       "id": "romanian-deadlift",
@@ -192,7 +216,15 @@
       "source": {
         "id": "1757",
         "name": "Single Dumbbell Stiff-Leg Deadlift"
-      }
+      },
+      "categoryID": "legs",
+      "tagIDs": [
+        "low-impact",
+        "dumbbell",
+        "standing",
+        "beginner"
+      ],
+      "estimatedMinutes": 12
     },
     {
       "id": "seated-leg-curl",
@@ -239,7 +271,15 @@
       "source": {
         "id": "0599",
         "name": "Lever Seated Leg Curl"
-      }
+      },
+      "categoryID": "legs",
+      "tagIDs": [
+        "low-impact",
+        "machine",
+        "seated",
+        "beginner"
+      ],
+      "estimatedMinutes": 10
     },
     {
       "id": "standing-calf-raise",
@@ -285,7 +325,15 @@
       "source": {
         "id": "0605",
         "name": "Lever Standing Calf Raise"
-      }
+      },
+      "categoryID": "legs",
+      "tagIDs": [
+        "low-impact",
+        "machine",
+        "standing",
+        "beginner"
+      ],
+      "estimatedMinutes": 10
     },
     {
       "id": "glute-bridge",
@@ -331,7 +379,15 @@
       "source": {
         "id": "drv-hip-raise-bridge",
         "name": "Glute Bridge"
-      }
+      },
+      "categoryID": "glutes",
+      "tagIDs": [
+        "low-impact",
+        "bodyweight",
+        "floor-based",
+        "beginner"
+      ],
+      "estimatedMinutes": 10
     },
     {
       "id": "glute-kickback",
@@ -377,7 +433,15 @@
       "source": {
         "id": "drv-lever-standing-rear-kick",
         "name": "Lever Standing Rear Kick"
-      }
+      },
+      "categoryID": "glutes",
+      "tagIDs": [
+        "low-impact",
+        "machine",
+        "standing",
+        "beginner"
+      ],
+      "estimatedMinutes": 10
     },
     {
       "id": "hip-abduction",
@@ -423,7 +487,15 @@
       "source": {
         "id": "0597",
         "name": "Lever Seated Hip Abduction"
-      }
+      },
+      "categoryID": "glutes",
+      "tagIDs": [
+        "low-impact",
+        "machine",
+        "seated",
+        "beginner"
+      ],
+      "estimatedMinutes": 10
     },
     {
       "id": "lat-pulldown",
@@ -472,7 +544,15 @@
       "source": {
         "id": "drv-cable-bar-lateral-pulldown-wide-shoulder-grip",
         "name": "Wide Grip Cable Lat Pulldown"
-      }
+      },
+      "categoryID": "back",
+      "tagIDs": [
+        "low-impact",
+        "cable",
+        "seated",
+        "beginner"
+      ],
+      "estimatedMinutes": 12
     },
     {
       "id": "seated-cable-row",
@@ -520,7 +600,15 @@
       "source": {
         "id": "0208",
         "name": "Seated Cable Row (V-Grip)"
-      }
+      },
+      "categoryID": "back",
+      "tagIDs": [
+        "low-impact",
+        "cable",
+        "seated",
+        "beginner"
+      ],
+      "estimatedMinutes": 12
     },
     {
       "id": "chest-supported-row",
@@ -568,7 +656,15 @@
       "source": {
         "id": "0327",
         "name": "Dumbbell Incline Row"
-      }
+      },
+      "categoryID": "back",
+      "tagIDs": [
+        "low-impact",
+        "dumbbell",
+        "lying",
+        "beginner"
+      ],
+      "estimatedMinutes": 12
     },
     {
       "id": "machine-chest-press",
@@ -613,7 +709,15 @@
       "source": {
         "id": "0577",
         "name": "Lever Lying Chest Press"
-      }
+      },
+      "categoryID": "chest",
+      "tagIDs": [
+        "low-impact",
+        "machine",
+        "lying",
+        "beginner"
+      ],
+      "estimatedMinutes": 12
     },
     {
       "id": "seated-dumbbell-shoulder-press",
@@ -661,7 +765,15 @@
       "source": {
         "id": "0289",
         "name": "Seated Dumbbell Shoulder Press"
-      }
+      },
+      "categoryID": "shoulders",
+      "tagIDs": [
+        "low-impact",
+        "dumbbell",
+        "seated",
+        "beginner"
+      ],
+      "estimatedMinutes": 12
     },
     {
       "id": "dumbbell-lateral-raise",
@@ -707,7 +819,15 @@
       "source": {
         "id": "0334",
         "name": "Dumbbell Lateral Raise"
-      }
+      },
+      "categoryID": "shoulders",
+      "tagIDs": [
+        "low-impact",
+        "dumbbell",
+        "standing",
+        "beginner"
+      ],
+      "estimatedMinutes": 10
     },
     {
       "id": "rope-rear-delt-row",
@@ -756,7 +876,15 @@
       "source": {
         "id": "0203",
         "name": "Cable Rear Delt Row (with rope)"
-      }
+      },
+      "categoryID": "shoulders",
+      "tagIDs": [
+        "low-impact",
+        "cable",
+        "standing",
+        "beginner"
+      ],
+      "estimatedMinutes": 10
     },
     {
       "id": "biceps-curl",
@@ -800,7 +928,15 @@
       "source": {
         "id": "0294",
         "name": "Dumbbell Biceps Curl"
-      }
+      },
+      "categoryID": "arms",
+      "tagIDs": [
+        "low-impact",
+        "dumbbell",
+        "standing",
+        "beginner"
+      ],
+      "estimatedMinutes": 10
     },
     {
       "id": "triceps-pushdown",
@@ -844,7 +980,15 @@
       "source": {
         "id": "1723",
         "name": "Cable Triceps Pushdown"
-      }
+      },
+      "categoryID": "arms",
+      "tagIDs": [
+        "low-impact",
+        "cable",
+        "standing",
+        "beginner"
+      ],
+      "estimatedMinutes": 10
     },
     {
       "id": "reverse-crunch",
@@ -890,7 +1034,15 @@
       "source": {
         "id": "0872",
         "name": "Reverse Crunch"
-      }
+      },
+      "categoryID": "core",
+      "tagIDs": [
+        "low-impact",
+        "bodyweight",
+        "floor-based",
+        "beginner"
+      ],
+      "estimatedMinutes": 8
     },
     {
       "id": "cable-kneeling-crunch",
@@ -937,7 +1089,16 @@
       "source": {
         "id": "0175",
         "name": "Cable Kneeling Crunch"
-      }
+      },
+      "categoryID": "core",
+      "tagIDs": [
+        "low-impact",
+        "cable",
+        "kneeling",
+        "beginner"
+      ],
+      "estimatedMinutes": 10
     }
-  ]
+  ],
+  "_schemaVersion": 3
 }
