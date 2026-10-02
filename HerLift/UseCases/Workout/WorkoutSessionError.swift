@@ -14,6 +14,7 @@ nonisolated enum WorkoutSessionError: LocalizedError, Equatable {
     case couldNotSaveSet
     case couldNotFinishWorkout
     case couldNotLoadWorkouts
+    case couldNotUpdatePlan
 
     var errorDescription: String? {
         switch self {
@@ -30,6 +31,7 @@ nonisolated enum WorkoutSessionError: LocalizedError, Equatable {
         case .couldNotSaveSet: "We couldn't save your set."
         case .couldNotFinishWorkout: "We couldn't finish your workout."
         case .couldNotLoadWorkouts: "We couldn't open your workouts."
+        case .couldNotUpdatePlan: "We couldn't update your plan."
         }
     }
 
@@ -46,6 +48,7 @@ nonisolated enum WorkoutSessionError: LocalizedError, Equatable {
         case .nothingLogged: "Log at least one set before finishing."
         case .couldNotStartWorkout, .couldNotFinishWorkout, .couldNotLoadWorkouts: "Try again."
         case .couldNotSaveSet: "Your workout is still open — tap Complete Set again."
+        case .couldNotUpdatePlan: "Your plan hasn't changed — tap Apply again."
         }
     }
 }

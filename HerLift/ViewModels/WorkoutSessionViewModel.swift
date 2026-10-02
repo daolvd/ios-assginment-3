@@ -13,9 +13,17 @@ final class WorkoutSessionViewModel {
         var suggestion: NextSetSuggestion?
     }
 
+    enum ProposalDecision: Equatable {
+        case applied
+        case kept
+    }
+
     let workout: PlannedWorkout
     private(set) var log: WorkoutLog?
     private(set) var rest: RestState?
+    /// What the finished workout means for the plan; nil until the workout is finished.
+    private(set) var summary: WorkoutSummary?
+    private(set) var decisions: [Exercise.ID: ProposalDecision] = [:]
     var weightText = ""
     var repsText = ""
     var effort = PerceivedEffort.good
@@ -24,11 +32,16 @@ final class WorkoutSessionViewModel {
     /// The weight the next set aims for: the last set's weight, or the one she took from a suggestion.
     private var targetKg: Double?
     @ObservationIgnored private let useCase: WorkoutSessionUseCase
+    @ObservationIgnored private let editPlan: EditWorkoutPlanUseCase
     @ObservationIgnored private let now: () -> Date
 
-    init(workout: PlannedWorkout, useCase: WorkoutSessionUseCase, now: @escaping () -> Date = { Date() }) {
+    init(
+        workout: PlannedWorkout, useCase: WorkoutSessionUseCase, editPlan: EditWorkoutPlanUseCase,
+        now: @escaping () -> Date = { Date() }
+    ) {
         self.workout = workout
         self.useCase = useCase
+        self.editPlan = editPlan
         self.now = now
     }
 
@@ -86,6 +99,12 @@ final class WorkoutSessionViewModel {
     }
 
     var cue: String? { current?.exercise.coachingCues.first }
+
+    /// Until a weight is known for the exercise, she is asked to find one: not too heavy, about fifteen reps.
+    var weightHint: String? {
+        guard current != nil, showsWeightField, targetKg == nil else { return nil }
+        return "Pick a weight you could lift about 15 times."
+    }
 
     // MARK: The set being typed
 
@@ -168,17 +187,56 @@ final class WorkoutSessionViewModel {
             suggestion: sameExercise ? NextSetSuggestion.after(set, of: exercise) : nil)
     }
 
-    /// Finishes the workout. Returns true once it is saved as done.
+    /// Finishes the workout and works out what it means for the plan. Starting weights it showed are saved to the
+    /// plan right away; the proposals wait for her. Returns true once the workout is saved as done.
     func finish() -> Bool {
         guard let log else { return false }
         do {
-            self.log = try useCase.finish(log)
+            let finished = try useCase.finish(log, at: now())
+            self.log = finished
             rest = nil
+            let summary = WorkoutFeedback.summary(of: workout, log: finished)
+            self.summary = summary
+            saveStartingWeights(summary.startingWeights)
             return true
         } catch {
             self.error = error
             return false
         }
+    }
+
+    // MARK: Proposals for next time
+
+    var pendingProposals: [WeightProposal] {
+        summary?.proposals.filter { decisions[$0.id] == nil } ?? []
+    }
+
+    func apply(_ proposal: WeightProposal) { applyAll([proposal]) }
+    func applyAll() { applyAll(pendingProposals) }
+
+    func keep(_ proposal: WeightProposal) { decisions[proposal.id] = .kept }
+
+    func keepAll() {
+        for proposal in pendingProposals { decisions[proposal.id] = .kept }
+    }
+
+    /// Changes the plan's target weights; the proposals are marked applied only once that is saved.
+    private func applyAll(_ proposals: [WeightProposal]) {
+        guard !proposals.isEmpty else { return }
+        let changes = proposals.map { TargetWeightChange(weekday: $0.weekday, exerciseID: $0.exerciseID, weightKg: $0.proposedKg) }
+        do {
+            _ = try editPlan.setTargetWeights(changes)
+            for proposal in proposals { decisions[proposal.id] = .applied }
+            error = nil
+        } catch {
+            self.error = .couldNotUpdatePlan
+        }
+    }
+
+    private func saveStartingWeights(_ startingWeights: [StartingWeight]) {
+        guard !startingWeights.isEmpty else { return }
+        let changes = startingWeights.map { TargetWeightChange(weekday: $0.weekday, exerciseID: $0.exerciseID, weightKg: $0.weightKg) }
+        do { _ = try editPlan.setTargetWeights(changes) } catch { self.error = .couldNotUpdatePlan }
     }
 
     // MARK: Helpers
@@ -191,7 +249,7 @@ final class WorkoutSessionViewModel {
             repsText = ""
             return
         }
-        targetKg = lastSet(of: current)?.weightKg
+        targetKg = lastSet(of: current)?.weightKg ?? current.targetWeightKg
         weightText = targetKg.map(Self.text) ?? ""
         repsText = String(current.exercise.maximumReps)
         effort = .good

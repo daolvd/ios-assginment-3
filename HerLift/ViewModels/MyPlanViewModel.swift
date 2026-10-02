@@ -45,7 +45,7 @@ final class MyPlanViewModel {
     /// The session for a workout, picking up one already started today.
     func sessionViewModel(for workout: PlannedWorkout) -> WorkoutSessionViewModel {
         if let existing = sessionViewModels[workout.weekday] { return existing }
-        let created = WorkoutSessionViewModel(workout: workout, useCase: workoutSessions, now: now)
+        let created = WorkoutSessionViewModel(workout: workout, useCase: workoutSessions, editPlan: editPlan, now: now)
         created.load()
         sessionViewModels[workout.weekday] = created
         return created
