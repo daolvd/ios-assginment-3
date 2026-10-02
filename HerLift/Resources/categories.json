@@ -1,0 +1,30 @@
+[
+  {
+    "id": "legs",
+    "title": "Legs"
+  },
+  {
+    "id": "glutes",
+    "title": "Glutes"
+  },
+  {
+    "id": "back",
+    "title": "Back"
+  },
+  {
+    "id": "chest",
+    "title": "Chest"
+  },
+  {
+    "id": "shoulders",
+    "title": "Shoulders"
+  },
+  {
+    "id": "arms",
+    "title": "Arms"
+  },
+  {
+    "id": "core",
+    "title": "Core"
+  }
+]

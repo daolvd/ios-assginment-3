@@ -1,0 +1,57 @@
+[
+  {
+    "id": "low-impact",
+    "title": "Low impact",
+    "type": "impact"
+  },
+  {
+    "id": "machine",
+    "title": "Machine",
+    "type": "equipment"
+  },
+  {
+    "id": "cable",
+    "title": "Cable",
+    "type": "equipment"
+  },
+  {
+    "id": "dumbbell",
+    "title": "Dumbbell",
+    "type": "equipment"
+  },
+  {
+    "id": "bodyweight",
+    "title": "Bodyweight",
+    "type": "equipment"
+  },
+  {
+    "id": "seated",
+    "title": "Seated",
+    "type": "position"
+  },
+  {
+    "id": "standing",
+    "title": "Standing",
+    "type": "position"
+  },
+  {
+    "id": "floor-based",
+    "title": "Floor based",
+    "type": "position"
+  },
+  {
+    "id": "kneeling",
+    "title": "Kneeling",
+    "type": "position"
+  },
+  {
+    "id": "lying",
+    "title": "Lying",
+    "type": "position"
+  },
+  {
+    "id": "beginner",
+    "title": "Beginner",
+    "type": "level"
+  }
+]

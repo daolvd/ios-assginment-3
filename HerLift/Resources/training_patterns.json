@@ -1,0 +1,59 @@
+[
+  {
+    "id": "beginner-balanced",
+    "title": "Beginner Balanced",
+    "level": "beginner",
+    "description": "A reusable cycle of focused muscle-group sessions. The planner takes as many session groups as the user trains that week and cycles when needed.",
+    "sessionGroups": [
+      {
+        "id": "legs-glutes",
+        "categoryIDs": [
+          "legs",
+          "glutes"
+        ]
+      },
+      {
+        "id": "back-arms",
+        "categoryIDs": [
+          "back",
+          "arms"
+        ]
+      },
+      {
+        "id": "chest-shoulders",
+        "categoryIDs": [
+          "chest",
+          "shoulders"
+        ]
+      },
+      {
+        "id": "glutes-core",
+        "categoryIDs": [
+          "glutes",
+          "core"
+        ]
+      },
+      {
+        "id": "legs-core",
+        "categoryIDs": [
+          "legs",
+          "core"
+        ]
+      },
+      {
+        "id": "back-shoulders",
+        "categoryIDs": [
+          "back",
+          "shoulders"
+        ]
+      },
+      {
+        "id": "arms-core",
+        "categoryIDs": [
+          "arms",
+          "core"
+        ]
+      }
+    ]
+  }
+]

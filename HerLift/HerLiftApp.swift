@@ -10,11 +10,59 @@ import SwiftData
 
 @main
 struct HerLiftApp: App {
+    private let onboardingViewModel: OnboardingViewModel
+    private let exerciseGuideViewModel: ExerciseGuideViewModel
+    private let generatePlanViewModel: GeneratePlanViewModel
+    private let myPlanViewModel: MyPlanViewModel
+    private let profileViewModel: ProfileViewModel
+
+    init() {
+        do {
+            let goals = try JSONGoalRepository()
+            let exercises = try JSONExerciseRepository()
+            exerciseGuideViewModel = ExerciseGuideViewModel(
+                browse: BrowseExerciseGuideUseCase(repository: exercises)
+            )
+            let profiles = try SwiftDataUserProfileRepository(modelContext: sharedModelContainer.mainContext)
+            let plans = SwiftDataWorkoutPlanRepository(modelContext: sharedModelContainer.mainContext, exercises: exercises)
+            let editPlan = EditWorkoutPlanUseCase(plans: plans, exercises: exercises)
+            generatePlanViewModel = GeneratePlanViewModel(
+                createPlan: CreateWorkoutPlanUseCase(
+                    patterns: try JSONTrainingPatternRepository(), exercises: exercises, plans: plans),
+                editPlan: editPlan,
+                goals: goals.goals
+            )
+            let workoutSessions = WorkoutSessionUseCase(
+                sessions: SwiftDataWorkoutSessionRepository(modelContext: sharedModelContainer.mainContext))
+            myPlanViewModel = MyPlanViewModel(editPlan: editPlan, workoutSessions: workoutSessions, goals: goals.goals)
+            generatePlanViewModel.restore()
+            myPlanViewModel.load()
+            onboardingViewModel = OnboardingViewModel(
+                goals: goals.goals,
+                saveProfile: SaveOnboardingProfileUseCase(repository: profiles)
+            )
+            let loadProfile = LoadOnboardingProfileUseCase(repository: profiles)
+            onboardingViewModel.load(using: loadProfile)
+            profileViewModel = ProfileViewModel(editor: onboardingViewModel, loadProfile: loadProfile, editPlan: editPlan)
+            profileViewModel.refresh()
+        } catch {
+            fatalError("Could not prepare app repositories: \(error)")
+        }
+    }
+
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self,
+            UserProfile.self,
+            TrainingPlan.self,
+            WorkoutDay.self,
+            PlannedExercise.self,
+            WorkoutSession.self,
+            ExerciseSet.self
         ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+        let modelConfiguration = ModelConfiguration(
+            schema: schema, isStoredInMemoryOnly: false,
+            groupContainer: .none, cloudKitDatabase: .none
+        )
 
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])
@@ -25,7 +73,11 @@ struct HerLiftApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView(
+                onboardingViewModel: onboardingViewModel, generatePlanViewModel: generatePlanViewModel,
+                myPlanViewModel: myPlanViewModel, profileViewModel: profileViewModel)
+                .environment(exerciseGuideViewModel)
+                .tint(HerLiftTheme.primary)
         }
         .modelContainer(sharedModelContainer)
     }
