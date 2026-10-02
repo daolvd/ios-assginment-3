@@ -4,12 +4,18 @@ struct OnboardingView: View {
     @State private var viewModel: OnboardingViewModel
     @State private var page = 0
     @State private var showsGoal = false
-    @State private var showsSavedProfile = false
     @FocusState private var focusedField: OnboardingField?
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    private let onFinished: () -> Void
+    private let onOpenGuide: (() -> Void)?
 
-    init(viewModel: OnboardingViewModel) {
+    /// `onFinished` runs after the answers have been saved successfully.
+    /// `onOpenGuide` adds a temporary Guide button on the first page for debugging.
+    init(viewModel: OnboardingViewModel, onFinished: @escaping () -> Void = {},
+         onOpenGuide: (() -> Void)? = nil) {
         _viewModel = State(initialValue: viewModel)
+        self.onFinished = onFinished
+        self.onOpenGuide = onOpenGuide
     }
 
     var body: some View {
@@ -38,6 +44,10 @@ struct OnboardingView: View {
                 if page == 1 {
                     ToolbarItem(placement: .topBarLeading) {
                         Button("Back", systemImage: "chevron.left") { changePage(to: 0) }
+                    }
+                } else if let onOpenGuide {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button("Guide", action: onOpenGuide)
                     }
                 }
                 ToolbarItemGroup(placement: .keyboard) {
@@ -70,16 +80,11 @@ struct OnboardingView: View {
             Text([viewModel.error?.errorDescription, viewModel.error?.recoverySuggestion]
                 .compactMap { $0 }.joined(separator: "\n"))
         }
-        .alert("Onboarding complete", isPresented: $showsSavedProfile) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text("Your answers are saved on this device.")
-        }
     }
 
     private func finish() {
         guard viewModel.save() else { return }
-        showsSavedProfile = true
+        onFinished()
     }
 
     private func changePage(to nextPage: Int) {

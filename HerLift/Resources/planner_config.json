@@ -1,0 +1,18 @@
+{
+  "supportedDaysPerWeek": {
+    "min": 1,
+    "max": 7
+  },
+  "supportedSessionMinutes": [
+    45,
+    60,
+    75
+  ],
+  "maxPrimaryCategoriesPerSession": 2,
+  "allowCoreAsAdditionalCategory": true,
+  "selection": {
+    "usePatternAsCycle": true,
+    "doNotCreateFullBodySessions": true,
+    "onlyUseKnownExerciseIDs": true
+  }
+}
