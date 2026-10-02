@@ -1,10 +1,10 @@
 import SwiftUI
 
-/// The plan built right after onboarding: one row per workout, the forecast, and Accept plan / Start over.
-/// Once accepted, the buttons give way to a link to the goal and its milestones.
-/// The caller supplies the NavigationStack.
+/// The plan built right after onboarding, waiting for her decision: one row per workout, the forecast,
+/// and Accept plan / Start over. The caller supplies the NavigationStack.
 struct GeneratePlanView: View {
     let viewModel: GeneratePlanViewModel
+    let onAccepted: () -> Void
     let onChangeAnswers: () -> Void
 
     var body: some View {
@@ -54,18 +54,7 @@ struct GeneratePlanView: View {
                     }
                 }
 
-                if plan.status == .active {
-                    HLGroup {
-                        NavigationLink {
-                            GoalForecastView(plan: plan, goalTitle: viewModel.goalTitle(for: plan))
-                        } label: {
-                            HLListRow(title: "Goal", subtitle: viewModel.goalTitle(for: plan), accessory: .chevron)
-                        }
-                        .buttonStyle(.plain)
-                    }
-                } else {
-                    forecast(plan)
-                }
+                forecast(plan)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 20).padding(.top, 4).padding(.bottom, 24)
@@ -89,7 +78,7 @@ struct GeneratePlanView: View {
 
     private var draftActions: some View {
         VStack(spacing: 12) {
-            OnboardingStyle.primaryButton("Accept plan") { viewModel.accept() }
+            OnboardingStyle.primaryButton("Accept plan") { if viewModel.accept() { onAccepted() } }
             Button {
                 if viewModel.startOver() { onChangeAnswers() }
             } label: {
