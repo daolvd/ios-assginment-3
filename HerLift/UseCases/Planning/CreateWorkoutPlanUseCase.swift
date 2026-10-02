@@ -5,8 +5,10 @@ import Foundation
 /// eligible exercises → fill the time with sets → validate.
 @MainActor
 struct CreateWorkoutPlanUseCase {
-    /// Between 1 and 7 distinct weekdays, where Monday = 1 and Sunday = 7.
-    static let supportedDays = 1...7
+    /// Monday = 1 … Sunday = 7.
+    static let weekdays = 1...7
+    /// At least two training days: one day a week cannot cover the whole body.
+    static let supportedDayCounts = 2...7
     static let supportedSessionMinutes = 20...120
 
     let patterns: any TrainingPatternRepository
@@ -15,6 +17,7 @@ struct CreateWorkoutPlanUseCase {
 
     func execute(for user: UserPlanningProfile) throws(PlanningError) -> WorkoutPlan {
         try validateInput(user)
+        try requireClearanceIfNeeded(user)
         guard let pattern = pattern(for: user.level) else { throw .patternNotFound }
 
         let eligible = exercises.exercises.filter { isAllowed($0, for: user) }
@@ -38,11 +41,16 @@ struct CreateWorkoutPlanUseCase {
 
     private func validateInput(_ user: UserPlanningProfile) throws(PlanningError) {
         let days = user.trainingDays
-        guard Self.supportedDays.contains(days.count),
+        guard Self.supportedDayCounts.contains(days.count),
               Set(days).count == days.count,
-              days.allSatisfy({ Self.supportedDays.contains($0) })
+              days.allSatisfy({ Self.weekdays.contains($0) })
         else { throw .unsupportedTrainingDays }
         guard Self.supportedSessionMinutes.contains(user.sessionMinutes) else { throw .unsupportedSessionMinutes }
+    }
+
+    /// Anyone who reported a health concern needs a doctor's clearance before a plan is built.
+    private func requireClearanceIfNeeded(_ user: UserPlanningProfile) throws(PlanningError) {
+        guard !user.reportsHealthConcern || user.clearedByDoctor else { throw .medicalClearanceRequired }
     }
 
     /// The most advanced pattern that is not above the person's level.

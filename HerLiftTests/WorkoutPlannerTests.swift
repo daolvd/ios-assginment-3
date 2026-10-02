@@ -78,7 +78,7 @@ struct WorkoutPlannerTests {
             exercise("a3", category: "legs", minutes: 10),
         ]
         let useCase = makeUseCase(patterns: [pattern(groups: [["legs"]])], exercises: catalogue)
-        let workout = try useCase.execute(for: user(days: [1], minutes: 45)).workouts[0]
+        let workout = try useCase.execute(for: user(days: [1, 2], minutes: 45)).workouts[0]
 
         #expect(ids(workout) == ["a1", "a3"])
         #expect(workout.exercises.map(\.sets) == [5, 3])
@@ -89,14 +89,14 @@ struct WorkoutPlannerTests {
         // 12 minutes at 3 sets is 4 minutes per set, so 5 sets is exactly 20 minutes.
         let catalogue = [exercise("a1", category: "legs", minutes: 12)]
         let useCase = makeUseCase(patterns: [pattern(groups: [["legs"]])], exercises: catalogue)
-        let workout = try useCase.execute(for: user(days: [1], minutes: 20)).workouts[0]
+        let workout = try useCase.execute(for: user(days: [1, 2], minutes: 20)).workouts[0]
 
         #expect(workout.exercises.map(\.sets) == [5])
         #expect(workout.estimatedMinutes == 20)
     }
 
     @Test func noWorkoutIsLongerThanTheChosenSessionLength() throws {
-        for dayCount in 1...7 {
+        for dayCount in 2...7 {
             for minutes in [45, 60, 75] {
                 let plan = try makeUseCase().execute(for: user(days: Array(1...dayCount), minutes: minutes))
                 #expect(plan.workouts.allSatisfy { $0.estimatedMinutes <= minutes })
@@ -108,7 +108,7 @@ struct WorkoutPlannerTests {
     @Test func bundledCatalogueProducesAValidPlanForEveryDayCountAndSessionLength() throws {
         let useCase = CreateWorkoutPlanUseCase(
             patterns: try JSONTrainingPatternRepository(), exercises: try JSONExerciseRepository())
-        for dayCount in 1...7 {
+        for dayCount in 2...7 {
             for minutes in [30, 45, 60, 75, 90] {
                 let plan = try useCase.execute(for: user(days: Array(1...dayCount), minutes: minutes))
                 #expect(plan.workouts.count == dayCount)
@@ -143,7 +143,7 @@ struct WorkoutPlannerTests {
             exercise("jump", category: "legs", minutes: 10, tags: []),
             exercise("press", category: "legs", minutes: 10, tags: ["low-impact"]),
         ]
-        var profile = user(days: [1])
+        var profile = user(days: [1, 2])
         profile.requiresLowImpact = true
         let useCase = makeUseCase(patterns: [pattern(groups: [["legs"]])], exercises: catalogue)
 
@@ -157,12 +157,12 @@ struct WorkoutPlannerTests {
         ]
         let useCase = makeUseCase(patterns: [pattern(groups: [["legs"]])], exercises: catalogue)
 
-        #expect(ids(try useCase.execute(for: user(days: [1], level: .beginner)).workouts[0]) == ["easy"])
-        #expect(ids(try useCase.execute(for: user(days: [1], level: .intermediate)).workouts[0]) == ["easy", "hard"])
+        #expect(ids(try useCase.execute(for: user(days: [1, 2], level: .beginner)).workouts[0]) == ["easy"])
+        #expect(ids(try useCase.execute(for: user(days: [1, 2], level: .intermediate)).workouts[0]) == ["easy", "hard"])
     }
 
     @Test func intermediateLevelUsesTheBeginnerPatternWhenNothingHigherExists() throws {
-        let plan = try makeUseCase().execute(for: user(days: [1], level: .intermediate))
+        let plan = try makeUseCase().execute(for: user(days: [1, 2], level: .intermediate))
         #expect(plan.workouts[0].categoryIDs == ["legs", "glutes"])
     }
 
@@ -170,7 +170,7 @@ struct WorkoutPlannerTests {
 
     @Test func invalidTrainingDaysAreRejected() {
         let useCase = makeUseCase()
-        for days in [[], [1, 1], [0, 2], [2, 8], Array(1...7) + [1]] {
+        for days in [[], [1], [1, 1], [0, 2], [2, 8], Array(1...7) + [1]] {
             #expect(throws: PlanningError.unsupportedTrainingDays) { try useCase.execute(for: user(days: days)) }
         }
     }
@@ -193,14 +193,35 @@ struct WorkoutPlannerTests {
 
     @Test func categoryWithNoEligibleExerciseLeavesAnEmptyWorkoutAndFailsValidation() {
         let useCase = makeUseCase(patterns: [pattern(groups: [["core"]])])
-        #expect(throws: PlanningError.emptyWorkout) { try useCase.execute(for: user(days: [1])) }
+        #expect(throws: PlanningError.emptyWorkout) { try useCase.execute(for: user(days: [1, 2])) }
+    }
+
+    // MARK: Medical clearance
+
+    @Test func healthNoteWithoutClearanceThrowsMedicalClearanceRequired() {
+        var profile = user()
+        profile.reportsHealthConcern = true
+        #expect(throws: PlanningError.medicalClearanceRequired) { try makeUseCase().execute(for: profile) }
+    }
+
+    @Test func healthNoteWithClearanceBuildsAPlan() throws {
+        var profile = user()
+        profile.reportsHealthConcern = true
+        profile.clearedByDoctor = true
+        #expect(try makeUseCase().execute(for: profile).workouts.count == 3)
+    }
+
+    @Test func clearanceAloneWithoutAHealthNoteChangesNothing() throws {
+        var profile = user()
+        profile.clearedByDoctor = true
+        #expect(try makeUseCase().execute(for: profile) == makeUseCase().execute(for: user()))
     }
 
     // MARK: Validator
 
     @Test func validatorRejectsEachKindOfBrokenPlan() {
         let validator = WorkoutPlanValidator()
-        let profile = user(days: [1], minutes: 45)
+        let profile = user(days: [1], minutes: 45) // one planned workout; the validator does not check the day range
         let ok = planned(exercise("ok", category: "legs", minutes: 10))
 
         func plan(_ workout: PlannedWorkout, count: Int = 1) -> WorkoutPlan {
@@ -238,16 +259,28 @@ struct WorkoutPlannerTests {
     // MARK: Onboarding mapping
 
     @Test func onboardingAnswersMapToPlannerInput() {
-        let profile = OnboardingProfile(
-            age: 30, heightCm: 165, weightKg: 60, experience: .some, trainingWeekdays: [2, 4],
-            sessionMinutes: 60, healthNote: "Knee pain", clearedByDoctor: false)
-        let mapped = UserPlanningProfile(profile: profile, goalID: "loseFat")
+        let mapped = UserPlanningProfile(profile: onboardingProfile(note: "Knee pain", cleared: false), goalID: "loseFat")
 
-        #expect(mapped == UserPlanningProfile(level: .intermediate, goalID: "loseFat", trainingDays: [2, 4], sessionMinutes: 60))
+        #expect(mapped == UserPlanningProfile(
+            level: .intermediate, goalID: "loseFat", trainingDays: [2, 4], sessionMinutes: 60,
+            reportsHealthConcern: true, clearedByDoctor: false))
+    }
+
+    @Test func onlyWhetherAHealthNoteExistsIsPassedToThePlanner() {
+        #expect(!UserPlanningProfile(profile: onboardingProfile(note: nil), goalID: "g").reportsHealthConcern)
+        #expect(!UserPlanningProfile(profile: onboardingProfile(note: "  \n "), goalID: "g").reportsHealthConcern)
+        #expect(UserPlanningProfile(profile: onboardingProfile(note: "Asthma", cleared: true), goalID: "g")
+            .reportsHealthConcern)
     }
 }
 
 // MARK: - Helpers
+
+private func onboardingProfile(note: String?, cleared: Bool = false) -> OnboardingProfile {
+    OnboardingProfile(
+        age: 30, heightCm: 165, weightKg: 60, experience: .some, trainingWeekdays: [2, 4],
+        sessionMinutes: 60, healthNote: note, clearedByDoctor: cleared)
+}
 
 private func ids(_ workout: PlannedWorkout) -> [String] { workout.exercises.map(\.id) }
 
