@@ -4,7 +4,7 @@ import SwiftUI
 /// The caller supplies the NavigationStack.
 struct LogSetView: View {
     let viewModel: WorkoutSessionViewModel
-    /// Runs once the workout has been saved as finished.
+    /// Runs when she leaves the workout summary.
     let onFinished: () -> Void
 
     @Environment(ExerciseGuideViewModel.self) private var guide
@@ -16,7 +16,9 @@ struct LogSetView: View {
 
     var body: some View {
         Group {
-            if let rest = viewModel.rest {
+            if let summary = viewModel.summary {
+                WorkoutDoneView(viewModel: viewModel, summary: summary, onBack: onFinished)
+            } else if let rest = viewModel.rest {
                 RestView(viewModel: viewModel, rest: rest)
             } else if let current = viewModel.current {
                 logging(current)
@@ -29,8 +31,9 @@ struct LogSetView: View {
         .background(HerLiftTheme.background)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.hidden, for: .tabBar)
+        .navigationBarBackButtonHidden(viewModel.summary != nil)
         .toolbar {
-            if viewModel.rest == nil, let current = viewModel.current {
+            if viewModel.summary == nil, viewModel.rest == nil, let current = viewModel.current {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("How to") { showsHowTo = true }.font(.headline).accessibilityLabel("How to do \(current.exercise.name)")
                 }
@@ -41,7 +44,7 @@ struct LogSetView: View {
             }
         }
         .sheet(isPresented: $showsHowTo) {
-            if viewModel.rest == nil, let current = viewModel.current {
+            if viewModel.summary == nil, viewModel.rest == nil, let current = viewModel.current {
                 NavigationStack {
                     ExerciseDetailView(exerciseID: current.exercise.id)
                         .toolbar { ToolbarItem(placement: .topBarTrailing) { Button("Done") { showsHowTo = false } } }
@@ -73,6 +76,10 @@ struct LogSetView: View {
                         .accessibilityAddTraits(.isHeader)
                     if let target = viewModel.targetLine {
                         Text(target).font(.subheadline).foregroundStyle(HerLiftTheme.secondaryText)
+                    }
+                    if let hint = viewModel.weightHint {
+                        Text(hint).font(.subheadline.weight(.medium)).foregroundStyle(HerLiftTheme.text)
+                            .padding(.top, 4)
                     }
                 }
 
@@ -162,6 +169,6 @@ struct LogSetView: View {
 
     private func finish() {
         focusedField = nil
-        if viewModel.finish() { onFinished() }
+        viewModel.finish()
     }
 }

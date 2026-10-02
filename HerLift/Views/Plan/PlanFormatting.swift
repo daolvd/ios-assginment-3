@@ -24,9 +24,11 @@ enum PlanFormatting {
         return "\(day) · \(meta(of: workout))"
     }
 
-    /// "3 × 10–12 · find your weight". No starting weights are known yet, so every exercise asks her to find hers.
+    /// "3 × 10–12 · 30 kg", or "3 × 10–12 · find your weight" until a workout shows her starting weight.
     static func target(of planned: WorkoutExercise) -> String {
-        "\(planned.sets) × \(planned.exercise.minimumReps)–\(planned.exercise.maximumReps) · find your weight"
+        let reps = "\(planned.sets) × \(planned.exercise.minimumReps)–\(planned.exercise.maximumReps)"
+        guard let weight = planned.targetWeightKg else { return "\(reps) · find your weight" }
+        return "\(reps) · \(NextSetSuggestion.text(weight)) kg"
     }
 
     /// "Target 56 kg · see forecast"

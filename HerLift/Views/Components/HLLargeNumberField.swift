@@ -24,6 +24,11 @@ struct HLLargeNumberField: View {
             }
         }
         .accessibilityElement(children: .combine)
+        // A tap selects the number already there, so typing replaces it instead of adding to it.
+        .onReceive(NotificationCenter.default.publisher(for: UITextField.textDidBeginEditingNotification)) { note in
+            guard let field = note.object as? UITextField else { return }
+            DispatchQueue.main.async { field.selectAll(nil) }
+        }
     }
 }
 
