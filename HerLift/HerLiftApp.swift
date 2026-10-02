@@ -12,6 +12,7 @@ import SwiftData
 struct HerLiftApp: App {
     private let onboardingViewModel: OnboardingViewModel
     private let exerciseGuideViewModel: ExerciseGuideViewModel
+    private let generatePlanViewModel: GeneratePlanViewModel
 
     init() {
         do {
@@ -21,6 +22,11 @@ struct HerLiftApp: App {
                 browse: BrowseExerciseGuideUseCase(repository: exercises)
             )
             let profiles = try SwiftDataUserProfileRepository(modelContext: sharedModelContainer.mainContext)
+            generatePlanViewModel = GeneratePlanViewModel(createPlan: CreateWorkoutPlanUseCase(
+                patterns: try JSONTrainingPatternRepository(),
+                exercises: exercises,
+                plans: SwiftDataWorkoutPlanRepository(modelContext: sharedModelContainer.mainContext, exercises: exercises)
+            ))
             onboardingViewModel = OnboardingViewModel(
                 goals: goals.goals,
                 saveProfile: SaveOnboardingProfileUseCase(repository: profiles)
@@ -33,7 +39,10 @@ struct HerLiftApp: App {
 
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            UserProfile.self
+            UserProfile.self,
+            TrainingPlan.self,
+            WorkoutDay.self,
+            PlannedExercise.self
         ])
         let modelConfiguration = ModelConfiguration(
             schema: schema, isStoredInMemoryOnly: false,
@@ -49,7 +58,7 @@ struct HerLiftApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView(onboardingViewModel: onboardingViewModel)
+            ContentView(onboardingViewModel: onboardingViewModel, generatePlanViewModel: generatePlanViewModel)
                 .environment(exerciseGuideViewModel)
                 .tint(HerLiftTheme.primary)
         }

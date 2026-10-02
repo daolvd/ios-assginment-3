@@ -15,7 +15,7 @@ nonisolated struct WorkoutPlanValidator {
             guard workout.estimatedMinutes <= user.sessionMinutes else { throw .sessionTooLong }
 
             for planned in workout.exercises {
-                guard (1...PlannedExercise.maximumSets).contains(planned.sets) else { throw .invalidSetCount }
+                guard (1...WorkoutExercise.maximumSets).contains(planned.sets) else { throw .invalidSetCount }
                 guard workout.categoryIDs.contains(planned.exercise.categoryID) else {
                     throw .invalidExerciseCategory
                 }

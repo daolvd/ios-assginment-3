@@ -25,6 +25,42 @@ struct WorkoutPlannerTests {
         #expect(plan.goalID == "buildMuscle")
     }
 
+    // MARK: Saving
+
+    @Test func theNewPlanIsSavedAsTheCurrentPlan() throws {
+        let store = PlanStoreStub()
+        let plan = try makeUseCase(store: store).execute(for: user())
+
+        #expect(store.plan == plan)
+    }
+
+    @Test func theNewPlanReplacesAnEarlierOne() throws {
+        let store = PlanStoreStub(plan: WorkoutPlan(goalID: "old", workouts: []))
+        let plan = try makeUseCase(store: store).execute(for: user(goalID: "buildMuscle"))
+
+        #expect(store.plan == plan)
+        #expect(store.plan?.goalID == "buildMuscle")
+    }
+
+    @Test func failedPlanningKeepsTheEarlierPlan() {
+        let earlier = WorkoutPlan(goalID: "old", workouts: [])
+        let store = PlanStoreStub(plan: earlier)
+        var profile = user()
+        profile.reportsHealthConcern = true
+
+        #expect(throws: PlanningError.medicalClearanceRequired) { try makeUseCase(store: store).execute(for: profile) }
+        #expect(throws: PlanningError.unsupportedTrainingDays) { try makeUseCase(store: store).execute(for: user(days: [1])) }
+        #expect(store.plan == earlier)
+    }
+
+    @Test func aStorageFailureIsReportedAndNothingIsStored() {
+        let store = PlanStoreStub()
+        store.failsOnSave = true
+
+        #expect(throws: PlanningError.couldNotSavePlan) { try makeUseCase(store: store).execute(for: user()) }
+        #expect(store.plan == nil)
+    }
+
     // MARK: Covering every muscle group
 
     @Test func threeDayWeekAddsCoreToTheLastWorkout() throws {
@@ -107,7 +143,7 @@ struct WorkoutPlannerTests {
 
     @Test func bundledCatalogueProducesAValidPlanForEveryDayCountAndSessionLength() throws {
         let useCase = CreateWorkoutPlanUseCase(
-            patterns: try JSONTrainingPatternRepository(), exercises: try JSONExerciseRepository())
+            patterns: try JSONTrainingPatternRepository(), exercises: try JSONExerciseRepository(), plans: PlanStoreStub())
         for dayCount in 2...7 {
             for minutes in [30, 45, 60, 75, 90] {
                 let plan = try useCase.execute(for: user(days: Array(1...dayCount), minutes: minutes))
@@ -120,7 +156,7 @@ struct WorkoutPlannerTests {
 
     @Test func bundledCatalogueCoversEveryMuscleGroupInAThreeDayWeek() throws {
         let useCase = CreateWorkoutPlanUseCase(
-            patterns: try JSONTrainingPatternRepository(), exercises: try JSONExerciseRepository())
+            patterns: try JSONTrainingPatternRepository(), exercises: try JSONExerciseRepository(), plans: PlanStoreStub())
         let plan = try useCase.execute(for: user(days: [1, 3, 5], minutes: 60))
         let trained = Set(plan.workouts.flatMap(\.exercises).map(\.exercise.categoryID))
 
@@ -227,10 +263,8 @@ struct WorkoutPlannerTests {
         func plan(_ workout: PlannedWorkout, count: Int = 1) -> WorkoutPlan {
             WorkoutPlan(goalID: "g", workouts: Array(repeating: workout, count: count))
         }
-        func workout(
-            categories: [String] = ["legs"], exercises: [PlannedExercise]? = nil, minutes: Int = 30
-        ) -> PlannedWorkout {
-            PlannedWorkout(weekday: 1, categoryIDs: categories, exercises: exercises ?? [ok], estimatedMinutes: minutes)
+        func workout(categories: [String] = ["legs"], exercises: [WorkoutExercise]? = nil) -> PlannedWorkout {
+            PlannedWorkout(weekday: 1, categoryIDs: categories, exercises: exercises ?? [ok])
         }
 
         #expect(throws: Never.self) { try validator.validate(plan(workout()), for: profile) }
@@ -242,7 +276,10 @@ struct WorkoutPlannerTests {
             try validator.validate(plan(workout(categories: ["legs", "glutes", "back"])), for: profile)
         }
         #expect(throws: PlanningError.emptyWorkout) { try validator.validate(plan(workout(exercises: [])), for: profile) }
-        #expect(throws: PlanningError.sessionTooLong) { try validator.validate(plan(workout(minutes: 46)), for: profile) }
+        #expect(throws: PlanningError.sessionTooLong) { // 10 minutes at 3 sets is 5 sets × 3.3 = 16.7, so 3 of them pass 45
+            let long = (1...3).map { planned(exercise("e\($0)", category: "legs", minutes: 10), sets: 5) }
+            try validator.validate(plan(workout(exercises: long)), for: profile)
+        }
         #expect(throws: PlanningError.invalidSetCount) {
             try validator.validate(plan(workout(exercises: [planned(ok.exercise, sets: 6)])), for: profile)
         }
@@ -296,8 +333,8 @@ private func pattern(groups: [[String]]) -> TrainingPattern {
         sessionGroups: groups.enumerated().map { TrainingPatternSession(id: "g\($0.offset)", categoryIDs: $0.element) })
 }
 
-private func planned(_ exercise: Exercise, sets: Int = 3) -> PlannedExercise {
-    PlannedExercise(exercise: exercise, sets: sets)
+private func planned(_ exercise: Exercise, sets: Int = 3) -> WorkoutExercise {
+    WorkoutExercise(exercise: exercise, sets: sets)
 }
 
 private func exercise(
@@ -324,13 +361,15 @@ private let sampleCatalogue = [
     exercise("shoulder-press", category: "shoulders", minutes: 12),
 ]
 
+@MainActor
 private func makeUseCase(
-    patterns: [TrainingPattern]? = nil, exercises: [Exercise]? = nil
+    patterns: [TrainingPattern]? = nil, exercises: [Exercise]? = nil, store: PlanStoreStub? = nil
 ) -> CreateWorkoutPlanUseCase {
     let defaultPattern = pattern(groups: [["legs", "glutes"], ["back", "arms"], ["chest", "shoulders"]])
     return CreateWorkoutPlanUseCase(
         patterns: PatternRepositoryStub(patterns: patterns ?? [defaultPattern]),
-        exercises: ExerciseRepositoryStub(exercises: exercises ?? sampleCatalogue))
+        exercises: ExerciseRepositoryStub(exercises: exercises ?? sampleCatalogue),
+        plans: store ?? PlanStoreStub())
 }
 
 @MainActor

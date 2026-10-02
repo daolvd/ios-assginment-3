@@ -11,15 +11,16 @@ nonisolated struct PlannedWorkout: Equatable, Identifiable, Sendable {
     /// Monday = 1 … Sunday = 7.
     let weekday: Int
     let categoryIDs: [Category.ID]
-    let exercises: [PlannedExercise]
-    /// Total time of all sets including rests, rounded up to whole minutes.
-    let estimatedMinutes: Int
+    let exercises: [WorkoutExercise]
 
     var id: Int { weekday }
+
+    /// Total time of all sets including rests, rounded up to whole minutes.
+    var estimatedMinutes: Int { (exercises.reduce(0) { $0 + $1.seconds } + 59) / 60 }
 }
 
 /// One catalogue exercise with the number of sets planned for it.
-nonisolated struct PlannedExercise: Equatable, Identifiable, Sendable {
+nonisolated struct WorkoutExercise: Equatable, Identifiable, Sendable {
     static let baselineSets = 3
     static let maximumSets = 5
 

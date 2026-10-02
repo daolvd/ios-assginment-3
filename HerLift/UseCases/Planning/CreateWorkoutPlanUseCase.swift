@@ -2,7 +2,7 @@ import Foundation
 
 /// Builds a week of workouts from the training pattern and the exercise catalogue:
 /// pattern → one muscle-group session per training day → cover every muscle group in the week →
-/// eligible exercises → fill the time with sets → validate.
+/// eligible exercises → fill the time with sets → validate → save as the current plan.
 @MainActor
 struct CreateWorkoutPlanUseCase {
     /// Monday = 1 … Sunday = 7.
@@ -13,6 +13,7 @@ struct CreateWorkoutPlanUseCase {
 
     let patterns: any TrainingPatternRepository
     let exercises: any ExerciseRepository
+    let plans: any WorkoutPlanRepository
     var validator = WorkoutPlanValidator()
 
     func execute(for user: UserPlanningProfile) throws(PlanningError) -> WorkoutPlan {
@@ -20,7 +21,7 @@ struct CreateWorkoutPlanUseCase {
         try requireClearanceIfNeeded(user)
         guard let pattern = pattern(for: user.level) else { throw .patternNotFound }
 
-        let eligible = exercises.exercises.filter { isAllowed($0, for: user) }
+        let eligible = exercises.exercises.filter { ExerciseEligibility.isAllowed($0, for: user) }
         let days = user.trainingDays.sorted()
 
         // The pattern is a cycle: with more training days than groups, start again from the first group.
@@ -34,6 +35,9 @@ struct CreateWorkoutPlanUseCase {
 
         let plan = WorkoutPlan(goalID: user.goalID, workouts: workouts)
         try validator.validate(plan, for: user)
+
+        // The new plan replaces the current one. Nothing is stored unless every step above succeeded.
+        do { try plans.savePlan(plan) } catch { throw .couldNotSavePlan }
         return plan
     }
 
@@ -60,14 +64,6 @@ struct CreateWorkoutPlanUseCase {
             .max { $0.level < $1.level }
     }
 
-    /// Level and hard constraints only; nothing else removes an exercise.
-    private func isAllowed(_ exercise: Exercise, for user: UserPlanningProfile) -> Bool {
-        guard let level = TrainingLevel(rawValue: exercise.level), level <= user.level else { return false }
-        if user.mustAvoidFloorExercises, exercise.tagIDs.contains(Tag.floorBasedID) { return false }
-        if user.requiresLowImpact, !exercise.tagIDs.contains(Tag.lowImpactID) { return false }
-        return true
-    }
-
     /// A short week can leave core out of every group (three training days: six main categories).
     /// Core may be added on top of a workout's two main categories, so it joins the last workout.
     /// Other muscle groups are never added, so a week of one or two days can still miss some.
@@ -87,11 +83,7 @@ struct CreateWorkoutPlanUseCase {
         let candidates = eligible.filter { categoryIDs.contains($0.categoryID) }
         let selected = fill(interleaved(candidates, categoryIDs: categoryIDs), categoryIDs: categoryIDs,
                             maxSeconds: maxMinutes * 60)
-        let seconds = selected.reduce(0) { $0 + $1.seconds }
-        return PlannedWorkout(
-            weekday: weekday, categoryIDs: categoryIDs, exercises: selected,
-            estimatedMinutes: (seconds + 59) / 60
-        )
+        return PlannedWorkout(weekday: weekday, categoryIDs: categoryIDs, exercises: selected)
     }
 
     /// Catalogue order inside each category, then one exercise from each category in turn
@@ -109,11 +101,11 @@ struct CreateWorkoutPlanUseCase {
     /// 2. extra sets for those exercises, one at a time in turn, up to the maximum;
     /// 3. each further exercise that still fits at the baseline sets, followed by extra sets again.
     /// Anything that does not fit in the remaining time is skipped.
-    private func fill(_ ordered: [Exercise], categoryIDs: [Category.ID], maxSeconds: Int) -> [PlannedExercise] {
+    private func fill(_ ordered: [Exercise], categoryIDs: [Category.ID], maxSeconds: Int) -> [WorkoutExercise] {
         let firstOfEachCategory = categoryIDs.compactMap { id in ordered.first { $0.categoryID == id } }
         let others = ordered.filter { !firstOfEachCategory.contains($0) }
 
-        var selected: [PlannedExercise] = []
+        var selected: [WorkoutExercise] = []
         for exercise in firstOfEachCategory {
             addIfItFits(exercise, to: &selected, maxSeconds: maxSeconds)
         }
@@ -128,18 +120,18 @@ struct CreateWorkoutPlanUseCase {
     }
 
     @discardableResult
-    private func addIfItFits(_ exercise: Exercise, to selected: inout [PlannedExercise], maxSeconds: Int) -> Bool {
-        let planned = PlannedExercise(exercise: exercise, sets: PlannedExercise.baselineSets)
+    private func addIfItFits(_ exercise: Exercise, to selected: inout [WorkoutExercise], maxSeconds: Int) -> Bool {
+        let planned = WorkoutExercise(exercise: exercise, sets: WorkoutExercise.baselineSets)
         guard selected.reduce(0, { $0 + $1.seconds }) + planned.seconds <= maxSeconds else { return false }
         selected.append(planned)
         return true
     }
 
-    private func addSets(to selected: inout [PlannedExercise], maxSeconds: Int) {
+    private func addSets(to selected: inout [WorkoutExercise], maxSeconds: Int) {
         var added = true
         while added {
             added = false
-            for index in selected.indices where selected[index].sets < PlannedExercise.maximumSets {
+            for index in selected.indices where selected[index].sets < WorkoutExercise.maximumSets {
                 let total = selected.reduce(0) { $0 + $1.seconds }
                 if total + selected[index].secondsPerSet <= maxSeconds {
                     selected[index].sets += 1
@@ -148,9 +140,4 @@ struct CreateWorkoutPlanUseCase {
             }
         }
     }
-}
-
-private extension Tag {
-    static let floorBasedID = "floor-based"
-    static let lowImpactID = "low-impact"
 }
