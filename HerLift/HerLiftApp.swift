@@ -13,6 +13,8 @@ struct HerLiftApp: App {
     private let onboardingViewModel: OnboardingViewModel
     private let exerciseGuideViewModel: ExerciseGuideViewModel
     private let generatePlanViewModel: GeneratePlanViewModel
+    private let myPlanViewModel: MyPlanViewModel
+    private let profileViewModel: ProfileViewModel
 
     init() {
         do {
@@ -23,17 +25,24 @@ struct HerLiftApp: App {
             )
             let profiles = try SwiftDataUserProfileRepository(modelContext: sharedModelContainer.mainContext)
             let plans = SwiftDataWorkoutPlanRepository(modelContext: sharedModelContainer.mainContext, exercises: exercises)
+            let editPlan = EditWorkoutPlanUseCase(plans: plans, exercises: exercises)
             generatePlanViewModel = GeneratePlanViewModel(
                 createPlan: CreateWorkoutPlanUseCase(
                     patterns: try JSONTrainingPatternRepository(), exercises: exercises, plans: plans),
-                editPlan: EditWorkoutPlanUseCase(plans: plans, exercises: exercises),
+                editPlan: editPlan,
                 goals: goals.goals
             )
+            myPlanViewModel = MyPlanViewModel(editPlan: editPlan, goals: goals.goals)
+            generatePlanViewModel.restore()
+            myPlanViewModel.load()
             onboardingViewModel = OnboardingViewModel(
                 goals: goals.goals,
                 saveProfile: SaveOnboardingProfileUseCase(repository: profiles)
             )
-            onboardingViewModel.load(using: LoadOnboardingProfileUseCase(repository: profiles))
+            let loadProfile = LoadOnboardingProfileUseCase(repository: profiles)
+            onboardingViewModel.load(using: loadProfile)
+            profileViewModel = ProfileViewModel(editor: onboardingViewModel, loadProfile: loadProfile, editPlan: editPlan)
+            profileViewModel.refresh()
         } catch {
             fatalError("Could not prepare app repositories: \(error)")
         }
@@ -60,7 +69,9 @@ struct HerLiftApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView(onboardingViewModel: onboardingViewModel, generatePlanViewModel: generatePlanViewModel)
+            ContentView(
+                onboardingViewModel: onboardingViewModel, generatePlanViewModel: generatePlanViewModel,
+                myPlanViewModel: myPlanViewModel, profileViewModel: profileViewModel)
                 .environment(exerciseGuideViewModel)
                 .tint(HerLiftTheme.primary)
         }

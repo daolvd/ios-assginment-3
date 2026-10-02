@@ -8,6 +8,22 @@ enum PlanFormatting {
         weekdayNames.indices.contains(weekday - 1) ? weekdayNames[weekday - 1] : "Day \(weekday)"
     }
 
+    /// "MON" for Monday.
+    static func shortWeekdayName(_ weekday: Int) -> String {
+        String(weekdayName(weekday).prefix(3)).uppercased()
+    }
+
+    /// "3 exercises · 45 min"
+    static func meta(of workout: PlannedWorkout) -> String {
+        "\(workout.exercises.count) exercises · \(workout.estimatedMinutes) min"
+    }
+
+    /// "Target 56 kg · see forecast"
+    static func goalSubtitle(of plan: WorkoutPlan) -> String {
+        guard let forecast = plan.weightForecast else { return "See forecast and milestones" }
+        return "Target \(kilograms(forecast.targetKg)) · see forecast"
+    }
+
     static func categories(_ workout: PlannedWorkout) -> String {
         workout.categoryIDs.map(\.capitalized).joined(separator: " · ")
     }
