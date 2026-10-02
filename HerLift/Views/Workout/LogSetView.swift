@@ -16,7 +16,9 @@ struct LogSetView: View {
 
     var body: some View {
         Group {
-            if let current = viewModel.current {
+            if let rest = viewModel.rest {
+                RestView(viewModel: viewModel, rest: rest)
+            } else if let current = viewModel.current {
                 logging(current)
             } else if viewModel.isReadyToFinish {
                 allSetsDone
@@ -28,7 +30,7 @@ struct LogSetView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.hidden, for: .tabBar)
         .toolbar {
-            if let current = viewModel.current {
+            if viewModel.rest == nil, let current = viewModel.current {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("How to") { showsHowTo = true }.font(.headline).accessibilityLabel("How to do \(current.exercise.name)")
                 }
@@ -39,7 +41,7 @@ struct LogSetView: View {
             }
         }
         .sheet(isPresented: $showsHowTo) {
-            if let current = viewModel.current {
+            if viewModel.rest == nil, let current = viewModel.current {
                 NavigationStack {
                     ExerciseDetailView(exerciseID: current.exercise.id)
                         .toolbar { ToolbarItem(placement: .topBarTrailing) { Button("Done") { showsHowTo = false } } }
