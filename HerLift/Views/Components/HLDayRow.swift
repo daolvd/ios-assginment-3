@@ -18,7 +18,7 @@ struct HLDayRow: View {
     let onStart: () -> Void
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-    @ScaledMetric(relativeTo: .caption) private var dateWidth: CGFloat = 40
+    @ScaledMetric(relativeTo: .caption) private var dateWidth: CGFloat = 48
 
     var body: some View {
         HStack(spacing: 12) {
@@ -29,11 +29,21 @@ struct HLDayRow: View {
                     .foregroundStyle(state == .today ? HerLiftTheme.primary : HerLiftTheme.text)
             }
             .frame(width: dateWidth)
+            .padding(.vertical, 8)
+            .overlay {
+                RoundedRectangle(cornerRadius: 12)
+                    .strokeBorder(state == .today ? HerLiftTheme.primary : HerLiftTheme.border,
+                                  lineWidth: state == .today ? 2 : 1)
+            }
+            .accessibilityElement(children: .combine)
 
             if state == .rest {
                 Text("Rest").font(.subheadline).foregroundStyle(HerLiftTheme.secondaryText)
                     .padding(.horizontal, 16)
-                    .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                    .frame(maxWidth: .infinity, minHeight: 44, maxHeight: .infinity, alignment: .leading)
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 14).strokeBorder(HerLiftTheme.border, lineWidth: 1)
+                    }
             } else {
                 card
             }
