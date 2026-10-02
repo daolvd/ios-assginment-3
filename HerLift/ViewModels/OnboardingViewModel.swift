@@ -10,7 +10,6 @@ final class OnboardingViewModel {
     var error: OnboardingProfileError?
     @ObservationIgnored private let saveProfile: SaveOnboardingProfileUseCase?
 
-    /// Omit the use case only for view previews; saving requires a repository supplied by the app.
     init(goals: [Goal], input: OnboardingInput = OnboardingInput(),
          saveProfile: SaveOnboardingProfileUseCase? = nil) {
         self.goals = goals
@@ -18,7 +17,19 @@ final class OnboardingViewModel {
         self.saveProfile = saveProfile
     }
 
-    var canSave: Bool { saveProfile != nil }
+    var selectedGoal: Goal? { goals.first { $0.id == input.selectedGoalID } }
+
+    var canFinish: Bool {
+        guard selectedGoal != nil else { return false }
+        guard selectedGoal?.requiresTargetWeight == true else { return true }
+        return positiveNumber(input.targetWeight) != nil
+    }
+
+    var targetWeightMessage: String? {
+        guard selectedGoal?.requiresTargetWeight == true, !input.targetWeight.isEmpty,
+              positiveNumber(input.targetWeight) == nil else { return nil }
+        return "Enter a valid target weight."
+    }
 
     func load(using useCase: LoadOnboardingProfileUseCase) {
         do {
@@ -32,7 +43,6 @@ final class OnboardingViewModel {
             input.healthNote = profile.healthNote ?? ""
             input.clearedByDoctor = profile.clearedByDoctor
             savedProfile = profile
-            error = nil
         } catch {
             self.error = error
         }
@@ -40,10 +50,7 @@ final class OnboardingViewModel {
 
     @discardableResult
     func save() -> Bool {
-        guard let saveProfile else {
-            error = .couldNotSaveProfile
-            return false
-        }
+        guard let saveProfile else { return false }
         do {
             savedProfile = try saveProfile.execute(input)
             error = nil
@@ -52,5 +59,13 @@ final class OnboardingViewModel {
             self.error = error
             return false
         }
+    }
+
+    private func positiveNumber(_ text: String) -> Double? {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let value = Double(trimmed.replacingOccurrences(of: ",", with: ".")), value.isFinite, value > 0 else {
+            return nil
+        }
+        return value
     }
 }

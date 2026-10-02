@@ -29,6 +29,8 @@ struct OnboardingTests {
         #expect(saved.healthNote == "Mild asthma.")
         #expect(saved.clearedByDoctor)
         #expect(repository.saved == saved)
+        input.minutes = 25
+        #expect(try useCase.execute(input).sessionMinutes == 25)
     }
 
     @Test func invalidAnswersNeverReachRepository() {
@@ -62,8 +64,7 @@ struct OnboardingTests {
     }
 
     @Test func savingTwiceUpdatesOneProfileAndCanReadItBack() throws {
-        let schema = Schema([UserProfile.self, TrainingPlan.self, WorkoutDay.self,
-                             PlannedExercise.self, WorkoutSession.self, ExerciseSet.self])
+        let schema = Schema([UserProfile.self])
         let container = try ModelContainer(
             for: schema, configurations: ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
         )
@@ -73,6 +74,8 @@ struct OnboardingTests {
         let originalID = try #require(repository.profiles.first?.id)
         var updated = validInput()
         updated.weight = "63,5"
+        updated.healthNote = "Mild asthma."
+        updated.clearedByDoctor = true
         _ = try save.execute(updated)
 
         let reopened = try SwiftDataUserProfileRepository(modelContext: ModelContext(container))
@@ -80,6 +83,7 @@ struct OnboardingTests {
         #expect(reopened.profiles.count == 1)
         #expect(reopened.profiles.first?.id == originalID)
         #expect(loaded?.weightKg == 63.5)
+        #expect(loaded?.clearedByDoctor == true)
     }
 
     @Test func loadingSavedProfilePrefillsAnswersWithoutChangingGoal() {

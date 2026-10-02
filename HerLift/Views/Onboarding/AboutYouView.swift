@@ -8,10 +8,7 @@
 import SwiftUI
 
 struct AboutYouView: View {
-    enum Experience: String, CaseIterable {
-        case beginner = "Beginner"
-        case some = "Some"
-    }
+    typealias Experience = ExperienceLevel
 
     @Binding var age: String
     @Binding var height: String
@@ -42,8 +39,4 @@ struct AboutYouView: View {
         OnboardingNumberField("Height", text: $height, prompt: "165", unit: "cm", focusedField: focusedField, field: .height)
         OnboardingNumberField("Weight", text: $weight, prompt: "62", unit: "kg", focusedField: focusedField, field: .weight)
     }
-}
-
-#Preview("About you") {
-    OnboardingView(goals: onboardingPreviewGoals, age: "29", height: "165", weight: "62")
 }

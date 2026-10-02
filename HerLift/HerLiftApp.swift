@@ -11,11 +11,9 @@ import SwiftData
 @main
 struct HerLiftApp: App {
     private let onboardingViewModel: OnboardingViewModel
-    private let exerciseRepository: JSONExerciseRepository
 
     init() {
         do {
-            exerciseRepository = try JSONExerciseRepository()
             let goals = try JSONGoalRepository()
             let profiles = try SwiftDataUserProfileRepository(modelContext: sharedModelContainer.mainContext)
             onboardingViewModel = OnboardingViewModel(
@@ -30,13 +28,7 @@ struct HerLiftApp: App {
 
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self,
-            UserProfile.self,
-            TrainingPlan.self,
-            WorkoutDay.self,
-            PlannedExercise.self,
-            WorkoutSession.self,
-            ExerciseSet.self,
+            UserProfile.self
         ])
         let modelConfiguration = ModelConfiguration(
             schema: schema, isStoredInMemoryOnly: false,

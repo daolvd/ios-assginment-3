@@ -96,17 +96,3 @@ struct YourTrainingView: View {
         .accessibilityHint("Opens the minutes picker")
     }
 }
-
-#Preview("Your training") {
-    OnboardingView(goals: onboardingPreviewGoals, initialPage: .training)
-}
-
-#Preview("Health note") {
-    OnboardingView(goals: onboardingPreviewGoals, initialPage: .training,
-                   healthNote: "Mild asthma. I use an inhaler before running.")
-}
-
-#Preview("Training · large text") {
-    OnboardingView(goals: onboardingPreviewGoals, initialPage: .training)
-        .environment(\.dynamicTypeSize, .accessibility3)
-}

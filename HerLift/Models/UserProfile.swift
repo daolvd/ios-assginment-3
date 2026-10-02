@@ -22,9 +22,6 @@ nonisolated final class UserProfile {
     var clearedByDoctor: Bool
     var createdAt: Date
 
-    @Relationship(deleteRule: .cascade, inverse: \TrainingPlan.profile)
-    var plans: [TrainingPlan] = []
-
     init(
         id: UUID = UUID(), age: Int, heightCm: Double, weightKg: Double,
         experienceRaw: String, trainingWeekdays: [Int], sessionMinutes: Int,
