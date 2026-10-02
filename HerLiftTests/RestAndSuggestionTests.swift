@@ -149,6 +149,9 @@ struct RestViewModelTests {
     private func makeViewModel() -> WorkoutSessionViewModel {
         WorkoutSessionViewModel(
             workout: workout(), useCase: WorkoutSessionUseCase(sessions: SessionStoreStub(), calendar: calendar),
+            editPlan: EditWorkoutPlanUseCase(
+                plans: PlanStoreStub(plan: WorkoutPlan(goalID: "buildMuscle", workouts: [workout()], status: .active)),
+                exercises: try! JSONExerciseRepository()),
             now: { saturday })
     }
 }

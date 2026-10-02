@@ -18,7 +18,7 @@ struct WorkoutSessionUseCaseTests {
         let store = SessionStoreStub()
         let log = try makeUseCase(store).start(workout(), on: today)
 
-        #expect(log == WorkoutLog(date: todayStart, weekday: 6, status: .inProgress, sets: []))
+        #expect(log == WorkoutLog(date: todayStart, weekday: 6, status: .inProgress, sets: [], startedAt: today))
         #expect(store.logs[todayStart] == log)
     }
 
@@ -410,6 +410,10 @@ struct WorkoutSessionViewModelTests {
 
     private func makeViewModel(_ store: SessionStoreStub) -> WorkoutSessionViewModel {
         WorkoutSessionViewModel(
-            workout: workout(), useCase: WorkoutSessionUseCase(sessions: store, calendar: calendar), now: { saturday })
+            workout: workout(), useCase: WorkoutSessionUseCase(sessions: store, calendar: calendar),
+            editPlan: EditWorkoutPlanUseCase(
+                plans: PlanStoreStub(plan: WorkoutPlan(goalID: "buildMuscle", workouts: [workout()], status: .active)),
+                exercises: try! JSONExerciseRepository()),
+            now: { saturday })
     }
 }

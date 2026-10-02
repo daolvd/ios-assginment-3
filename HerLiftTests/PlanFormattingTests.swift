@@ -11,6 +11,14 @@ struct PlanFormattingTests {
         #expect(PlanFormatting.target(of: planned("goblet-squat", sets: 3)) == "3 × 8–12 · find your weight")
     }
 
+    @Test func theTargetShowsTheWeightOnceItIsKnown() {
+        var press = planned("leg-press", sets: 5)
+        press.targetWeightKg = 42.5
+        #expect(PlanFormatting.target(of: press) == "5 × 10–12 · 42.5 kg")
+        press.targetWeightKg = 40
+        #expect(PlanFormatting.target(of: press) == "5 × 10–12 · 40 kg")
+    }
+
     @Test func theHeaderSaysTodayOrNamesTheWeekday() {
         // Leg Press 5 sets is 20 minutes, Glute Bridge 3 sets is 10 minutes.
         let workout = PlannedWorkout(
