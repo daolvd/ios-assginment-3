@@ -20,7 +20,8 @@ struct ContentView: View {
             OnboardingView(viewModel: onboardingViewModel, onFinished: {
                 guard let profile = onboardingViewModel.savedProfile,
                       let goalID = onboardingViewModel.input.selectedGoalID else { return }
-                generatePlanViewModel.generate(profile: profile, goalID: goalID)
+                generatePlanViewModel.generate(
+                    profile: profile, goalID: goalID, targetWeightKg: onboardingViewModel.targetWeightKg)
                 withAnimation(reduceMotion ? nil : .easeInOut) { hasFinishedOnboarding = true }
             }, onOpenGuide: { showsDebugGuide = true })
             .sheet(isPresented: $showsDebugGuide) {
@@ -39,13 +40,16 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView(
+    let exercises = try! JSONExerciseRepository()
+    let plans = PreviewPlanStore()
+    return ContentView(
         onboardingViewModel: OnboardingViewModel(goals: onboardingPreviewGoals),
-        generatePlanViewModel: GeneratePlanViewModel(createPlan: CreateWorkoutPlanUseCase(
-            patterns: try! JSONTrainingPatternRepository(), exercises: try! JSONExerciseRepository(),
-            plans: PreviewPlanStore())))
-        .environment(ExerciseGuideViewModel(
-            browse: BrowseExerciseGuideUseCase(repository: (try? JSONExerciseRepository())!)))
+        generatePlanViewModel: GeneratePlanViewModel(
+            createPlan: CreateWorkoutPlanUseCase(
+                patterns: try! JSONTrainingPatternRepository(), exercises: exercises, plans: plans),
+            editPlan: EditWorkoutPlanUseCase(plans: plans, exercises: exercises),
+            goals: onboardingPreviewGoals))
+        .environment(ExerciseGuideViewModel(browse: BrowseExerciseGuideUseCase(repository: exercises)))
 }
 
 /// Keeps the preview's plan in memory instead of the real store.
