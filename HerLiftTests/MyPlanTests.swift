@@ -188,7 +188,7 @@ struct MyPlanViewModelTests {
     private func makeMyPlan(_ store: PlanStoreStub, now: Date = Date()) throws -> MyPlanViewModel {
         MyPlanViewModel(
             editPlan: EditWorkoutPlanUseCase(plans: store, exercises: try JSONExerciseRepository()),
-            goals: goals, now: { now })
+            workoutSessions: WorkoutSessionUseCase(sessions: SessionStoreStub()), goals: goals, now: { now })
     }
 
     private func makeGeneratePlan(_ store: PlanStoreStub) throws -> GeneratePlanViewModel {
