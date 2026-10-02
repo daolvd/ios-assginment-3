@@ -25,20 +25,27 @@ nonisolated struct UserPlanningProfile: Equatable, Sendable {
     /// She wrote something in the health box. The text itself never reaches the planner.
     var reportsHealthConcern = false
     var clearedByDoctor = false
+    /// Body measurements and the fat-loss target stay on the device; they only feed the forecast.
+    var weightKg: Double?
+    var heightCm: Double?
+    var targetWeightKg: Double?
 }
 
 nonisolated extension UserPlanningProfile {
     /// Builds the planner input from saved onboarding answers. The onboarding answers contain no
     /// structured movement limits, so both hard constraints stay off. Only whether a health note
     /// exists is passed on, never its text.
-    init(profile: OnboardingProfile, goalID: Goal.ID) {
+    init(profile: OnboardingProfile, goalID: Goal.ID, targetWeightKg: Double? = nil) {
         self.init(
             level: profile.experience == .beginner ? .beginner : .intermediate,
             goalID: goalID,
             trainingDays: profile.trainingWeekdays,
             sessionMinutes: profile.sessionMinutes,
             reportsHealthConcern: !(profile.healthNote?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true),
-            clearedByDoctor: profile.clearedByDoctor
+            clearedByDoctor: profile.clearedByDoctor,
+            weightKg: profile.weightKg,
+            heightCm: profile.heightCm,
+            targetWeightKg: targetWeightKg
         )
     }
 }

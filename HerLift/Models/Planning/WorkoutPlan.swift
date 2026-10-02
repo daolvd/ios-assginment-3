@@ -1,10 +1,28 @@
 import Foundation
 
-/// A week of workouts. It lives in memory only; nothing here is persisted.
+nonisolated enum PlanStatus: String, Sendable {
+    /// Built and stored, waiting for her to accept it.
+    case draft
+    case active
+}
+
+/// A week of workouts with the forecast for its goal.
 nonisolated struct WorkoutPlan: Equatable, Sendable {
     let goalID: Goal.ID
     /// One workout per training day, in weekday order.
     let workouts: [PlannedWorkout]
+    var status: PlanStatus = .draft
+    /// Only for the fat-loss goal; other goals only have milestones.
+    var weightForecast: WeightLossForecast?
+    /// Start of the day she accepted the plan. Plan weeks count from here.
+    var startedOn: Date?
+
+    var milestones: [ForecastMilestone] { ForecastCalculator.milestones(for: goalID) }
+
+    func replacingWorkouts(_ workouts: [PlannedWorkout]) -> WorkoutPlan {
+        WorkoutPlan(goalID: goalID, workouts: workouts, status: status,
+                    weightForecast: weightForecast, startedOn: startedOn)
+    }
 }
 
 nonisolated struct PlannedWorkout: Equatable, Identifiable, Sendable {
