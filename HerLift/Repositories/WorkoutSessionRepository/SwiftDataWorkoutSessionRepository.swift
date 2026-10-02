@@ -18,13 +18,17 @@ final class SwiftDataWorkoutSessionRepository: WorkoutSessionRepository {
                 repetitions: item.repetitions, effort: effort)
         }
         guard let status = WorkoutStatus(rawValue: stored.statusRaw) else { throw CocoaError(.coderReadCorrupt) }
-        return WorkoutLog(date: stored.date, weekday: stored.weekday, status: status, sets: sets)
+        return WorkoutLog(
+            date: stored.date, weekday: stored.weekday, status: status, sets: sets,
+            startedAt: stored.startedAt, completedAt: stored.completedAt)
     }
 
     func save(_ log: WorkoutLog) throws {
         do {
             if let existing = try storedSession(on: log.date) { modelContext.delete(existing) }
-            let session = WorkoutSession(date: log.date, weekday: log.weekday, statusRaw: log.status.rawValue)
+            let session = WorkoutSession(
+                date: log.date, weekday: log.weekday, statusRaw: log.status.rawValue,
+                startedAt: log.startedAt, completedAt: log.completedAt)
             modelContext.insert(session)
             for (index, logged) in log.sets.enumerated() {
                 let item = ExerciseSet(

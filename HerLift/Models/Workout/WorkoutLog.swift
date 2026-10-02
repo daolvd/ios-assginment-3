@@ -38,6 +38,8 @@ nonisolated struct WorkoutLog: Equatable, Sendable {
     var status: WorkoutStatus
     /// In the order they were done.
     var sets: [LoggedSet]
+    var startedAt: Date?
+    var completedAt: Date?
 }
 
 /// The set she is on: which exercise of the workout and which set of it.

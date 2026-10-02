@@ -23,7 +23,7 @@ struct WorkoutSessionUseCase {
             guard existing.status == .inProgress else { throw .alreadyCompleted }
             return existing
         }
-        let log = WorkoutLog(date: day, weekday: workout.weekday, status: .inProgress, sets: [])
+        let log = WorkoutLog(date: day, weekday: workout.weekday, status: .inProgress, sets: [], startedAt: date)
         do { try sessions.save(log) } catch { throw .couldNotStartWorkout }
         return log
     }
@@ -50,12 +50,13 @@ struct WorkoutSessionUseCase {
     }
 
     /// Finishes the workout. She can finish early, but not before logging at least one set.
-    func finish(_ log: WorkoutLog) throws(WorkoutSessionError) -> WorkoutLog {
+    func finish(_ log: WorkoutLog, at date: Date = Date()) throws(WorkoutSessionError) -> WorkoutLog {
         guard log.status == .inProgress else { throw .workoutNotActive }
         guard !log.sets.isEmpty else { throw .nothingLogged }
 
         var finished = log
         finished.status = .completed
+        finished.completedAt = date
         do { try sessions.save(finished) } catch { throw .couldNotFinishWorkout }
         return finished
     }
