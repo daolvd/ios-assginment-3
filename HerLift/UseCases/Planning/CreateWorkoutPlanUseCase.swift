@@ -2,7 +2,7 @@ import Foundation
 
 /// Builds a week of workouts from the training pattern and the exercise catalogue:
 /// pattern → one muscle-group session per training day → cover every muscle group in the week →
-/// eligible exercises → fill the time with sets → validate → save as the current plan.
+/// eligible exercises → fill the time with sets → validate → save as the current plan, waiting for her to accept it.
 @MainActor
 struct CreateWorkoutPlanUseCase {
     /// Monday = 1 … Sunday = 7.
@@ -19,6 +19,7 @@ struct CreateWorkoutPlanUseCase {
     func execute(for user: UserPlanningProfile) throws(PlanningError) -> WorkoutPlan {
         try validateInput(user)
         try requireClearanceIfNeeded(user)
+        let weightForecast = try ForecastCalculator.weightLossForecast(for: user)
         guard let pattern = pattern(for: user.level) else { throw .patternNotFound }
 
         let eligible = exercises.exercises.filter { ExerciseEligibility.isAllowed($0, for: user) }
@@ -33,7 +34,7 @@ struct CreateWorkoutPlanUseCase {
                                         maxMinutes: user.sessionMinutes))
         }
 
-        let plan = WorkoutPlan(goalID: user.goalID, workouts: workouts)
+        let plan = WorkoutPlan(goalID: user.goalID, workouts: workouts, status: .draft, weightForecast: weightForecast)
         try validator.validate(plan, for: user)
 
         // The new plan replaces the current one. Nothing is stored unless every step above succeeded.

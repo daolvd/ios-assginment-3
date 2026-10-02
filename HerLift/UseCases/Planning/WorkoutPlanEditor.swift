@@ -53,7 +53,7 @@ nonisolated struct WorkoutPlanEditor {
         var workouts = plan.workouts
         workouts[workoutIndex] = PlannedWorkout(
             weekday: workout.weekday, categoryIDs: workout.categoryIDs, exercises: exercises)
-        let edited = WorkoutPlan(goalID: plan.goalID, workouts: workouts)
+        let edited = plan.replacingWorkouts(workouts)
 
         // Safety net: the edited plan must still pass every rule the planner's plans pass.
         do { try validator.validate(edited, for: user) } catch { throw .invalidPlan }

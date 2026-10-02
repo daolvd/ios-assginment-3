@@ -25,13 +25,26 @@ final class SwiftDataWorkoutPlanRepository: WorkoutPlanRepository {
             }
             return PlannedWorkout(weekday: day.weekday, categoryIDs: day.categoryIDs, exercises: planned)
         }
-        return WorkoutPlan(goalID: stored.goalID, workouts: workouts)
+        var forecast: WeightLossForecast?
+        if let start = stored.startWeightKg, let target = stored.targetWeightKg,
+           let earliest = stored.forecastEarliestWeek, let latest = stored.forecastLatestWeek {
+            forecast = WeightLossForecast(currentKg: start, targetKg: target, earliestWeek: earliest, latestWeek: latest)
+        }
+        return WorkoutPlan(
+            goalID: stored.goalID, workouts: workouts, status: PlanStatus(rawValue: stored.statusRaw) ?? .draft,
+            weightForecast: forecast, startedOn: stored.startedOn)
     }
 
     func savePlan(_ plan: WorkoutPlan) throws {
         do {
             try deleteStoredPlans()
             let stored = TrainingPlan(goalID: plan.goalID)
+            stored.statusRaw = plan.status.rawValue
+            stored.startedOn = plan.startedOn
+            stored.startWeightKg = plan.weightForecast?.currentKg
+            stored.targetWeightKg = plan.weightForecast?.targetKg
+            stored.forecastEarliestWeek = plan.weightForecast?.earliestWeek
+            stored.forecastLatestWeek = plan.weightForecast?.latestWeek
             modelContext.insert(stored)
             for (dayIndex, workout) in plan.workouts.enumerated() {
                 let day = WorkoutDay(sortIndex: dayIndex, weekday: workout.weekday, categoryIDs: workout.categoryIDs)

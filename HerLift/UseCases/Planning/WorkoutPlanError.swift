@@ -4,6 +4,8 @@ nonisolated enum WorkoutPlanError: LocalizedError, Equatable {
     case noPlan
     case invalidPlan
     case couldNotSavePlan
+    case couldNotAcceptPlan
+    case planAlreadyAccepted
     case couldNotLoadPlan
     case couldNotDeletePlan
     case workoutNotFound
@@ -20,6 +22,8 @@ nonisolated enum WorkoutPlanError: LocalizedError, Equatable {
         case .noPlan: "You don't have a plan yet."
         case .invalidPlan: "That plan isn't valid."
         case .couldNotSavePlan: "We couldn't save your plan."
+        case .couldNotAcceptPlan: "We couldn't activate your plan."
+        case .planAlreadyAccepted: "This plan is already active."
         case .couldNotLoadPlan: "We couldn't open your plan."
         case .couldNotDeletePlan: "We couldn't delete your plan."
         case .workoutNotFound: "That workout isn't in your plan."
@@ -38,6 +42,8 @@ nonisolated enum WorkoutPlanError: LocalizedError, Equatable {
         case .noPlan: "Create your plan first."
         case .invalidPlan: "Change your answers and build your plan again."
         case .couldNotSavePlan, .couldNotLoadPlan, .couldNotDeletePlan: "Try again."
+        case .couldNotAcceptPlan: "Your plan is still here — tap Accept plan again."
+        case .planAlreadyAccepted: "Open your plan to see your workouts."
         case .workoutNotFound, .exerciseNotFound, .invalidPosition: "Go back to your plan and try again."
         case .exerciseAlreadyInWorkout, .exerciseNotAllowed: "Choose a different exercise."
         case .cannotRemoveLastExercise: "Add another exercise before removing this one."

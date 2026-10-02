@@ -22,11 +22,13 @@ struct HerLiftApp: App {
                 browse: BrowseExerciseGuideUseCase(repository: exercises)
             )
             let profiles = try SwiftDataUserProfileRepository(modelContext: sharedModelContainer.mainContext)
-            generatePlanViewModel = GeneratePlanViewModel(createPlan: CreateWorkoutPlanUseCase(
-                patterns: try JSONTrainingPatternRepository(),
-                exercises: exercises,
-                plans: SwiftDataWorkoutPlanRepository(modelContext: sharedModelContainer.mainContext, exercises: exercises)
-            ))
+            let plans = SwiftDataWorkoutPlanRepository(modelContext: sharedModelContainer.mainContext, exercises: exercises)
+            generatePlanViewModel = GeneratePlanViewModel(
+                createPlan: CreateWorkoutPlanUseCase(
+                    patterns: try JSONTrainingPatternRepository(), exercises: exercises, plans: plans),
+                editPlan: EditWorkoutPlanUseCase(plans: plans, exercises: exercises),
+                goals: goals.goals
+            )
             onboardingViewModel = OnboardingViewModel(
                 goals: goals.goals,
                 saveProfile: SaveOnboardingProfileUseCase(repository: profiles)
