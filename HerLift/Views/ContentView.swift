@@ -87,7 +87,8 @@ struct ContentView: View {
             editPlan: EditWorkoutPlanUseCase(plans: plans, exercises: exercises),
             goals: onboardingPreviewGoals),
         myPlanViewModel: MyPlanViewModel(
-            editPlan: EditWorkoutPlanUseCase(plans: plans, exercises: exercises), goals: onboardingPreviewGoals),
+            editPlan: EditWorkoutPlanUseCase(plans: plans, exercises: exercises),
+            workoutSessions: WorkoutSessionUseCase(sessions: PreviewSessionStore()), goals: onboardingPreviewGoals),
         profileViewModel: ProfileViewModel(
             editor: OnboardingViewModel(goals: onboardingPreviewGoals),
             loadProfile: LoadOnboardingProfileUseCase(repository: PreviewProfileStore()),
@@ -108,4 +109,12 @@ private final class PreviewPlanStore: WorkoutPlanRepository {
 private final class PreviewProfileStore: OnboardingProfileRepository {
     func loadOnboardingProfile() throws -> OnboardingProfile? { nil }
     func saveOnboardingProfile(_ profile: OnboardingProfile) throws {}
+}
+
+@MainActor
+private final class PreviewSessionStore: WorkoutSessionRepository {
+    private var logs: [Date: WorkoutLog] = [:]
+    func log(on day: Date) throws -> WorkoutLog? { logs[day] }
+    func save(_ log: WorkoutLog) throws { logs[log.date] = log }
+    func completedDays() throws -> Set<Date> { Set(logs.values.filter { $0.status == .completed }.map(\.date)) }
 }

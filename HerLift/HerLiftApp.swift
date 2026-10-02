@@ -32,7 +32,9 @@ struct HerLiftApp: App {
                 editPlan: editPlan,
                 goals: goals.goals
             )
-            myPlanViewModel = MyPlanViewModel(editPlan: editPlan, goals: goals.goals)
+            let workoutSessions = WorkoutSessionUseCase(
+                sessions: SwiftDataWorkoutSessionRepository(modelContext: sharedModelContainer.mainContext))
+            myPlanViewModel = MyPlanViewModel(editPlan: editPlan, workoutSessions: workoutSessions, goals: goals.goals)
             generatePlanViewModel.restore()
             myPlanViewModel.load()
             onboardingViewModel = OnboardingViewModel(
@@ -53,7 +55,9 @@ struct HerLiftApp: App {
             UserProfile.self,
             TrainingPlan.self,
             WorkoutDay.self,
-            PlannedExercise.self
+            PlannedExercise.self,
+            WorkoutSession.self,
+            ExerciseSet.self
         ])
         let modelConfiguration = ModelConfiguration(
             schema: schema, isStoredInMemoryOnly: false,

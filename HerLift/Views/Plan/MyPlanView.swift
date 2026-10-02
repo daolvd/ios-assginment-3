@@ -21,10 +21,17 @@ struct MyPlanView: View {
         .navigationDestination(isPresented: Binding(
             get: { openedWeekday != nil }, set: { if !$0 { openedWeekday = nil } }
         )) {
-            if let workout = viewModel.plan?.workouts.first(where: { $0.weekday == openedWeekday }) {
-                WorkoutDayView(workout: workout)
+            if let day = viewModel.week?.days.first(where: { $0.weekday == openedWeekday }), let workout = day.workout {
+                WorkoutDayView(
+                    workout: workout,
+                    session: Calendar.current.isDateInToday(day.date) ? viewModel.sessionViewModel(for: workout) : nil,
+                    onFinished: {
+                        openedWeekday = nil
+                        viewModel.load()
+                    })
             }
         }
+        .onAppear { viewModel.load() }
     }
 
     private func content(plan: WorkoutPlan, week: PlanWeek) -> some View {

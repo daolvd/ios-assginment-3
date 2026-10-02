@@ -6,19 +6,30 @@ import Observation
 @Observable
 final class MyPlanViewModel {
     private(set) var plan: WorkoutPlan?
+    /// The days she finished a workout.
+    private(set) var completedDays: Set<Date> = []
     var error: WorkoutPlanError?
     let goals: [Goal]
     @ObservationIgnored private let editPlan: EditWorkoutPlanUseCase
+    @ObservationIgnored private let workoutSessions: WorkoutSessionUseCase
     @ObservationIgnored let now: () -> Date
+    /// One session view model per workout, so its state survives the screen being redrawn.
+    @ObservationIgnored private var sessionViewModels: [Int: WorkoutSessionViewModel] = [:]
 
-    init(editPlan: EditWorkoutPlanUseCase, goals: [Goal], now: @escaping () -> Date = { Date() }) {
+    init(
+        editPlan: EditWorkoutPlanUseCase, workoutSessions: WorkoutSessionUseCase, goals: [Goal],
+        now: @escaping () -> Date = { Date() }
+    ) {
         self.editPlan = editPlan
+        self.workoutSessions = workoutSessions
         self.goals = goals
         self.now = now
     }
 
-    /// Reads the stored plan again; nil when none has been created.
+    /// Reads the stored plan and the finished workouts again; the plan is nil when none has been created.
     func load() {
+        sessionViewModels = [:]
+        completedDays = (try? workoutSessions.completedDays()) ?? []
         do {
             plan = try editPlan.currentPlan()
             error = nil
@@ -28,7 +39,16 @@ final class MyPlanViewModel {
     }
 
     var week: PlanWeek? {
-        plan.map { PlanWeek(plan: $0, today: now()) }
+        plan.map { PlanWeek(plan: $0, today: now(), completedDays: completedDays) }
+    }
+
+    /// The session for a workout, picking up one already started today.
+    func sessionViewModel(for workout: PlannedWorkout) -> WorkoutSessionViewModel {
+        if let existing = sessionViewModels[workout.weekday] { return existing }
+        let created = WorkoutSessionViewModel(workout: workout, useCase: workoutSessions, now: now)
+        created.load()
+        sessionViewModels[workout.weekday] = created
+        return created
     }
 
     func goalTitle(for plan: WorkoutPlan) -> String {
