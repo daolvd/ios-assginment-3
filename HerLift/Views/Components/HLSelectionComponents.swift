@@ -18,6 +18,7 @@ struct HLChip: View {
         Button(action: action) {
             Text(title)
                 .font(isSelected ? .headline : .body)
+                .lineLimit(1).minimumScaleFactor(0.7)
                 .foregroundStyle(isSelected ? HerLiftTheme.onPrimary : HerLiftTheme.text)
                 .padding(.horizontal, horizontalPadding)
                 .padding(.vertical, 8)
