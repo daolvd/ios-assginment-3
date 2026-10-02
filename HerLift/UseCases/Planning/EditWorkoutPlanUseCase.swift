@@ -1,6 +1,7 @@
 import Foundation
 
-/// Everything done with the current plan after it has been created: open it, change one workout, or delete it.
+/// Everything done with the current plan after it has been created: open it, accept it, change one workout,
+/// or delete it (start over).
 @MainActor
 struct EditWorkoutPlanUseCase {
     let plans: any WorkoutPlanRepository
@@ -18,6 +19,17 @@ struct EditWorkoutPlanUseCase {
         let edited = try WorkoutPlanEditor(catalogue: exercises.exercises).apply(edit, to: current, for: user)
         do { try plans.savePlan(edited) } catch { throw .couldNotSavePlan }
         return edited
+    }
+
+    /// Makes the draft plan the active plan, counting its weeks from the start of `now`'s day.
+    func acceptPlan(now: Date = Date()) throws(WorkoutPlanError) -> WorkoutPlan {
+        guard var plan = try currentPlan() else { throw .noPlan }
+        guard plan.status == .draft else { throw .planAlreadyAccepted }
+
+        plan.status = .active
+        plan.startedOn = Calendar.current.startOfDay(for: now)
+        do { try plans.savePlan(plan) } catch { throw .couldNotAcceptPlan }
+        return plan
     }
 
     /// Deletes the current plan. Deleting when there is none is not an error.
