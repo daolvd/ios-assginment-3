@@ -30,4 +30,13 @@ nonisolated struct Exercise: Codable, Identifiable, Sendable {
     let videoFile: String?
     let imageURL: String?
     let videoURL: String?
+    let source: ExerciseSource?
+    let categoryID: Category.ID
+    let tagIDs: [Tag.ID]
+    let estimatedMinutes: Int
+}
+
+nonisolated struct ExerciseSource: Codable, Hashable, Sendable {
+    let id: String
+    let name: String
 }
