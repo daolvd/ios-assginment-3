@@ -13,7 +13,7 @@ struct SaveOnboardingProfileUseCase {
         guard (2...7).contains(input.trainingDays.count), input.trainingDays.allSatisfy({ (1...7).contains($0) }) else {
             throw .unsupportedTrainingFrequency
         }
-        guard (30...120).contains(input.minutes), input.minutes.isMultiple(of: 5) else {
+        guard (20...120).contains(input.minutes), input.minutes.isMultiple(of: 5) else {
             throw .invalidSessionDuration
         }
         let note = input.healthNote.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -50,7 +50,7 @@ nonisolated enum OnboardingProfileError: Error, LocalizedError, Equatable {
         case .invalidHeight: "Enter a valid height in centimetres."
         case .invalidWeight: "Enter a valid weight in kilograms."
         case .unsupportedTrainingFrequency: "Choose between 2 and 7 training days."
-        case .invalidSessionDuration: "Choose 30–120 minutes, in steps of 5."
+        case .invalidSessionDuration: "Choose 20–120 minutes, in steps of 5."
         case .couldNotLoadProfile: "We couldn't load your saved profile."
         case .couldNotSaveProfile: "We couldn't save your profile."
         }

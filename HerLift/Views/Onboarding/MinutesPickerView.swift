@@ -15,9 +15,9 @@ struct MinutesPickerView: View {
     var body: some View {
         VStack(spacing: 12) {
             Text("Minutes per workout").font(.headline)
-            OnboardingStyle.helper("30–120 minutes, in steps of 5")
+            OnboardingStyle.helper("20–120 minutes, in steps of 5")
             Picker("Minutes per workout", selection: $selection) {
-                ForEach(Array(stride(from: 30, through: 120, by: 5)), id: \.self) { value in
+                ForEach(Array(stride(from: 20, through: 120, by: 5)), id: \.self) { value in
                     Text("\(value) min").tag(value)
                 }
             }

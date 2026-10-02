@@ -40,7 +40,3 @@ struct AboutYouView: View {
         OnboardingNumberField("Weight", text: $weight, prompt: "62", unit: "kg", focusedField: focusedField, field: .weight)
     }
 }
-
-#Preview("About you") {
-    OnboardingView(goals: onboardingPreviewGoals, age: "29", height: "165", weight: "62")
-}

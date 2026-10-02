@@ -49,8 +49,3 @@ struct YourGoalView: View {
         }
     }
 }
-
-#Preview("Your goal") {
-    OnboardingView(goals: onboardingPreviewGoals, initialPage: .goal, selectedGoalID: "loseFat",
-                   onBuildPlan: { /* Preview only; plan creation is supplied by the caller. */ })
-}

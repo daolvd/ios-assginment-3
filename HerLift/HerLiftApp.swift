@@ -11,25 +11,16 @@ import SwiftData
 @main
 struct HerLiftApp: App {
     private let onboardingViewModel: OnboardingViewModel
-    private let exerciseRepository: JSONExerciseRepository
 
     init() {
         do {
-            exerciseRepository = try JSONExerciseRepository()
             let goals = try JSONGoalRepository()
             let profiles = try SwiftDataUserProfileRepository(modelContext: sharedModelContainer.mainContext)
-            let plans = try SwiftDataTrainingPlanRepository(modelContext: sharedModelContainer.mainContext)
-            let planner = FoundationModelPlanGenerator(catalogue: exerciseRepository.exercises)
             onboardingViewModel = OnboardingViewModel(
                 goals: goals.goals,
-                exercises: exerciseRepository.exercises,
-                saveProfile: SaveOnboardingProfileUseCase(repository: profiles),
-                createPlan: CreatePersonalisedPlanUseCase(generator: planner, catalogue: exerciseRepository.exercises,
-                                                         repository: plans),
-                acceptPlan: AcceptTrainingPlanUseCase(repository: plans)
+                saveProfile: SaveOnboardingProfileUseCase(repository: profiles)
             )
             onboardingViewModel.load(using: LoadOnboardingProfileUseCase(repository: profiles))
-            onboardingViewModel.loadSavedPlan()
         } catch {
             fatalError("Could not prepare app repositories: \(error)")
         }
@@ -37,13 +28,7 @@ struct HerLiftApp: App {
 
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self,
-            UserProfile.self,
-            TrainingPlan.self,
-            WorkoutDay.self,
-            PlannedExercise.self,
-            WorkoutSession.self,
-            ExerciseSet.self,
+            UserProfile.self
         ])
         let modelConfiguration = ModelConfiguration(
             schema: schema, isStoredInMemoryOnly: false,
