@@ -34,12 +34,22 @@ final class GeneratePlanViewModel {
         }
     }
 
-    func accept() {
+    /// Shows the stored plan again if she left before accepting it. An accepted plan belongs to My Plan instead.
+    func restore() {
+        guard let stored = try? editPlan.currentPlan(), stored.status == .draft else { return }
+        state = .ready(stored)
+    }
+
+    /// Returns true when the plan is now active.
+    @discardableResult
+    func accept() -> Bool {
         do {
             state = .ready(try editPlan.acceptPlan())
             error = nil
+            return true
         } catch {
             self.error = error
+            return false
         }
     }
 
