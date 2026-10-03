@@ -74,8 +74,8 @@ nonisolated struct CoachSnapshot: Codable, Equatable, Sendable {
     let updatedAt: Date
 }
 
-/// What she did on the widget since the app last looked: the start, the rep counter, the sets she finished and
-/// the rest. It belongs to one day; a new day starts with an empty inbox.
+/// What she did on the widget since the app last looked: the start, the sets she finished and the rest. It
+/// belongs to one day; a new day starts with an empty inbox.
 nonisolated struct WidgetInbox: Codable, Equatable, Sendable {
     struct LoggedSet: Codable, Equatable, Sendable {
         let exerciseID: String
@@ -91,14 +91,13 @@ nonisolated struct WidgetInbox: Codable, Equatable, Sendable {
     var day: Date?
     /// When she tapped Start workout on the widget, until the app has started the workout.
     var startedAt: Date?
-    var reps = 0
     var sets: [LoggedSet] = []
     /// When the rest she started on the widget ends, or when she skipped a rest there. Until the app has read it,
     /// it overrides the app's rest.
     var restEndsAt: Date?
 }
 
-/// The widget's rules: which screen to show, the rep counter, Start, Complete set, Reset and Skip rest. Kept free
+/// The widget's rules: which screen to show, Start, Complete set and Skip rest. Kept free
 /// of WidgetKit so the app's tests can cover them.
 nonisolated enum WidgetCoaching {
     static let repetitionRange = 1...100
@@ -109,7 +108,7 @@ nonisolated enum WidgetCoaching {
         case noPlan
         /// The day's workout or the next one, the week strip, and Start workout when today's can be started.
         case schedule(today: CoachSnapshot.Workout?, next: CoachSnapshot.Workout?, canStart: Bool)
-        case log(CoachSnapshot.Step, weightKg: Double?, reps: Int)
+        case log(CoachSnapshot.Step, weightKg: Double?)
         case rest(until: Date, next: CoachSnapshot.Step)
         case allSetsDone(title: String, setCount: Int, startedAt: Date?)
         case done(title: String, summary: CoachSnapshot.Summary?, next: CoachSnapshot.Workout?)
@@ -145,7 +144,7 @@ nonisolated enum WidgetCoaching {
                     startedAt: snapshot.startedAt ?? inbox.startedAt)
             }
             if let restEndsAt = restEnd(snapshot, inbox), restEndsAt > now { return .rest(until: restEndsAt, next: step) }
-            return .log(step, weightKg: weight(for: step, inbox), reps: inbox.reps)
+            return .log(step, weightKg: weight(for: step, inbox))
         }
     }
 
@@ -178,9 +177,9 @@ nonisolated enum WidgetCoaching {
         return inbox.sets.last { $0.exerciseID == step.exerciseID }?.weightKg ?? step.weightKg
     }
 
-    /// The set needs a known weight and at least one counted rep.
+    /// The set needs a known weight; the widget has no way to ask for one.
     static func canComplete(_ step: CoachSnapshot.Step, _ inbox: WidgetInbox) -> Bool {
-        weight(for: step, inbox) != nil && repetitionRange.contains(inbox.reps)
+        weight(for: step, inbox) != nil
     }
 
     // MARK: The buttons
@@ -190,23 +189,11 @@ nonisolated enum WidgetCoaching {
         var updated = current(inbox, for: snapshot)
         guard snapshot.phase == .ready, updated.startedAt == nil, !snapshot.steps.isEmpty else { return updated }
         updated.startedAt = now
-        updated.reps = 0
         return updated
     }
 
-    static func addRep(_ snapshot: CoachSnapshot, _ inbox: WidgetInbox) -> WidgetInbox {
-        var updated = current(inbox, for: snapshot)
-        updated.reps = min(updated.reps + 1, repetitionRange.upperBound)
-        return updated
-    }
-
-    static func reset(_ snapshot: CoachSnapshot, _ inbox: WidgetInbox) -> WidgetInbox {
-        var updated = current(inbox, for: snapshot)
-        updated.reps = 0
-        return updated
-    }
-
-    /// Logs the counted reps as the current set and starts the rest; there is no rest after the last set.
+    /// Logs the current set as done with the reps she was asked for, the top of its rep range, the same as the app
+    /// starts from, and starts the rest; there is no rest after the last set. Reps are not counted on the widget.
     static func complete(_ snapshot: CoachSnapshot, _ inbox: WidgetInbox, now: Date) -> WidgetInbox {
         let inbox = current(inbox, for: snapshot)
         guard let step = currentStep(snapshot, inbox), canComplete(step, inbox),
@@ -214,8 +201,7 @@ nonisolated enum WidgetCoaching {
         var updated = inbox
         updated.sets.append(WidgetInbox.LoggedSet(
             exerciseID: step.exerciseID, setNumber: step.setNumber, weightKg: weight,
-            repetitions: inbox.reps, effort: effort, loggedAt: now))
-        updated.reps = 0
+            repetitions: step.maximumReps, effort: effort, loggedAt: now))
         let hasNext = snapshot.steps.indices.contains(updated.sets.count)
         updated.restEndsAt = hasNext ? now.addingTimeInterval(Double(step.restSeconds)) : nil
         return updated

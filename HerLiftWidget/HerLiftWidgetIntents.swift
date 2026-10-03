@@ -15,28 +15,6 @@ struct StartWorkoutIntent: AppIntent {
     }
 }
 
-struct AddRepIntent: AppIntent {
-    static let title: LocalizedStringResource = "Add a rep"
-    static let isDiscoverable = false
-
-    func perform() async throws -> some IntentResult {
-        guard let snapshot = CoachFiles.readSnapshot() else { return .result() }
-        CoachFiles.updateInbox { WidgetCoaching.addRep(snapshot, $0) }
-        return .result()
-    }
-}
-
-struct ResetRepsIntent: AppIntent {
-    static let title: LocalizedStringResource = "Reset reps"
-    static let isDiscoverable = false
-
-    func perform() async throws -> some IntentResult {
-        guard let snapshot = CoachFiles.readSnapshot() else { return .result() }
-        CoachFiles.updateInbox { WidgetCoaching.reset(snapshot, $0) }
-        return .result()
-    }
-}
-
 struct CompleteSetIntent: AppIntent {
     static let title: LocalizedStringResource = "Complete set"
     static let isDiscoverable = false
@@ -54,7 +32,7 @@ struct SkipRestIntent: AppIntent {
 
     func perform() async throws -> some IntentResult {
         guard let snapshot = CoachFiles.readSnapshot() else { return .result() }
-        CoachFiles.updateInbox { WidgetCoaching.skipRest(snapshot, $0) }
+        CoachFiles.updateInbox { WidgetCoaching.skipRest(snapshot, $0, now: Date()) }
         return .result()
     }
 }

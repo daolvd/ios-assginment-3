@@ -132,11 +132,11 @@ struct WeekStrip: View {
 
 // MARK: - Log a set
 
-/// The set she is on, the live rep counter, +1, reset and Complete set. Nothing here is typed.
+/// The set she is on, the reps to do and Complete set. The reps are what she is asked to do; nothing here is typed
+/// or counted.
 struct LogSetWidgetView: View {
     let step: CoachSnapshot.Step
     let weightKg: Double?
-    let reps: Int
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -151,25 +151,15 @@ struct LogSetWidgetView: View {
                 }
             }
             Spacer(minLength: 8)
-            HStack(spacing: 8) {
+            HStack(spacing: 12) {
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
-                    Text("\(reps)").font(.system(size: 34, weight: .bold)).monospacedDigit()
-                        .foregroundStyle(WidgetTheme.text).contentTransition(.numericText())
+                    Text("\(step.maximumReps)").font(.system(size: 34, weight: .bold)).monospacedDigit()
+                        .foregroundStyle(WidgetTheme.text)
                     Text("reps").font(.footnote.weight(.medium)).foregroundStyle(WidgetTheme.secondaryText)
                 }
                 .accessibilityElement(children: .combine)
+                .accessibilityLabel("\(step.maximumReps) reps to do")
                 Spacer(minLength: 0)
-                Button(intent: AddRepIntent()) {
-                    Text("+1").font(.headline).foregroundStyle(WidgetTheme.primary)
-                        .frame(width: 48, height: 48).background(WidgetTheme.primarySoft, in: Circle())
-                }
-                .buttonStyle(.plain).accessibilityLabel("Add a rep")
-                Button(intent: ResetRepsIntent()) {
-                    Image(systemName: "arrow.counterclockwise").font(.headline).foregroundStyle(WidgetTheme.text)
-                        .frame(width: 48, height: 48)
-                        .overlay { Circle().strokeBorder(WidgetTheme.border, lineWidth: 1.5) }
-                }
-                .buttonStyle(.plain).accessibilityLabel("Reset reps")
                 completeButton
             }
         }
@@ -183,14 +173,13 @@ struct LogSetWidgetView: View {
         } else {
             Button(intent: CompleteSetIntent()) { pill("Complete set") }
                 .buttonStyle(.plain)
-                .opacity(reps > 0 ? 1 : 0.4)
         }
     }
 
     private func pill(_ title: String) -> some View {
         Text(title).font(.subheadline.weight(.semibold)).foregroundStyle(WidgetTheme.onPrimary)
             .lineLimit(1).minimumScaleFactor(0.8)
-            .padding(.horizontal, 14).frame(height: 48)
+            .padding(.horizontal, 20).frame(height: 48)
             .background(WidgetTheme.primary, in: Capsule())
     }
 
@@ -205,12 +194,12 @@ struct LogSetWidgetView: View {
 }
 
 #Preview("Log a set") {
-    LogSetWidgetView(step: previewStep(kg: 20), weightKg: 20, reps: 8)
+    LogSetWidgetView(step: previewStep(kg: 20), weightKg: 20)
         .widgetPreviewFrame()
 }
 
 #Preview("Log a set · weight not known yet") {
-    LogSetWidgetView(step: previewStep(kg: nil), weightKg: nil, reps: 0)
+    LogSetWidgetView(step: previewStep(kg: nil), weightKg: nil)
         .widgetPreviewFrame()
 }
 

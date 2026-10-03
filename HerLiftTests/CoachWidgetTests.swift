@@ -156,8 +156,8 @@ struct WidgetCoachingTests {
             steps: steps, loggedSetCount: logged, startedAt: nil, restEndsAt: appRestEnds, summary: nil, updatedAt: now)
     }
 
-    private func inbox(reps: Int = 0, started: Bool = false) -> WidgetInbox {
-        WidgetInbox(day: Clock.saturdayStart, startedAt: started ? now : nil, reps: reps)
+    private func inbox(started: Bool = false) -> WidgetInbox {
+        WidgetInbox(day: Clock.saturdayStart, startedAt: started ? now : nil)
     }
 
     private func screen(_ snapshot: CoachSnapshot?, _ inbox: WidgetInbox, at time: Date? = nil) -> WidgetCoaching.Screen {
@@ -180,11 +180,10 @@ struct WidgetCoachingTests {
     @Test func startingOnTheWidgetGoesStraightToTheFirstSet() {
         let ready = snapshot(.ready, [step("a", set: 1), step("a", set: 2)])
 
-        let started = WidgetCoaching.start(ready, inbox(reps: 4), now: now)
+        let started = WidgetCoaching.start(ready, inbox(), now: now)
 
         #expect(started.startedAt == now)
-        #expect(started.reps == 0)
-        #expect(screen(ready, started) == .log(step("a", set: 1), weightKg: 20, reps: 0))
+        #expect(screen(ready, started) == .log(step("a", set: 1), weightKg: 20))
     }
 
     @Test func startDoesNothingOnceTheWorkoutIsUnderWay() {
@@ -193,46 +192,36 @@ struct WidgetCoachingTests {
         #expect(WidgetCoaching.start(logging, inbox(), now: now).startedAt == nil)
     }
 
-    @Test func repsCountUpStopAtOneHundredAndResetToZero() {
-        let logging = snapshot(.logging, [step("a", set: 1)])
-        var counted = inbox()
-        for _ in 1...3 { counted = WidgetCoaching.addRep(logging, counted) }
-        #expect(counted.reps == 3)
-        #expect(WidgetCoaching.reset(logging, counted).reps == 0)
-        #expect(WidgetCoaching.addRep(logging, inbox(reps: 100)).reps == 100)
-    }
-
-    @Test func completeSetNeedsAtLeastOneRep() {
-        let logging = snapshot(.logging, [step("a", set: 1)])
-
-        #expect(WidgetCoaching.complete(logging, inbox(), now: now).sets.isEmpty)
-    }
-
-    @Test func completeSetLogsTheCountedRepsAndRunsTheRest() {
+    @Test func completeSetLogsTheTopOfTheRepRangeBecauseRepsAreNotCounted() {
         let logging = snapshot(.logging, [step("a", set: 1), step("a", set: 2)])
 
-        let after = WidgetCoaching.complete(logging, inbox(reps: 11), now: now)
+        #expect(WidgetCoaching.complete(logging, inbox(), now: now).sets.first?.repetitions == 12)
+    }
+
+    @Test func completeSetLogsTheSetAndRunsTheRest() {
+        let logging = snapshot(.logging, [step("a", set: 1), step("a", set: 2)])
+
+        let after = WidgetCoaching.complete(logging, inbox(), now: now)
 
         #expect(after.sets == [WidgetInbox.LoggedSet(
-            exerciseID: "a", setNumber: 1, weightKg: 20, repetitions: 11, effort: "good", loggedAt: now)])
-        #expect(after.reps == 0)
+            exerciseID: "a", setNumber: 1, weightKg: 20, repetitions: 12, effort: "good", loggedAt: now)])
         #expect(after.restEndsAt == now.addingTimeInterval(90))
         #expect(screen(logging, after) == .rest(until: now.addingTimeInterval(90), next: step("a", set: 2)))
-        #expect(screen(logging, after, at: now.addingTimeInterval(91)) == .log(step("a", set: 2), weightKg: 20, reps: 0))
+        #expect(screen(logging, after, at: now.addingTimeInterval(91)) == .log(step("a", set: 2), weightKg: 20))
     }
 
     @Test func skipRestGoesBackToTheNextSet() {
         let logging = snapshot(.logging, [step("a", set: 1), step("a", set: 2)])
-        let resting = WidgetCoaching.complete(logging, inbox(reps: 10), now: now)
+        let resting = WidgetCoaching.complete(logging, inbox(), now: now)
 
-        #expect(screen(logging, WidgetCoaching.skipRest(logging, resting, now: now)) == .log(step("a", set: 2), weightKg: 20, reps: 0))
+        #expect(screen(logging, WidgetCoaching.skipRest(logging, resting, now: now)) == .log(step("a", set: 2), weightKg: 20))
     }
 
     @Test func aRestRunningInTheAppShowsOnTheWidget() {
         let logging = snapshot(.logging, [step("a", set: 2)], logged: 1, appRestEnds: now.addingTimeInterval(60))
 
         #expect(screen(logging, inbox()) == .rest(until: now.addingTimeInterval(60), next: step("a", set: 2)))
-        #expect(screen(logging, inbox(), at: now.addingTimeInterval(61)) == .log(step("a", set: 2), weightKg: 20, reps: 0))
+        #expect(screen(logging, inbox(), at: now.addingTimeInterval(61)) == .log(step("a", set: 2), weightKg: 20))
     }
 
     @Test func skippingOnTheWidgetEndsTheAppsRestThere() {
@@ -241,13 +230,13 @@ struct WidgetCoachingTests {
         let skipped = WidgetCoaching.skipRest(logging, inbox(), now: now)
 
         #expect(skipped.restEndsAt == now)
-        #expect(screen(logging, skipped) == .log(step("a", set: 2), weightKg: 20, reps: 0))
+        #expect(screen(logging, skipped) == .log(step("a", set: 2), weightKg: 20))
     }
 
     @Test func afterTheLastSetEverySetIsDoneWithNoRest() {
         let logging = snapshot(.logging, [step("a", set: 3)], logged: 2)
 
-        let after = WidgetCoaching.complete(logging, inbox(reps: 10), now: now)
+        let after = WidgetCoaching.complete(logging, inbox(), now: now)
 
         #expect(after.restEndsAt == nil)
         #expect(screen(logging, after) == .allSetsDone(title: "Chest · Core", setCount: 3, startedAt: nil))
@@ -256,14 +245,14 @@ struct WidgetCoachingTests {
     @Test func withoutAKnownWeightTheSetCannotBeLoggedOnTheWidget() {
         let logging = snapshot(.logging, [step("a", set: 1, kg: nil)])
 
-        #expect(screen(logging, inbox(reps: 10)) == .log(step("a", set: 1, kg: nil), weightKg: nil, reps: 10))
-        #expect(WidgetCoaching.complete(logging, inbox(reps: 10), now: now).sets.isEmpty)
+        #expect(screen(logging, inbox()) == .log(step("a", set: 1, kg: nil), weightKg: nil))
+        #expect(WidgetCoaching.complete(logging, inbox(), now: now).sets.isEmpty)
     }
 
     @Test func bodyweightSetsNeedNoWeight() {
         let logging = snapshot(.logging, [step("a", set: 1, kg: nil, bodyweight: true)])
 
-        #expect(WidgetCoaching.complete(logging, inbox(reps: 10), now: now).sets.first?.weightKg == 0)
+        #expect(WidgetCoaching.complete(logging, inbox(), now: now).sets.first?.weightKg == 0)
     }
 
     @Test func aWeightLoggedOnTheWidgetCarriesToTheNextSetOfTheSameExercise() {
@@ -272,17 +261,16 @@ struct WidgetCoachingTests {
             day: Clock.saturdayStart,
             sets: [WidgetInbox.LoggedSet(exerciseID: "a", setNumber: 1, weightKg: 17.5, repetitions: 10, effort: "good", loggedAt: now)])
 
-        #expect(screen(logging, earlier) == .log(step("a", set: 2, kg: nil), weightKg: 17.5, reps: 0))
+        #expect(screen(logging, earlier) == .log(step("a", set: 2, kg: nil), weightKg: 17.5))
     }
 
     @Test func anInboxFromAnotherDayIsIgnored() {
         let logging = snapshot(.logging, [step("a", set: 1), step("a", set: 2)])
         let yesterday = WidgetInbox(
-            day: Clock.day(-1), reps: 9,
+            day: Clock.day(-1),
             sets: [WidgetInbox.LoggedSet(exerciseID: "a", setNumber: 1, weightKg: 20, repetitions: 10, effort: "good", loggedAt: Clock.day(-1))])
 
-        #expect(screen(logging, yesterday) == .log(step("a", set: 1), weightKg: 20, reps: 0))
-        #expect(WidgetCoaching.addRep(logging, yesterday) == WidgetInbox(day: Clock.saturdayStart, reps: 1))
+        #expect(screen(logging, yesterday) == .log(step("a", set: 1), weightKg: 20))
     }
 
     @Test func aSnapshotFromAnotherDayOnlyShowsTheComingWorkout() {
@@ -450,7 +438,7 @@ struct WidgetIntoWorkoutTests {
     @Test func nothingDoneOnTheWidgetOpensNothing() throws {
         let spy = SyncSpy()
         let myPlan = try makeMyPlan(store: startedStore(), spy: spy)
-        spy.waiting = WidgetInbox(day: Clock.saturdayStart, reps: 4)
+        spy.waiting = WidgetInbox(day: Clock.saturdayStart)
 
         myPlan.load()
 

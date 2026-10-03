@@ -96,8 +96,8 @@ struct CoachWidgetView: View {
         case .schedule(let today, let next, let canStart):
             ScheduleWidgetView(
                 today: today, next: next, canStart: canStart, week: entry.snapshot?.week ?? [], now: entry.date)
-        case .log(let step, let weightKg, let reps):
-            LogSetWidgetView(step: step, weightKg: weightKg, reps: reps)
+        case .log(let step, let weightKg):
+            LogSetWidgetView(step: step, weightKg: weightKg)
         case .rest(let until, let next):
             RestWidgetView(until: until, next: next, now: entry.date)
         case .allSetsDone(let title, let setCount, let startedAt):
@@ -112,7 +112,7 @@ struct CoachWidgetView: View {
     HerLiftWidget()
 } timeline: {
     previewEntry(.ready)
-    previewEntry(.logging, inbox: WidgetInbox(day: Calendar.current.startOfDay(for: Date()), reps: 8))
+    previewEntry(.logging, inbox: WidgetInbox(day: Calendar.current.startOfDay(for: Date())))
     previewEntry(.allSetsDone)
     previewEntry(.done)
     CoachEntry(date: Date(), snapshot: nil, inbox: WidgetInbox())
