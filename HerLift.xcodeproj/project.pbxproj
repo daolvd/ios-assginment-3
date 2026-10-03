@@ -10,6 +10,9 @@
 		5E3B565730701B2300DDADDB /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5E3B565630701B2300DDADDB /* WidgetKit.framework */; };
 		5E3B565930701B2300DDADDB /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5E3B565830701B2300DDADDB /* SwiftUI.framework */; };
 		5E3B566430701B2500DDADDB /* HerLiftWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 5E3B565430701B2300DDADDB /* HerLiftWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		5E3B5A16307102AE00DDADDB /* UserNotifications.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5E3B59D53070FB5600DDADDB /* UserNotifications.framework */; };
+		5E3B5A17307102AE00DDADDB /* UserNotificationsUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5E3B59D73070FB5600DDADDB /* UserNotificationsUI.framework */; };
+		5E3B5A21307102AE00DDADDB /* HerLiftReminderContent.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 5E3B5A15307102AE00DDADDB /* HerLiftReminderContent.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -19,6 +22,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 5E3B565330701B2300DDADDB;
 			remoteInfo = HerLiftWidgetExtension;
+		};
+		5E3B5A1F307102AE00DDADDB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 5E9342F4306DDB6900CC9DC9 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 5E3B5A14307102AE00DDADDB;
+			remoteInfo = HerLiftReminderContent;
 		};
 		5E93430C306DDB6B00CC9DC9 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -37,6 +47,7 @@
 			dstSubfolderSpec = 13;
 			files = (
 				5E3B566430701B2500DDADDB /* HerLiftWidgetExtension.appex in Embed Foundation Extensions */,
+				5E3B5A21307102AE00DDADDB /* HerLiftReminderContent.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -48,6 +59,9 @@
 		5E3B565630701B2300DDADDB /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		5E3B565830701B2300DDADDB /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		5E3B566B30701C2500DDADDB /* HerLiftWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = HerLiftWidgetExtension.entitlements; sourceTree = "<group>"; };
+		5E3B59D53070FB5600DDADDB /* UserNotifications.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UserNotifications.framework; path = System/Library/Frameworks/UserNotifications.framework; sourceTree = SDKROOT; };
+		5E3B59D73070FB5600DDADDB /* UserNotificationsUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UserNotificationsUI.framework; path = System/Library/Frameworks/UserNotificationsUI.framework; sourceTree = SDKROOT; };
+		5E3B5A15307102AE00DDADDB /* HerLiftReminderContent.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = HerLiftReminderContent.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		5E9342FC306DDB6A00CC9DC9 /* HerLift.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HerLift.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5E93430B306DDB6B00CC9DC9 /* HerLiftTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HerLiftTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -89,6 +103,43 @@
 			);
 			target = 5E3B565330701B2300DDADDB /* HerLiftWidgetExtension */;
 		};
+		5E3B5A22307102AE00DDADDB /* Exceptions for "HerLiftReminderContent" folder in "HerLiftReminderContent" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 5E3B5A14307102AE00DDADDB /* HerLiftReminderContent */;
+		};
+		5E3B5A2A307102D400DDADDB /* Exceptions for "HerLift" folder in "HerLiftReminderContent" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"Resources/Thumbnails/biceps-curl.jpg",
+				"Resources/Thumbnails/cable-kneeling-crunch.jpg",
+				"Resources/Thumbnails/chest-supported-row.jpg",
+				"Resources/Thumbnails/dumbbell-lateral-raise.jpg",
+				"Resources/Thumbnails/glute-bridge.jpg",
+				"Resources/Thumbnails/glute-kickback.jpg",
+				"Resources/Thumbnails/goblet-squat.jpg",
+				"Resources/Thumbnails/hip-abduction.jpg",
+				"Resources/Thumbnails/lat-pulldown.jpg",
+				"Resources/Thumbnails/leg-extension.jpg",
+				"Resources/Thumbnails/leg-press.jpg",
+				"Resources/Thumbnails/machine-chest-press.jpg",
+				"Resources/Thumbnails/reverse-crunch.jpg",
+				"Resources/Thumbnails/romanian-deadlift.jpg",
+				"Resources/Thumbnails/rope-rear-delt-row.jpg",
+				"Resources/Thumbnails/seated-cable-row.jpg",
+				"Resources/Thumbnails/seated-dumbbell-shoulder-press.jpg",
+				"Resources/Thumbnails/seated-leg-curl.jpg",
+				"Resources/Thumbnails/standing-calf-raise.jpg",
+				"Resources/Thumbnails/triceps-pushdown.jpg",
+				Shared/CoachFiles.swift,
+				Shared/CoachSnapshot.swift,
+				Shared/ReminderContent.swift,
+				Shared/WorkoutLink.swift,
+			);
+			target = 5E3B5A14307102AE00DDADDB /* HerLiftReminderContent */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -100,10 +151,19 @@
 			path = HerLiftWidget;
 			sourceTree = "<group>";
 		};
+		5E3B5A18307102AE00DDADDB /* HerLiftReminderContent */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				5E3B5A22307102AE00DDADDB /* Exceptions for "HerLiftReminderContent" folder in "HerLiftReminderContent" target */,
+			);
+			path = HerLiftReminderContent;
+			sourceTree = "<group>";
+		};
 		5E9342FE306DDB6A00CC9DC9 /* HerLift */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				5E3B56D130709E6800DDADDB /* Exceptions for "HerLift" folder in "HerLiftWidgetExtension" target */,
+				5E3B5A2A307102D400DDADDB /* Exceptions for "HerLift" folder in "HerLiftReminderContent" target */,
 			);
 			path = HerLift;
 			sourceTree = "<group>";
@@ -122,6 +182,15 @@
 			files = (
 				5E3B565930701B2300DDADDB /* SwiftUI.framework in Frameworks */,
 				5E3B565730701B2300DDADDB /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5E3B5A12307102AE00DDADDB /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5E3B5A17307102AE00DDADDB /* UserNotificationsUI.framework in Frameworks */,
+				5E3B5A16307102AE00DDADDB /* UserNotifications.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -147,6 +216,8 @@
 			children = (
 				5E3B565630701B2300DDADDB /* WidgetKit.framework */,
 				5E3B565830701B2300DDADDB /* SwiftUI.framework */,
+				5E3B59D53070FB5600DDADDB /* UserNotifications.framework */,
+				5E3B59D73070FB5600DDADDB /* UserNotificationsUI.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -158,6 +229,7 @@
 				5E9342FE306DDB6A00CC9DC9 /* HerLift */,
 				5E93430E306DDB6B00CC9DC9 /* HerLiftTests */,
 				5E3B565A30701B2300DDADDB /* HerLiftWidget */,
+				5E3B5A18307102AE00DDADDB /* HerLiftReminderContent */,
 				5E3B565530701B2300DDADDB /* Frameworks */,
 				5E9342FD306DDB6A00CC9DC9 /* Products */,
 			);
@@ -169,6 +241,7 @@
 				5E9342FC306DDB6A00CC9DC9 /* HerLift.app */,
 				5E93430B306DDB6B00CC9DC9 /* HerLiftTests.xctest */,
 				5E3B565430701B2300DDADDB /* HerLiftWidgetExtension.appex */,
+				5E3B5A15307102AE00DDADDB /* HerLiftReminderContent.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -198,6 +271,28 @@
 			productReference = 5E3B565430701B2300DDADDB /* HerLiftWidgetExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		5E3B5A14307102AE00DDADDB /* HerLiftReminderContent */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5E3B5A23307102AE00DDADDB /* Build configuration list for PBXNativeTarget "HerLiftReminderContent" */;
+			buildPhases = (
+				5E3B5A11307102AE00DDADDB /* Sources */,
+				5E3B5A12307102AE00DDADDB /* Frameworks */,
+				5E3B5A13307102AE00DDADDB /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				5E3B5A18307102AE00DDADDB /* HerLiftReminderContent */,
+			);
+			name = HerLiftReminderContent;
+			packageProductDependencies = (
+			);
+			productName = HerLiftReminderContent;
+			productReference = 5E3B5A15307102AE00DDADDB /* HerLiftReminderContent.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		5E9342FB306DDB6900CC9DC9 /* HerLift */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 5E93431F306DDB6B00CC9DC9 /* Build configuration list for PBXNativeTarget "HerLift" */;
@@ -211,6 +306,7 @@
 			);
 			dependencies = (
 				5E3B566330701B2500DDADDB /* PBXTargetDependency */,
+				5E3B5A20307102AE00DDADDB /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				5E9342FE306DDB6A00CC9DC9 /* HerLift */,
@@ -258,6 +354,9 @@
 					5E3B565330701B2300DDADDB = {
 						CreatedOnToolsVersion = 26.5;
 					};
+					5E3B5A14307102AE00DDADDB = {
+						CreatedOnToolsVersion = 26.5;
+					};
 					5E9342FB306DDB6900CC9DC9 = {
 						CreatedOnToolsVersion = 26.5;
 					};
@@ -284,12 +383,20 @@
 				5E9342FB306DDB6900CC9DC9 /* HerLift */,
 				5E93430A306DDB6B00CC9DC9 /* HerLiftTests */,
 				5E3B565330701B2300DDADDB /* HerLiftWidgetExtension */,
+				5E3B5A14307102AE00DDADDB /* HerLiftReminderContent */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		5E3B565230701B2300DDADDB /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5E3B5A13307102AE00DDADDB /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -320,6 +427,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		5E3B5A11307102AE00DDADDB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		5E9342F8306DDB6900CC9DC9 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -341,6 +455,11 @@
 			isa = PBXTargetDependency;
 			target = 5E3B565330701B2300DDADDB /* HerLiftWidgetExtension */;
 			targetProxy = 5E3B566230701B2500DDADDB /* PBXContainerItemProxy */;
+		};
+		5E3B5A20307102AE00DDADDB /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 5E3B5A14307102AE00DDADDB /* HerLiftReminderContent */;
+			targetProxy = 5E3B5A1F307102AE00DDADDB /* PBXContainerItemProxy */;
 		};
 		5E93430D306DDB6B00CC9DC9 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -401,6 +520,64 @@
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.van.assignment3.HerLift.HerLiftWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		5E3B5A24307102AE00DDADDB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = HerLiftReminderContent/HerLiftReminderContent.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = DTG5F6L6XZ;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = HerLiftReminderContent/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = HerLiftReminderContent;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.van.assignment3.HerLift.HerLiftReminderContent;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		5E3B5A25307102AE00DDADDB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = HerLiftReminderContent/HerLiftReminderContent.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = DTG5F6L6XZ;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = HerLiftReminderContent/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = HerLiftReminderContent;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.van.assignment3.HerLift.HerLiftReminderContent;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -647,6 +824,15 @@
 			buildConfigurations = (
 				5E3B566730701B2500DDADDB /* Debug */,
 				5E3B566830701B2500DDADDB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		5E3B5A23307102AE00DDADDB /* Build configuration list for PBXNativeTarget "HerLiftReminderContent" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5E3B5A24307102AE00DDADDB /* Debug */,
+				5E3B5A25307102AE00DDADDB /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
