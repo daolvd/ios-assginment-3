@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import UserNotifications
 
 @main
 struct HerLiftApp: App {
@@ -14,6 +15,7 @@ struct HerLiftApp: App {
     private let exerciseGuideViewModel: ExerciseGuideViewModel
     private let generatePlanViewModel: GeneratePlanViewModel
     private let myPlanViewModel: MyPlanViewModel
+    private let reminderPresenter = ReminderPresenter()
     private let profileViewModel: ProfileViewModel
 
     init() {
@@ -34,7 +36,11 @@ struct HerLiftApp: App {
             )
             let workoutSessions = WorkoutSessionUseCase(
                 sessions: SwiftDataWorkoutSessionRepository(modelContext: sharedModelContainer.mainContext))
-            myPlanViewModel = MyPlanViewModel(editPlan: editPlan, workoutSessions: workoutSessions, goals: goals.goals)
+            UNUserNotificationCenter.current().delegate = reminderPresenter
+            let reminders = WorkoutReminderUseCase(
+                scheduler: UserNotificationsReminderScheduler(), time: UserDefaultsTrainingTime())
+            myPlanViewModel = MyPlanViewModel(
+                editPlan: editPlan, workoutSessions: workoutSessions, goals: goals.goals, reminders: reminders)
             generatePlanViewModel.restore()
             myPlanViewModel.load()
             onboardingViewModel = OnboardingViewModel(

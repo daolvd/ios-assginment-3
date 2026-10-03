@@ -12,16 +12,18 @@ final class MyPlanViewModel {
     let goals: [Goal]
     @ObservationIgnored private let editPlan: EditWorkoutPlanUseCase
     @ObservationIgnored private let workoutSessions: WorkoutSessionUseCase
+    @ObservationIgnored private let reminders: WorkoutReminderUseCase
     @ObservationIgnored let now: () -> Date
     /// One session view model per workout, so its state survives the screen being redrawn.
     @ObservationIgnored private var sessionViewModels: [Int: WorkoutSessionViewModel] = [:]
 
     init(
         editPlan: EditWorkoutPlanUseCase, workoutSessions: WorkoutSessionUseCase, goals: [Goal],
-        now: @escaping () -> Date = { Date() }
+        reminders: WorkoutReminderUseCase? = nil, now: @escaping () -> Date = { Date() }
     ) {
         self.editPlan = editPlan
         self.workoutSessions = workoutSessions
+        self.reminders = reminders ?? .disabled()
         self.goals = goals
         self.now = now
     }
@@ -36,6 +38,7 @@ final class MyPlanViewModel {
         } catch {
             self.error = error
         }
+        reminders.refresh(plan: plan, completedDays: completedDays, now: now())
     }
 
     var week: PlanWeek? {
