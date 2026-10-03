@@ -50,3 +50,9 @@ struct ExerciseGuideView: View {
         "\(exercise.equipment.capitalized) · \(exercise.position.capitalized) · \(exercise.minimumReps)–\(exercise.maximumReps) reps"
     }
 }
+
+#Preview("Exercise guide") {
+    NavigationStack { ExerciseGuideView() }
+        .environment(ExerciseGuideViewModel(browse: BrowseExerciseGuideUseCase(repository: try! JSONExerciseRepository())))
+        .tint(HerLiftTheme.primary)
+}

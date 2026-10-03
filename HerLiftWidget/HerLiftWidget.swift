@@ -77,3 +77,36 @@ struct CoachWidgetView: View {
         }
     }
 }
+
+#Preview("Workout widget · every screen", as: .systemMedium) {
+    HerLiftWidget()
+} timeline: {
+    previewEntry(.ready)
+    previewEntry(.logging, inbox: WidgetInbox(day: Calendar.current.startOfDay(for: Date()), reps: 8))
+    previewEntry(.allSetsDone)
+    previewEntry(.done)
+    CoachEntry(date: Date(), snapshot: nil, inbox: WidgetInbox())
+}
+
+// MARK: - Preview data
+
+/// Today's Chest · Core workout at 6:00 PM in the given phase, with two sets of the chest press to go.
+private func previewEntry(_ phase: CoachSnapshot.Phase, inbox: WidgetInbox = WidgetInbox()) -> CoachEntry {
+    let calendar = Calendar.current
+    let today = calendar.startOfDay(for: Date())
+    let sixPM = calendar.date(byAdding: .minute, value: 18 * 60, to: today)!
+    let steps = (2...3).map {
+        CoachSnapshot.Step(
+            exerciseID: "machine-chest-press", exerciseName: "Machine Chest Press", exerciseNumber: 1,
+            exerciseCount: 2, setNumber: $0, setCount: 3, weightKg: 20, isBodyweight: false, minimumReps: 10,
+            maximumReps: 12, restSeconds: 90)
+    }
+    let snapshot = CoachSnapshot(
+        phase: phase, day: today,
+        today: CoachSnapshot.Workout(title: "Chest · Core", minutes: 40, startsAt: sixPM),
+        next: CoachSnapshot.Workout(title: "Legs", minutes: 45, startsAt: sixPM.addingTimeInterval(4 * 24 * 3600)),
+        week: [], steps: phase == .ready || phase == .logging ? steps : [], loggedSetCount: phase == .ready ? 0 : 5,
+        startedAt: phase == .ready ? nil : Date().addingTimeInterval(-32 * 60),
+        summary: phase == .done ? CoachSnapshot.Summary(setCount: 5, minutes: 43) : nil, updatedAt: Date())
+    return CoachEntry(date: Date(), snapshot: snapshot, inbox: inbox)
+}

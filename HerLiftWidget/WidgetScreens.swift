@@ -74,6 +74,21 @@ struct ScheduleWidgetView: View {
     }
 }
 
+#Preview("Schedule · today, with Start") {
+    ScheduleWidgetView(
+        today: CoachSnapshot.Workout(title: "Chest · Core", minutes: 40, startsAt: previewTime(days: 0)),
+        next: CoachSnapshot.Workout(title: "Legs", minutes: 45, startsAt: previewTime(days: 4)),
+        canStart: true, week: previewWeek(), now: Date())
+        .widgetPreviewFrame()
+}
+
+#Preview("Schedule · rest day") {
+    ScheduleWidgetView(
+        today: nil, next: CoachSnapshot.Workout(title: "Legs", minutes: 45, startsAt: previewTime(days: 2)),
+        canStart: false, week: previewWeek(), now: Date())
+        .widgetPreviewFrame()
+}
+
 /// Monday to Sunday: a black dot on days she trained, a pink dot on days still to train, today outlined.
 struct WeekStrip: View {
     let days: [CoachSnapshot.Day]
@@ -107,6 +122,12 @@ struct WeekStrip: View {
             if isToday { RoundedRectangle(cornerRadius: 10).strokeBorder(WidgetTheme.primary, lineWidth: 2) }
         }
     }
+}
+
+#Preview("Week strip") {
+    WeekStrip(days: previewWeek(), now: Date())
+        .padding()
+        .background(WidgetTheme.background)
 }
 
 // MARK: - Log a set
@@ -183,6 +204,16 @@ struct LogSetWidgetView: View {
     }
 }
 
+#Preview("Log a set") {
+    LogSetWidgetView(step: previewStep(kg: 20), weightKg: 20, reps: 8)
+        .widgetPreviewFrame()
+}
+
+#Preview("Log a set · weight not known yet") {
+    LogSetWidgetView(step: previewStep(kg: nil), weightKg: nil, reps: 0)
+        .widgetPreviewFrame()
+}
+
 // MARK: - Rest
 
 /// The rest counting down, the next set and Skip rest.
@@ -208,6 +239,11 @@ struct RestWidgetView: View {
         }
         .frame(maxWidth: .infinity)
     }
+}
+
+#Preview("Rest") {
+    RestWidgetView(until: Date().addingTimeInterval(45), next: previewStep(kg: 20, set: 3), now: Date())
+        .widgetPreviewFrame()
 }
 
 // MARK: - All sets done
@@ -247,6 +283,12 @@ struct AllSetsDoneWidgetView: View {
         guard let startedAt else { return sets }
         return "\(sets) · \(max(1, Int(now.timeIntervalSince(startedAt) / 60))) min"
     }
+}
+
+#Preview("All sets done") {
+    AllSetsDoneWidgetView(
+        title: "Chest · Core", setCount: 5, startedAt: Date().addingTimeInterval(-32 * 60), now: Date())
+        .widgetPreviewFrame()
 }
 
 // MARK: - Workout done
@@ -295,6 +337,13 @@ struct WorkoutDoneWidgetView: View {
     }
 }
 
+#Preview("Workout done") {
+    WorkoutDoneWidgetView(
+        title: "Chest · Core", summary: CoachSnapshot.Summary(setCount: 5, minutes: 43),
+        next: CoachSnapshot.Workout(title: "Legs", minutes: 45, startsAt: previewTime(days: 4)))
+        .widgetPreviewFrame()
+}
+
 // MARK: - No plan
 
 struct NoPlanWidgetView: View {
@@ -310,6 +359,11 @@ struct NoPlanWidgetView: View {
             Spacer(minLength: 0)
         }
     }
+}
+
+#Preview("No plan") {
+    NoPlanWidgetView()
+        .widgetPreviewFrame()
 }
 
 // MARK: - Exercise photo
@@ -336,4 +390,52 @@ struct ExerciseThumbnail: View {
         .clipShape(RoundedRectangle(cornerRadius: size * 0.2))
         .accessibilityHidden(true)
     }
+}
+
+#Preview("Exercise photo") {
+    HStack(spacing: 12) {
+        ExerciseThumbnail(exerciseID: "machine-chest-press", size: 56)
+        ExerciseThumbnail(exerciseID: "no-photo", size: 56)
+    }
+    .padding()
+    .background(WidgetTheme.background)
+}
+
+// MARK: - Preview data
+
+private extension View {
+    /// The medium widget's size, margins and background, for previewing a screen on its own.
+    func widgetPreviewFrame() -> some View {
+        padding(16)
+            .frame(width: 364, height: 170)
+            .background(WidgetTheme.background, in: RoundedRectangle(cornerRadius: 24))
+            .padding()
+    }
+}
+
+/// 6:00 PM, `days` from today.
+private func previewTime(days: Int) -> Date {
+    let day = Calendar.current.date(byAdding: .day, value: days, to: Calendar.current.startOfDay(for: Date()))!
+    return Calendar.current.date(byAdding: .minute, value: 18 * 60, to: day)!
+}
+
+/// This week, Monday to Sunday: trained on Monday, Wednesday and today.
+private func previewWeek() -> [CoachSnapshot.Day] {
+    let calendar = Calendar.current
+    let today = calendar.startOfDay(for: Date())
+    let todayIndex = (calendar.component(.weekday, from: today) + 5) % 7
+    let monday = calendar.date(byAdding: .day, value: -todayIndex, to: today)!
+    return (0..<7).map { offset in
+        let date = calendar.date(byAdding: .day, value: offset, to: monday)!
+        let isTraining = [0, 2, todayIndex].contains(offset)
+        return CoachSnapshot.Day(date: date, isTraining: isTraining, isDone: isTraining && date < today)
+    }
+}
+
+/// Set `set` of 3 of the machine chest press, the first of two exercises.
+private func previewStep(kg: Double?, set: Int = 2) -> CoachSnapshot.Step {
+    CoachSnapshot.Step(
+        exerciseID: "machine-chest-press", exerciseName: "Machine Chest Press", exerciseNumber: 1, exerciseCount: 2,
+        setNumber: set, setCount: 3, weightKg: kg, isBodyweight: false, minimumReps: 10, maximumReps: 12,
+        restSeconds: 90)
 }
