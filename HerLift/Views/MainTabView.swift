@@ -28,9 +28,8 @@ struct MainTabView: View {
         }
         .tint(HerLiftTheme.primary)
         .onOpenURL { url in
-            guard url == WorkoutLink.today else { return }
-            page = .myPlan
-            myPlanViewModel.openTodaysWorkout()
+            if url == WorkoutLink.today { myPlanViewModel.openTodaysWorkout() }
         }
+        .onChange(of: myPlanViewModel.openRequests) { page = .myPlan }
     }
 }

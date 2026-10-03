@@ -7,7 +7,7 @@ import Observation
 final class WorkoutSessionViewModel {
     /// The pause after a set, until the next one.
     struct RestState: Equatable {
-        let endsAt: Date
+        var endsAt: Date
         let next: WorkoutStep
         /// A weight for the next set, until she uses it or keeps hers.
         var suggestion: NextSetSuggestion?
@@ -179,23 +179,28 @@ final class WorkoutSessionViewModel {
 
     func endRest() {
         rest = nil
+        onChange()
     }
 
-    /// Adds the sets she finished on the widget, in order. A set that is not the one she is on is left out, so a
-    /// set already logged here is never logged twice. She comes back to the log, not to a rest the widget ran.
-    func applyWidgetSets(_ sets: [WidgetInbox.LoggedSet]) {
-        var applied = false
+    /// Brings in what she did on the widget: the sets she finished, in order, and its rest. A set that is not the
+    /// one she is on is left out, so a set already logged here is never logged twice. `restEndsAt` is when the
+    /// widget's rest ends, or when she skipped it there; nil when the widget has no rest to report.
+    func applyWidget(sets: [WidgetInbox.LoggedSet], restEndsAt: Date?) {
         for widgetSet in sets {
             guard let step, let current, current.id == widgetSet.exerciseID, step.setNumber == widgetSet.setNumber
             else { continue }
             weightText = Self.text(widgetSet.weightKg)
             repsText = String(widgetSet.repetitions)
             effort = PerceivedEffort(rawValue: widgetSet.effort) ?? .good
-            let before = log?.sets.count
             completeSet()
-            applied = applied || log?.sets.count != before
         }
-        if applied { rest = nil }
+        guard let restEndsAt else { return }
+        if restEndsAt > now(), rest != nil {
+            rest?.endsAt = restEndsAt
+        } else {
+            rest = nil
+        }
+        onChange()
     }
 
     /// Rests for as long as the exercise says. There is no rest after the last set, and a suggestion is only made

@@ -4,13 +4,13 @@ import Foundation
 nonisolated enum CoachSnapshotBuilder {
     static func make(
         plan: WorkoutPlan?, log: WorkoutLog?, completedDays: Set<Date>, now: Date, trainingMinute: Int,
-        calendar: Calendar = .current
+        restEndsAt: Date? = nil, calendar: Calendar = .current
     ) -> CoachSnapshot {
         let today = calendar.startOfDay(for: now)
         guard let plan, plan.status == .active else {
             return CoachSnapshot(
                 phase: .noPlan, day: today, today: nil, next: nil, week: [], steps: [], loggedSetCount: 0,
-                startedAt: nil, summary: nil, updatedAt: now)
+                startedAt: nil, restEndsAt: nil, summary: nil, updatedAt: now)
         }
 
         var completed = completedDays
@@ -44,7 +44,8 @@ nonisolated enum CoachSnapshotBuilder {
 
         return CoachSnapshot(
             phase: phase, day: today, today: todayItem, next: next, week: week, steps: steps,
-            loggedSetCount: log?.sets.count ?? 0, startedAt: log?.startedAt, summary: summary, updatedAt: now)
+            loggedSetCount: log?.sets.count ?? 0, startedAt: log?.startedAt,
+            restEndsAt: phase == .logging ? restEndsAt : nil, summary: summary, updatedAt: now)
     }
 
     /// Every set not yet logged, in order. A set starts from the weight of the exercise's last logged set,

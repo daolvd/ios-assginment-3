@@ -14,6 +14,8 @@ final class MyPlanViewModel {
     var openedWeekday: Int?
     /// The open workout day goes straight to its log, because the workout was already started.
     private(set) var opensLog = false
+    /// Counts the times today's workout was opened for her, so the screen holding My Plan can come to the front.
+    private(set) var openRequests = 0
     @ObservationIgnored private let editPlan: EditWorkoutPlanUseCase
     @ObservationIgnored private let workoutSessions: WorkoutSessionUseCase
     @ObservationIgnored private let reminders: WorkoutReminderUseCase
@@ -48,14 +50,20 @@ final class MyPlanViewModel {
         ingestWidget()
     }
 
-    /// Records what she did on the widget: a workout she started there and the sets she finished, in order. Only
-    /// today's counts. Then refreshes the widget.
+    /// Records what she did on the widget: a workout she started there, the sets she finished and its rest. Only
+    /// today's counts. When the workout was started or moved on there, it opens on the same step here. Then
+    /// refreshes the widget.
     func ingestWidget() {
         let inbox = widget.takeInbox()
         if let workout = todaysWorkout, let day = inbox.day, Calendar.current.isDate(day, inSameDayAs: now()) {
             let session = sessionViewModel(for: workout)
             if let startedAt = inbox.startedAt, session.log == nil { session.start(at: startedAt) }
-            if !inbox.sets.isEmpty { session.applyWidgetSets(inbox.sets) }
+            session.applyWidget(sets: inbox.sets, restEndsAt: inbox.restEndsAt)
+            if session.isInProgress, inbox.startedAt != nil || !inbox.sets.isEmpty {
+                opensLog = true
+                openedWeekday = workout.weekday
+                openRequests += 1
+            }
         }
         publishWidget()
     }
@@ -66,8 +74,10 @@ final class MyPlanViewModel {
 
     private func publishWidget() {
         let log = (try? workoutSessions.currentLog(on: now())) ?? nil
+        let rest = todaysWorkout.flatMap { sessionViewModels[$0.weekday]?.rest }
         widget.publish(
-            plan: plan, log: log, completedDays: completedDays, now: now(), trainingMinute: reminders.trainingMinute)
+            plan: plan, log: log, completedDays: completedDays, now: now(), trainingMinute: reminders.trainingMinute,
+            restEndsAt: rest?.endsAt)
     }
 
     /// Opens a day by tapping it.
@@ -83,6 +93,7 @@ final class MyPlanViewModel {
               let workout = day.workout else { return }
         opensLog = sessionViewModel(for: workout).isInProgress
         openedWeekday = day.weekday
+        openRequests += 1
     }
 
     var week: PlanWeek? {

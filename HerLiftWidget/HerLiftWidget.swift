@@ -22,7 +22,8 @@ struct CoachProvider: TimelineProvider {
         let now = Date()
         let midnight = Calendar.current.startOfDay(for: now.addingTimeInterval(24 * 60 * 60))
         var entries = [entry(at: now)]
-        if let restEndsAt = entries[0].inbox.restEndsAt, restEndsAt > now, restEndsAt < midnight {
+        if let snapshot = entries[0].snapshot, let restEndsAt = WidgetCoaching.restEnd(snapshot, entries[0].inbox),
+           restEndsAt > now, restEndsAt < midnight {
             entries.append(entry(at: restEndsAt))
         }
         entries.append(entry(at: midnight))
@@ -58,7 +59,8 @@ struct CoachProvider: TimelineProvider {
             phase: .ready, day: today,
             today: CoachSnapshot.Workout(title: "Chest · Core", minutes: 40, startsAt: at(0)),
             next: CoachSnapshot.Workout(title: "Legs", minutes: 45, startsAt: at(4)),
-            week: week, steps: [step], loggedSetCount: 0, startedAt: nil, summary: nil, updatedAt: now)
+            week: week, steps: [step], loggedSetCount: 0, startedAt: nil, restEndsAt: nil, summary: nil,
+            updatedAt: now)
         return CoachEntry(date: now, snapshot: snapshot, inbox: WidgetInbox(day: today))
     }
 }
@@ -134,7 +136,7 @@ private func previewEntry(_ phase: CoachSnapshot.Phase, inbox: WidgetInbox = Wid
         today: CoachSnapshot.Workout(title: "Chest · Core", minutes: 40, startsAt: sixPM),
         next: CoachSnapshot.Workout(title: "Legs", minutes: 45, startsAt: sixPM.addingTimeInterval(4 * 24 * 3600)),
         week: [], steps: phase == .ready || phase == .logging ? steps : [], loggedSetCount: phase == .ready ? 0 : 5,
-        startedAt: phase == .ready ? nil : Date().addingTimeInterval(-32 * 60),
+        startedAt: phase == .ready ? nil : Date().addingTimeInterval(-32 * 60), restEndsAt: nil,
         summary: phase == .done ? CoachSnapshot.Summary(setCount: 5, minutes: 43) : nil, updatedAt: Date())
     return CoachEntry(date: Date(), snapshot: snapshot, inbox: inbox)
 }

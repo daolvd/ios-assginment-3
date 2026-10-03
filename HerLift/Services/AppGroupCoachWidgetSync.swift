@@ -16,6 +16,7 @@ struct AppGroupCoachWidgetSync: CoachWidgetSyncing {
             var updated = inbox
             updated.startedAt = nil
             updated.sets = []
+            updated.restEndsAt = nil
             return updated
         }
         return taken

@@ -106,6 +106,18 @@ struct CoachSnapshotBuilderTests {
         #expect(snapshot.startedAt == Clock.day(0, hour: 18))
     }
 
+    @Test func theAppsRestIsSharedOnlyWhileTheWorkoutIsUnderWay() {
+        let restEnds = Clock.day(0, hour: 18, minute: 2)
+        let logging = CoachSnapshotBuilder.make(
+            plan: plan(), log: log([set("machine-chest-press", 1)]), completedDays: [], now: Clock.saturday,
+            trainingMinute: 18 * 60, restEndsAt: restEnds)
+        let ready = CoachSnapshotBuilder.make(
+            plan: plan(), log: nil, completedDays: [], now: Clock.saturday, trainingMinute: 18 * 60, restEndsAt: restEnds)
+
+        #expect(logging.restEndsAt == restEnds)
+        #expect(ready.restEndsAt == nil)
+    }
+
     @Test func aWorkoutWithEverySetLoggedWaitsToBeFinished() {
         let snapshot = make(plan(), log: log(allSets))
 
@@ -136,12 +148,12 @@ struct WidgetCoachingTests {
             weightKg: kg, isBodyweight: bodyweight, minimumReps: 10, maximumReps: 12, restSeconds: 90)
     }
 
-    private func snapshot(_ phase: CoachSnapshot.Phase, _ steps: [CoachSnapshot.Step] = [], logged: Int = 0)
-        -> CoachSnapshot
-    {
+    private func snapshot(
+        _ phase: CoachSnapshot.Phase, _ steps: [CoachSnapshot.Step] = [], logged: Int = 0, appRestEnds: Date? = nil
+    ) -> CoachSnapshot {
         CoachSnapshot(
             phase: phase, day: Clock.saturdayStart, today: phase == .restDay ? nil : today, next: next, week: [],
-            steps: steps, loggedSetCount: logged, startedAt: nil, summary: nil, updatedAt: now)
+            steps: steps, loggedSetCount: logged, startedAt: nil, restEndsAt: appRestEnds, summary: nil, updatedAt: now)
     }
 
     private func inbox(reps: Int = 0, started: Bool = false) -> WidgetInbox {
@@ -213,7 +225,23 @@ struct WidgetCoachingTests {
         let logging = snapshot(.logging, [step("a", set: 1), step("a", set: 2)])
         let resting = WidgetCoaching.complete(logging, inbox(reps: 10), now: now)
 
-        #expect(screen(logging, WidgetCoaching.skipRest(logging, resting)) == .log(step("a", set: 2), weightKg: 20, reps: 0))
+        #expect(screen(logging, WidgetCoaching.skipRest(logging, resting, now: now)) == .log(step("a", set: 2), weightKg: 20, reps: 0))
+    }
+
+    @Test func aRestRunningInTheAppShowsOnTheWidget() {
+        let logging = snapshot(.logging, [step("a", set: 2)], logged: 1, appRestEnds: now.addingTimeInterval(60))
+
+        #expect(screen(logging, inbox()) == .rest(until: now.addingTimeInterval(60), next: step("a", set: 2)))
+        #expect(screen(logging, inbox(), at: now.addingTimeInterval(61)) == .log(step("a", set: 2), weightKg: 20, reps: 0))
+    }
+
+    @Test func skippingOnTheWidgetEndsTheAppsRestThere() {
+        let logging = snapshot(.logging, [step("a", set: 2)], logged: 1, appRestEnds: now.addingTimeInterval(60))
+
+        let skipped = WidgetCoaching.skipRest(logging, inbox(), now: now)
+
+        #expect(skipped.restEndsAt == now)
+        #expect(screen(logging, skipped) == .log(step("a", set: 2), weightKg: 20, reps: 0))
     }
 
     @Test func afterTheLastSetEverySetIsDoneWithNoRest() {
@@ -381,13 +409,68 @@ struct WidgetIntoWorkoutTests {
         #expect(todaysLog(store) == nil)
     }
 
-    @Test func afterTheWidgetsSetsTheAppIsNotLeftInARest() throws {
+    @Test func aRestRunningOnTheWidgetCarriesOnInTheApp() throws {
         let spy = SyncSpy()
         let myPlan = try makeMyPlan(store: startedStore(), spy: spy)
-        spy.waiting = WidgetInbox(day: Clock.saturdayStart, sets: [widgetSet("machine-chest-press", 1, kg: 20, reps: 10)])
+        let restEnds = Clock.saturday.addingTimeInterval(40)
+        spy.waiting = WidgetInbox(
+            day: Clock.saturdayStart, sets: [widgetSet("machine-chest-press", 1, kg: 20, reps: 10)], restEndsAt: restEnds)
+
+        myPlan.load()
+
+        #expect(myPlan.sessionViewModel(for: workout()).rest?.endsAt == restEnds)
+        #expect(spy.published.last?.restEndsAt == restEnds)
+    }
+
+    @Test func aRestSkippedOnTheWidgetIsOverInTheApp() throws {
+        let spy = SyncSpy()
+        let myPlan = try makeMyPlan(store: startedStore(), spy: spy)
+        spy.waiting = WidgetInbox(
+            day: Clock.saturdayStart, sets: [widgetSet("machine-chest-press", 1, kg: 20, reps: 10)],
+            restEndsAt: Clock.saturday.addingTimeInterval(-1))
 
         myPlan.load()
 
         #expect(myPlan.sessionViewModel(for: workout()).rest == nil)
+        #expect(spy.published.last?.restEndsAt == nil)
+    }
+
+    @Test func aWorkoutStartedOnTheWidgetOpensOnItsLogInTheApp() throws {
+        let spy = SyncSpy()
+        let myPlan = try makeMyPlan(store: SessionStoreStub(), spy: spy)
+        spy.waiting = WidgetInbox(day: Clock.saturdayStart, startedAt: Clock.saturday)
+
+        myPlan.load()
+
+        #expect(myPlan.openedWeekday == 6)
+        #expect(myPlan.opensLog)
+        #expect(myPlan.openRequests == 1)
+    }
+
+    @Test func nothingDoneOnTheWidgetOpensNothing() throws {
+        let spy = SyncSpy()
+        let myPlan = try makeMyPlan(store: startedStore(), spy: spy)
+        spy.waiting = WidgetInbox(day: Clock.saturdayStart, reps: 4)
+
+        myPlan.load()
+
+        #expect(myPlan.openedWeekday == nil)
+        #expect(myPlan.openRequests == 0)
+    }
+
+    @Test func aSetLoggedInTheAppShowsItsRestOnTheWidgetUntilSheSkipsIt() throws {
+        let spy = SyncSpy()
+        let myPlan = try makeMyPlan(store: startedStore(), spy: spy)
+        myPlan.load()
+        let session = myPlan.sessionViewModel(for: workout())
+        session.weightText = "20"
+        session.repsText = "10"
+
+        session.completeSet()
+        #expect(spy.published.last?.restEndsAt == session.rest?.endsAt)
+        #expect(spy.published.last?.restEndsAt != nil)
+
+        session.endRest()
+        #expect(spy.published.last?.restEndsAt == nil)
     }
 }

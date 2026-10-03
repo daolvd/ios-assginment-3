@@ -67,6 +67,8 @@ nonisolated struct CoachSnapshot: Codable, Equatable, Sendable {
     /// Sets already logged in the app today.
     let loggedSetCount: Int
     let startedAt: Date?
+    /// When the rest the app is running ends; nil when she is not resting in the app.
+    let restEndsAt: Date?
     /// Only once the workout is done.
     let summary: Summary?
     let updatedAt: Date
@@ -91,6 +93,8 @@ nonisolated struct WidgetInbox: Codable, Equatable, Sendable {
     var startedAt: Date?
     var reps = 0
     var sets: [LoggedSet] = []
+    /// When the rest she started on the widget ends, or when she skipped a rest there. Until the app has read it,
+    /// it overrides the app's rest.
     var restEndsAt: Date?
 }
 
@@ -140,7 +144,7 @@ nonisolated enum WidgetCoaching {
                     title: snapshot.today?.title ?? "", setCount: snapshot.loggedSetCount + inbox.sets.count,
                     startedAt: snapshot.startedAt ?? inbox.startedAt)
             }
-            if let restEndsAt = inbox.restEndsAt, restEndsAt > now { return .rest(until: restEndsAt, next: step) }
+            if let restEndsAt = restEnd(snapshot, inbox), restEndsAt > now { return .rest(until: restEndsAt, next: step) }
             return .log(step, weightKg: weight(for: step, inbox), reps: inbox.reps)
         }
     }
@@ -149,6 +153,11 @@ nonisolated enum WidgetCoaching {
     static func current(_ inbox: WidgetInbox, for snapshot: CoachSnapshot) -> WidgetInbox {
         guard let day = inbox.day, day == snapshot.day else { return WidgetInbox(day: snapshot.day) }
         return inbox
+    }
+
+    /// The rest that applies: the one she ran or skipped on the widget, otherwise the one the app is running.
+    static func restEnd(_ snapshot: CoachSnapshot, _ inbox: WidgetInbox) -> Date? {
+        current(inbox, for: snapshot).restEndsAt ?? snapshot.restEndsAt
     }
 
     /// Whether the workout is under way on the widget: started in the app, or started on the widget.
@@ -212,9 +221,10 @@ nonisolated enum WidgetCoaching {
         return updated
     }
 
-    static func skipRest(_ snapshot: CoachSnapshot, _ inbox: WidgetInbox) -> WidgetInbox {
+    /// Ends the rest now, whether the widget or the app started it.
+    static func skipRest(_ snapshot: CoachSnapshot, _ inbox: WidgetInbox, now: Date) -> WidgetInbox {
         var updated = current(inbox, for: snapshot)
-        updated.restEndsAt = nil
+        updated.restEndsAt = now
         return updated
     }
 }

@@ -4,7 +4,8 @@ import Foundation
 @MainActor
 protocol CoachWidgetSyncing {
     func publish(_ snapshot: CoachSnapshot)
-    /// What she did on the widget: its Start and the sets she finished, which are removed from the shared inbox.
+    /// What she did on the widget: its Start, the sets she finished and its rest, which are removed from the
+    /// shared inbox.
     func takeInbox() -> WidgetInbox
 }
 
@@ -15,9 +16,14 @@ struct CoachWidgetUseCase {
 
     init(sync: any CoachWidgetSyncing) { self.sync = sync }
 
-    func publish(plan: WorkoutPlan?, log: WorkoutLog?, completedDays: Set<Date>, now: Date, trainingMinute: Int) {
+    /// `restEndsAt` is when the rest the app is running ends.
+    func publish(
+        plan: WorkoutPlan?, log: WorkoutLog?, completedDays: Set<Date>, now: Date, trainingMinute: Int,
+        restEndsAt: Date?
+    ) {
         sync.publish(CoachSnapshotBuilder.make(
-            plan: plan, log: log, completedDays: completedDays, now: now, trainingMinute: trainingMinute))
+            plan: plan, log: log, completedDays: completedDays, now: now, trainingMinute: trainingMinute,
+            restEndsAt: restEndsAt))
     }
 
     func takeInbox() -> WidgetInbox { sync.takeInbox() }
