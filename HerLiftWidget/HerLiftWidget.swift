@@ -71,21 +71,30 @@ struct HerLiftWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: CoachProvider()) { entry in
             CoachWidgetView(entry: entry)
-                .containerBackground(WidgetTheme.background, for: .widget)
         }
         .configurationDisplayName("Workout")
-        .description("See your week, start today's workout and log your sets from the Home Screen.")
-        .supportedFamilies([.systemMedium])
+        .description("See your week, start today's workout and log your sets from the Home Screen, or see where you are in the workout on the Lock Screen.")
+        .supportedFamilies([.systemMedium, .accessoryRectangular])
     }
 }
 
-/// Picks the screen for the entry. Tapping outside a button opens today's workout in the app.
+/// Picks the screen for the entry and the family it is drawn in. Tapping outside a button opens today's workout
+/// in the app.
 struct CoachWidgetView: View {
     let entry: CoachEntry
+    @Environment(\.widgetFamily) private var family
 
     var body: some View {
-        screen
-            .widgetURL(WorkoutLink.today)
+        Group {
+            if family == .accessoryRectangular {
+                LockScreenWidgetView(
+                    screen: WidgetCoaching.screen(entry.snapshot, entry.inbox, now: entry.date), now: entry.date)
+            } else {
+                screen
+            }
+        }
+        .widgetURL(WorkoutLink.today)
+        .containerBackground(family == .accessoryRectangular ? Color.clear : WidgetTheme.background, for: .widget)
     }
 
     @ViewBuilder
