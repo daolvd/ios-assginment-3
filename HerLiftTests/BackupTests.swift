@@ -122,3 +122,174 @@ struct BackupTests {
         #expect(try CloudKitBackupStore.records(for: CloudBackup(profile: profile, plan: nil, savedAt: Date())).count == 1)
     }
 }
+
+// MARK: - Backing up by itself
+
+@MainActor
+struct AutomaticBackupTests {
+    private final class CloudSpy: CloudBackupStoring {
+        var uploads: [CloudBackup] = []
+        var fails: BackupError?
+        func upload(_ backup: CloudBackup) async throws(BackupError) {
+            if let fails { throw fails }
+            uploads.append(backup)
+        }
+    }
+
+    private final class Profiles: OnboardingProfileRepository {
+        var profile: OnboardingProfile? = OnboardingProfile(
+            age: 29, heightCm: 165, weightKg: 80, experience: .beginner, trainingWeekdays: [1, 3],
+            sessionMinutes: 45, healthNote: nil, clearedByDoctor: false)
+        func loadOnboardingProfile() throws -> OnboardingProfile? { profile }
+        func saveOnboardingProfile(_ profile: OnboardingProfile) throws { self.profile = profile }
+    }
+
+    /// A backup view model that does not wait before backing up.
+    private func makeBackup(plans: PlanStoreStub, profiles: Profiles? = nil, cloud: CloudSpy) -> BackupViewModel {
+        BackupViewModel(
+            backup: BackupUseCase(profiles: profiles ?? Profiles(), plans: plans, cloud: cloud), wait: {})
+    }
+
+    private func plan(target: Double? = 20) -> WorkoutPlan {
+        let base = workout(target: target)
+        return WorkoutPlan(goalID: "buildMuscle", workouts: [base], status: .active)
+    }
+
+    @Test func aSavedPlanIsBackedUpWithoutAnyTap() async throws {
+        let cloud = CloudSpy()
+        let store = PlanStoreStub()
+        let backup = makeBackup(plans: store, cloud: cloud)
+        let plans = BackingUpWorkoutPlanRepository(store, planChanged: { backup.scheduleBackup() })
+
+        try plans.savePlan(plan())
+        await backup.waitUntilIdle()
+
+        #expect(cloud.uploads.count == 1)
+        #expect(cloud.uploads.first?.plan == plan())
+        #expect(backup.state != .idle)
+    }
+
+    @Test func newTargetWeightsFromFeedbackReachTheCloudToo() async throws {
+        let cloud = CloudSpy()
+        let store = PlanStoreStub(plan: plan(target: 20))
+        let backup = makeBackup(plans: store, cloud: cloud)
+        let plans = BackingUpWorkoutPlanRepository(store, planChanged: { backup.scheduleBackup() })
+        let editPlan = EditWorkoutPlanUseCase(plans: plans, exercises: try JSONExerciseRepository())
+
+        _ = try editPlan.setTargetWeights([TargetWeightChange(weekday: 6, exerciseID: "machine-chest-press", weightKg: 22.5)])
+        await backup.waitUntilIdle()
+
+        #expect(cloud.uploads.last?.plan?.workouts.first?.exercises.first?.targetWeightKg == 22.5)
+    }
+
+    @Test func aDeletedPlanIsBackedUpAsNoPlan() async throws {
+        let cloud = CloudSpy()
+        let store = PlanStoreStub(plan: plan())
+        let backup = makeBackup(plans: store, cloud: cloud)
+        let plans = BackingUpWorkoutPlanRepository(store, planChanged: { backup.scheduleBackup() })
+
+        try plans.deletePlan()
+        await backup.waitUntilIdle()
+
+        #expect(cloud.uploads.last?.plan == nil)
+    }
+
+    @Test func savedAnswersAreBackedUp() async throws {
+        let cloud = CloudSpy()
+        let profiles = Profiles()
+        let backup = makeBackup(plans: PlanStoreStub(), profiles: profiles, cloud: cloud)
+        let stored = BackingUpProfileRepository(profiles, profileChanged: { backup.scheduleBackup() })
+        let changed = OnboardingProfile(
+            age: 30, heightCm: 166, weightKg: 78, experience: .some, trainingWeekdays: [2, 4],
+            sessionMinutes: 60, healthNote: nil, clearedByDoctor: false)
+
+        try stored.saveOnboardingProfile(changed)
+        await backup.waitUntilIdle()
+
+        #expect(cloud.uploads.last?.profile == changed)
+    }
+
+    @Test func readingNeverTriggersABackup() async throws {
+        let cloud = CloudSpy()
+        let store = PlanStoreStub(plan: plan())
+        let backup = makeBackup(plans: store, cloud: cloud)
+        let plans = BackingUpWorkoutPlanRepository(store, planChanged: { backup.scheduleBackup() })
+
+        _ = try plans.loadPlan()
+        await backup.waitUntilIdle()
+
+        #expect(cloud.uploads.isEmpty)
+    }
+
+    @Test func aFailedSaveIsNotBackedUp() async throws {
+        let cloud = CloudSpy()
+        let store = PlanStoreStub()
+        store.failsOnSave = true
+        let backup = makeBackup(plans: store, cloud: cloud)
+        let plans = BackingUpWorkoutPlanRepository(store, planChanged: { backup.scheduleBackup() })
+
+        #expect(throws: Error.self) { try plans.savePlan(plan()) }
+        await backup.waitUntilIdle()
+
+        #expect(cloud.uploads.isEmpty)
+    }
+
+    @Test func aFailureShowsWhyAndTheNextTryCanSucceed() async throws {
+        let cloud = CloudSpy()
+        cloud.fails = .offline
+        let backup = makeBackup(plans: PlanStoreStub(plan: plan()), cloud: cloud)
+
+        backup.scheduleBackup()
+        await backup.waitUntilIdle()
+        #expect(backup.state == .failed(.offline))
+
+        cloud.fails = nil
+        backup.retryIfFailed()
+        await backup.waitUntilIdle()
+        guard case .done = backup.state else {
+            Issue.record("Expected a finished backup, got \(backup.state)")
+            return
+        }
+    }
+
+    @Test func retryDoesNothingWhenTheLastBackupWorked() async throws {
+        let cloud = CloudSpy()
+        let backup = makeBackup(plans: PlanStoreStub(plan: plan()), cloud: cloud)
+        await backup.backUpNow()
+
+        backup.retryIfFailed()
+        await backup.waitUntilIdle()
+
+        #expect(cloud.uploads.count == 1)
+    }
+
+    @Test func nothingToBackUpYetIsNotAnError() async throws {
+        let cloud = CloudSpy()
+        let profiles = Profiles()
+        profiles.profile = nil
+        let backup = makeBackup(plans: PlanStoreStub(), profiles: profiles, cloud: cloud)
+
+        backup.scheduleBackup()
+        await backup.waitUntilIdle()
+
+        #expect(backup.state == .idle)
+        #expect(cloud.uploads.isEmpty)
+    }
+
+    @Test func theProfileScreenShowsTheBackupState() async throws {
+        let cloud = CloudSpy()
+        cloud.fails = .iCloudUnavailable
+        let backup = makeBackup(plans: PlanStoreStub(plan: plan()), cloud: cloud)
+        let exercises = try JSONExerciseRepository()
+        let profiles = Profiles()
+        let viewModel = ProfileViewModel(
+            editor: OnboardingViewModel(goals: onboardingPreviewGoals),
+            loadProfile: LoadOnboardingProfileUseCase(repository: profiles),
+            editPlan: EditWorkoutPlanUseCase(plans: PlanStoreStub(), exercises: exercises), backup: backup)
+        #expect(viewModel.backupState == .idle)
+
+        await viewModel.backUpNow()
+
+        #expect(viewModel.backupState == .failed(.iCloudUnavailable))
+    }
+}

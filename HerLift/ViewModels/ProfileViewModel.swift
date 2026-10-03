@@ -12,6 +12,7 @@ final class ProfileViewModel {
     @ObservationIgnored private let loadProfile: LoadOnboardingProfileUseCase
     @ObservationIgnored private let editPlan: EditWorkoutPlanUseCase
     @ObservationIgnored private var reminders: WorkoutReminderUseCase
+    @ObservationIgnored private let backup: BackupViewModel?
     /// The answers as last saved; anything different is an unsaved change.
     private var baseline: OnboardingInput
     /// The time of day she trains. Her reminder comes 30 minutes before it. Changing it does not change the plan.
@@ -21,16 +22,23 @@ final class ProfileViewModel {
 
     init(
         editor: OnboardingViewModel, loadProfile: LoadOnboardingProfileUseCase, editPlan: EditWorkoutPlanUseCase,
-        reminders: WorkoutReminderUseCase? = nil
+        reminders: WorkoutReminderUseCase? = nil, backup: BackupViewModel? = nil
     ) {
         self.editor = editor
         self.loadProfile = loadProfile
         self.editPlan = editPlan
         let reminders = reminders ?? .disabled()
         self.reminders = reminders
+        self.backup = backup
         trainingTime = Self.date(atMinute: reminders.trainingMinute)
         baseline = editor.input
     }
+
+    /// Where the copy of her answers and plan in iCloud stands.
+    var backupState: BackupViewModel.State { backup?.state ?? .idle }
+
+    /// Backs up straight away instead of waiting for the next change.
+    func backUpNow() async { await backup?.backUpNow() }
 
     /// Sends a reminder in a few seconds, to show how it looks.
     func sendTestReminder() {
