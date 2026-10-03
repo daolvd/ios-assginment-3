@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import UserNotifications
 
 @main
 struct HerLiftApp: App {
@@ -14,7 +15,9 @@ struct HerLiftApp: App {
     private let exerciseGuideViewModel: ExerciseGuideViewModel
     private let generatePlanViewModel: GeneratePlanViewModel
     private let myPlanViewModel: MyPlanViewModel
+    private let reminderPresenter = ReminderPresenter()
     private let profileViewModel: ProfileViewModel
+    @Environment(\.scenePhase) private var scenePhase
 
     init() {
         do {
@@ -34,7 +37,12 @@ struct HerLiftApp: App {
             )
             let workoutSessions = WorkoutSessionUseCase(
                 sessions: SwiftDataWorkoutSessionRepository(modelContext: sharedModelContainer.mainContext))
-            myPlanViewModel = MyPlanViewModel(editPlan: editPlan, workoutSessions: workoutSessions, goals: goals.goals)
+            UNUserNotificationCenter.current().delegate = reminderPresenter
+            let reminders = WorkoutReminderUseCase(
+                scheduler: UserNotificationsReminderScheduler(), time: UserDefaultsTrainingTime())
+            myPlanViewModel = MyPlanViewModel(
+                editPlan: editPlan, workoutSessions: workoutSessions, goals: goals.goals, reminders: reminders,
+                widget: CoachWidgetUseCase(sync: AppGroupCoachWidgetSync()))
             generatePlanViewModel.restore()
             myPlanViewModel.load()
             onboardingViewModel = OnboardingViewModel(
@@ -43,7 +51,8 @@ struct HerLiftApp: App {
             )
             let loadProfile = LoadOnboardingProfileUseCase(repository: profiles)
             onboardingViewModel.load(using: loadProfile)
-            profileViewModel = ProfileViewModel(editor: onboardingViewModel, loadProfile: loadProfile, editPlan: editPlan)
+            profileViewModel = ProfileViewModel(
+                editor: onboardingViewModel, loadProfile: loadProfile, editPlan: editPlan, reminders: reminders)
             profileViewModel.refresh()
         } catch {
             fatalError("Could not prepare app repositories: \(error)")
@@ -78,6 +87,9 @@ struct HerLiftApp: App {
                 myPlanViewModel: myPlanViewModel, profileViewModel: profileViewModel)
                 .environment(exerciseGuideViewModel)
                 .tint(HerLiftTheme.primary)
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { myPlanViewModel.ingestWidget() }
         }
         .modelContainer(sharedModelContainer)
     }

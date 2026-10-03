@@ -6,7 +6,20 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		5E3B565730701B2300DDADDB /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5E3B565630701B2300DDADDB /* WidgetKit.framework */; };
+		5E3B565930701B2300DDADDB /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5E3B565830701B2300DDADDB /* SwiftUI.framework */; };
+		5E3B566430701B2500DDADDB /* HerLiftWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 5E3B565430701B2300DDADDB /* HerLiftWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
+		5E3B566230701B2500DDADDB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 5E9342F4306DDB6900CC9DC9 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 5E3B565330701B2300DDADDB;
+			remoteInfo = HerLiftWidgetExtension;
+		};
 		5E93430C306DDB6B00CC9DC9 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 5E9342F4306DDB6900CC9DC9 /* Project object */;
@@ -16,14 +29,82 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		5E3B566930701B2500DDADDB /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				5E3B566430701B2500DDADDB /* HerLiftWidgetExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		5E3B565430701B2300DDADDB /* HerLiftWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = HerLiftWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		5E3B565630701B2300DDADDB /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		5E3B565830701B2300DDADDB /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		5E3B566B30701C2500DDADDB /* HerLiftWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = HerLiftWidgetExtension.entitlements; sourceTree = "<group>"; };
 		5E9342FC306DDB6A00CC9DC9 /* HerLift.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HerLift.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5E93430B306DDB6B00CC9DC9 /* HerLiftTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HerLiftTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		5E3B566530701B2500DDADDB /* Exceptions for "HerLiftWidget" folder in "HerLiftWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 5E3B565330701B2300DDADDB /* HerLiftWidgetExtension */;
+		};
+		5E3B56D130709E6800DDADDB /* Exceptions for "HerLift" folder in "HerLiftWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"Resources/Thumbnails/biceps-curl.jpg",
+				"Resources/Thumbnails/cable-kneeling-crunch.jpg",
+				"Resources/Thumbnails/chest-supported-row.jpg",
+				"Resources/Thumbnails/dumbbell-lateral-raise.jpg",
+				"Resources/Thumbnails/glute-bridge.jpg",
+				"Resources/Thumbnails/glute-kickback.jpg",
+				"Resources/Thumbnails/goblet-squat.jpg",
+				"Resources/Thumbnails/hip-abduction.jpg",
+				"Resources/Thumbnails/lat-pulldown.jpg",
+				"Resources/Thumbnails/leg-extension.jpg",
+				"Resources/Thumbnails/leg-press.jpg",
+				"Resources/Thumbnails/machine-chest-press.jpg",
+				"Resources/Thumbnails/reverse-crunch.jpg",
+				"Resources/Thumbnails/romanian-deadlift.jpg",
+				"Resources/Thumbnails/rope-rear-delt-row.jpg",
+				"Resources/Thumbnails/seated-cable-row.jpg",
+				"Resources/Thumbnails/seated-dumbbell-shoulder-press.jpg",
+				"Resources/Thumbnails/seated-leg-curl.jpg",
+				"Resources/Thumbnails/standing-calf-raise.jpg",
+				"Resources/Thumbnails/triceps-pushdown.jpg",
+				Shared/CoachFiles.swift,
+				Shared/CoachSnapshot.swift,
+				Shared/WorkoutLink.swift,
+			);
+			target = 5E3B565330701B2300DDADDB /* HerLiftWidgetExtension */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		5E3B565A30701B2300DDADDB /* HerLiftWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				5E3B566530701B2500DDADDB /* Exceptions for "HerLiftWidget" folder in "HerLiftWidgetExtension" target */,
+			);
+			path = HerLiftWidget;
+			sourceTree = "<group>";
+		};
 		5E9342FE306DDB6A00CC9DC9 /* HerLift */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				5E3B56D130709E6800DDADDB /* Exceptions for "HerLift" folder in "HerLiftWidgetExtension" target */,
+			);
 			path = HerLift;
 			sourceTree = "<group>";
 		};
@@ -35,6 +116,15 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		5E3B565130701B2300DDADDB /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5E3B565930701B2300DDADDB /* SwiftUI.framework in Frameworks */,
+				5E3B565730701B2300DDADDB /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		5E9342F9306DDB6900CC9DC9 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -52,11 +142,23 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		5E3B565530701B2300DDADDB /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				5E3B565630701B2300DDADDB /* WidgetKit.framework */,
+				5E3B565830701B2300DDADDB /* SwiftUI.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		5E9342F3306DDB6900CC9DC9 = {
 			isa = PBXGroup;
 			children = (
+				5E3B566B30701C2500DDADDB /* HerLiftWidgetExtension.entitlements */,
 				5E9342FE306DDB6A00CC9DC9 /* HerLift */,
 				5E93430E306DDB6B00CC9DC9 /* HerLiftTests */,
+				5E3B565A30701B2300DDADDB /* HerLiftWidget */,
+				5E3B565530701B2300DDADDB /* Frameworks */,
 				5E9342FD306DDB6A00CC9DC9 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -66,6 +168,7 @@
 			children = (
 				5E9342FC306DDB6A00CC9DC9 /* HerLift.app */,
 				5E93430B306DDB6B00CC9DC9 /* HerLiftTests.xctest */,
+				5E3B565430701B2300DDADDB /* HerLiftWidgetExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -73,6 +176,28 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		5E3B565330701B2300DDADDB /* HerLiftWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5E3B566630701B2500DDADDB /* Build configuration list for PBXNativeTarget "HerLiftWidgetExtension" */;
+			buildPhases = (
+				5E3B565030701B2300DDADDB /* Sources */,
+				5E3B565130701B2300DDADDB /* Frameworks */,
+				5E3B565230701B2300DDADDB /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				5E3B565A30701B2300DDADDB /* HerLiftWidget */,
+			);
+			name = HerLiftWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = HerLiftWidgetExtension;
+			productReference = 5E3B565430701B2300DDADDB /* HerLiftWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		5E9342FB306DDB6900CC9DC9 /* HerLift */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 5E93431F306DDB6B00CC9DC9 /* Build configuration list for PBXNativeTarget "HerLift" */;
@@ -80,10 +205,12 @@
 				5E9342F8306DDB6900CC9DC9 /* Sources */,
 				5E9342F9306DDB6900CC9DC9 /* Frameworks */,
 				5E9342FA306DDB6900CC9DC9 /* Resources */,
+				5E3B566930701B2500DDADDB /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				5E3B566330701B2500DDADDB /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				5E9342FE306DDB6A00CC9DC9 /* HerLift */,
@@ -128,6 +255,9 @@
 				LastSwiftUpdateCheck = 2650;
 				LastUpgradeCheck = 2650;
 				TargetAttributes = {
+					5E3B565330701B2300DDADDB = {
+						CreatedOnToolsVersion = 26.5;
+					};
 					5E9342FB306DDB6900CC9DC9 = {
 						CreatedOnToolsVersion = 26.5;
 					};
@@ -153,11 +283,19 @@
 			targets = (
 				5E9342FB306DDB6900CC9DC9 /* HerLift */,
 				5E93430A306DDB6B00CC9DC9 /* HerLiftTests */,
+				5E3B565330701B2300DDADDB /* HerLiftWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		5E3B565230701B2300DDADDB /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		5E9342FA306DDB6900CC9DC9 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -175,6 +313,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		5E3B565030701B2300DDADDB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		5E9342F8306DDB6900CC9DC9 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -192,6 +337,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		5E3B566330701B2500DDADDB /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 5E3B565330701B2300DDADDB /* HerLiftWidgetExtension */;
+			targetProxy = 5E3B566230701B2500DDADDB /* PBXContainerItemProxy */;
+		};
 		5E93430D306DDB6B00CC9DC9 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 5E9342FB306DDB6900CC9DC9 /* HerLift */;
@@ -200,6 +350,68 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		5E3B566730701B2500DDADDB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = HerLiftWidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = DTG5F6L6XZ;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = HerLiftWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = HerLiftWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.van.assignment3.HerLift.HerLiftWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		5E3B566830701B2500DDADDB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = HerLiftWidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = DTG5F6L6XZ;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = HerLiftWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = HerLiftWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.van.assignment3.HerLift.HerLiftWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		5E93431D306DDB6B00CC9DC9 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -324,8 +536,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = HerLift/HerLift.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = DTG5F6L6XZ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -355,8 +569,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = HerLift/HerLift.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = DTG5F6L6XZ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -426,6 +642,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		5E3B566630701B2500DDADDB /* Build configuration list for PBXNativeTarget "HerLiftWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5E3B566730701B2500DDADDB /* Debug */,
+				5E3B566830701B2500DDADDB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		5E9342F7306DDB6900CC9DC9 /* Build configuration list for PBXProject "HerLift" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

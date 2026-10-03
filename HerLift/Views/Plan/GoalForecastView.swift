@@ -69,3 +69,35 @@ struct GoalForecastView: View {
         return days / 7 >= milestone.endWeek
     }
 }
+
+#Preview("Goal & forecast") {
+    NavigationStack { GoalForecastView(plan: previewPlan(), goalTitle: "Lose fat") }
+        .tint(HerLiftTheme.primary)
+}
+
+// MARK: - Preview data
+
+/// Today's workout: machine chest press with a target weight, then a bodyweight core exercise.
+@MainActor
+private func previewWorkout() -> PlannedWorkout {
+    let catalogue = try! JSONExerciseRepository().exercises
+    func planned(_ id: String, sets: Int, kg: Double? = nil) -> WorkoutExercise {
+        WorkoutExercise(exercise: catalogue.first { $0.id == id }!, sets: sets, targetWeightKg: kg)
+    }
+    return PlannedWorkout(
+        weekday: PlanWeek.mondayBasedWeekday(of: Date(), calendar: .current), categoryIDs: ["chest", "core"],
+        exercises: [planned("machine-chest-press", sets: 3, kg: 20), planned("reverse-crunch", sets: 2)])
+}
+
+/// An accepted fat-loss plan started a week ago: today's workout and legs on two other days.
+@MainActor
+private func previewPlan() -> WorkoutPlan {
+    let today = previewWorkout()
+    let legs = [(today.weekday + 1) % 7 + 1, (today.weekday + 3) % 7 + 1].map {
+        PlannedWorkout(weekday: $0, categoryIDs: ["legs"], exercises: today.exercises)
+    }
+    return WorkoutPlan(
+        goalID: "loseFat", workouts: (legs + [today]).sorted { $0.weekday < $1.weekday }, status: .active,
+        weightForecast: WeightLossForecast(currentKg: 68, targetKg: 62, earliestWeek: 12, latestWeek: 24),
+        startedOn: Calendar.current.date(byAdding: .day, value: -7, to: Date()))
+}

@@ -7,7 +7,7 @@ import Observation
 final class WorkoutSessionViewModel {
     /// The pause after a set, until the next one.
     struct RestState: Equatable {
-        let endsAt: Date
+        var endsAt: Date
         let next: WorkoutStep
         /// A weight for the next set, until she uses it or keeps hers.
         var suggestion: NextSetSuggestion?
@@ -34,6 +34,8 @@ final class WorkoutSessionViewModel {
     @ObservationIgnored private let useCase: WorkoutSessionUseCase
     @ObservationIgnored private let editPlan: EditWorkoutPlanUseCase
     @ObservationIgnored private let now: () -> Date
+    /// Runs after the workout's state changed, so the widget can follow.
+    @ObservationIgnored var onChange: () -> Void = {}
 
     init(
         workout: PlannedWorkout, useCase: WorkoutSessionUseCase, editPlan: EditWorkoutPlanUseCase,
@@ -56,6 +58,8 @@ final class WorkoutSessionViewModel {
     }
 
     var isFinished: Bool { log?.status == .completed }
+    /// The workout has been started and not finished.
+    var isInProgress: Bool { log?.status == .inProgress }
     var hasLoggedSets: Bool { !(log?.sets.isEmpty ?? true) }
 
     var buttonTitle: String {
@@ -63,12 +67,14 @@ final class WorkoutSessionViewModel {
         return hasLoggedSets ? "Resume workout" : "Start workout"
     }
 
-    /// Starts today's workout, or picks up the one in progress. Returns false when it could not be started.
+    /// Starts today's workout, or picks up the one in progress. `date` is when she started, if not now, such as
+    /// on the widget. Returns false when it could not be started.
     @discardableResult
-    func start() -> Bool {
+    func start(at date: Date? = nil) -> Bool {
         do {
-            log = try useCase.start(workout, on: now())
+            log = try useCase.start(workout, on: date ?? now())
             prepareInputs()
+            onChange()
             return true
         } catch {
             self.error = error
@@ -143,6 +149,7 @@ final class WorkoutSessionViewModel {
             error = nil
             prepareInputs()
             startRest(after: set, of: current.exercise, from: step)
+            onChange()
         } catch {
             self.error = error
         }
@@ -172,6 +179,28 @@ final class WorkoutSessionViewModel {
 
     func endRest() {
         rest = nil
+        onChange()
+    }
+
+    /// Brings in what she did on the widget: the sets she finished, in order, and its rest. A set that is not the
+    /// one she is on is left out, so a set already logged here is never logged twice. `restEndsAt` is when the
+    /// widget's rest ends, or when she skipped it there; nil when the widget has no rest to report.
+    func applyWidget(sets: [WidgetInbox.LoggedSet], restEndsAt: Date?) {
+        for widgetSet in sets {
+            guard let step, let current, current.id == widgetSet.exerciseID, step.setNumber == widgetSet.setNumber
+            else { continue }
+            weightText = Self.text(widgetSet.weightKg)
+            repsText = String(widgetSet.repetitions)
+            effort = PerceivedEffort(rawValue: widgetSet.effort) ?? .good
+            completeSet()
+        }
+        guard let restEndsAt else { return }
+        if restEndsAt > now(), rest != nil {
+            rest?.endsAt = restEndsAt
+        } else {
+            rest = nil
+        }
+        onChange()
     }
 
     /// Rests for as long as the exercise says. There is no rest after the last set, and a suggestion is only made
@@ -198,6 +227,7 @@ final class WorkoutSessionViewModel {
             let summary = WorkoutFeedback.summary(of: workout, log: finished)
             self.summary = summary
             saveStartingWeights(summary.startingWeights)
+            onChange()
             return true
         } catch {
             self.error = error

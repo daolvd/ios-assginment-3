@@ -38,3 +38,9 @@ struct HLGoalPicker: View {
         .background(HerLiftTheme.surface, in: RoundedRectangle(cornerRadius: 14))
     }
 }
+
+#Preview("Goal picker") {
+    @Previewable @State var selection: Goal.ID? = "loseFat"
+    HLGoalPicker(goals: (try? JSONGoalRepository().goals) ?? [], selection: $selection)
+        .padding(20).background(HerLiftTheme.background)
+}

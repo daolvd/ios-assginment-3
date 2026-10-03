@@ -93,6 +93,12 @@ struct OnboardingView: View {
     }
 }
 
+#Preview("Onboarding") {
+    OnboardingView(viewModel: OnboardingViewModel(goals: (try? JSONGoalRepository().goals) ?? []))
+        .environment(ExerciseGuideViewModel(browse: BrowseExerciseGuideUseCase(repository: try! JSONExerciseRepository())))
+        .tint(HerLiftTheme.primary)
+}
+
 enum OnboardingField: Hashable { case age, height, weight, health, targetWeight }
 
 struct OnboardingPageContent<Content: View>: View {
@@ -106,6 +112,12 @@ struct OnboardingPageContent<Content: View>: View {
         .scrollDismissesKeyboard(.interactively)
         .background(HerLiftTheme.background)
         .foregroundStyle(HerLiftTheme.text)
+    }
+}
+
+#Preview("Onboarding page") {
+    OnboardingPageContent {
+        Text("Page content").font(.title2.bold())
     }
 }
 
@@ -143,6 +155,13 @@ struct OnboardingNumberField: View {
         }
         .frame(maxWidth: .infinity)
     }
+}
+
+#Preview("Number field") {
+    @Previewable @State var text = "29"
+    @Previewable @FocusState var focus: OnboardingField?
+    OnboardingNumberField("Age", text: $text, prompt: "29", unit: "years", focusedField: $focus, field: .age)
+        .padding(20).background(HerLiftTheme.background)
 }
 
 enum OnboardingStyle {

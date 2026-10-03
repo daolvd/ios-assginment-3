@@ -152,3 +152,9 @@ struct ExerciseDetailView: View {
         }
     }
 }
+
+#Preview("Exercise detail") {
+    NavigationStack { ExerciseDetailView(exerciseID: "machine-chest-press") }
+        .environment(ExerciseGuideViewModel(browse: BrowseExerciseGuideUseCase(repository: try! JSONExerciseRepository())))
+        .tint(HerLiftTheme.primary)
+}

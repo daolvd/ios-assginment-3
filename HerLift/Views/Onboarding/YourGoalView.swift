@@ -49,3 +49,13 @@ struct YourGoalView: View {
         }
     }
 }
+
+#Preview("Your goal") {
+    @Previewable @State var goal: Goal.ID? = "loseFat"
+    @Previewable @State var target = "62"
+    @Previewable @FocusState var focus: OnboardingField?
+    YourGoalView(
+        goals: (try? JSONGoalRepository().goals) ?? [], selectedGoalID: $goal, targetWeight: $target,
+        focusedField: $focus)
+        .tint(HerLiftTheme.primary)
+}

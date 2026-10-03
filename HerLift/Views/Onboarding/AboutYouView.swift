@@ -40,3 +40,13 @@ struct AboutYouView: View {
         OnboardingNumberField("Weight", text: $weight, prompt: "62", unit: "kg", focusedField: focusedField, field: .weight)
     }
 }
+
+#Preview("About you") {
+    @Previewable @State var age = "29"
+    @Previewable @State var height = "165"
+    @Previewable @State var weight = "68"
+    @Previewable @State var experience = ExperienceLevel.beginner
+    @Previewable @FocusState var focus: OnboardingField?
+    AboutYouView(age: $age, height: $height, weight: $weight, experience: $experience, focusedField: $focus)
+        .tint(HerLiftTheme.primary)
+}
