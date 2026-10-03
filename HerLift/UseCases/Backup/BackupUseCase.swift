@@ -4,6 +4,8 @@ nonisolated enum BackupError: LocalizedError, Equatable {
     case nothingToBackUp
     case couldNotReadData
     case iCloudUnavailable
+    /// The app has no access to its iCloud container: the capability or the container is missing or wrong.
+    case iCloudNotSetUp
     case offline
     case iCloudFull
     case couldNotBackUp
@@ -12,7 +14,8 @@ nonisolated enum BackupError: LocalizedError, Equatable {
         switch self {
         case .nothingToBackUp: "There's nothing to back up yet."
         case .couldNotReadData: "We couldn't read your profile."
-        case .iCloudUnavailable: "iCloud isn't available on this phone."
+        case .iCloudUnavailable: "You're not signed in to iCloud on this phone."
+        case .iCloudNotSetUp: "HerLift can't use its iCloud container."
         case .offline: "You're offline."
         case .iCloudFull: "Your iCloud storage is full."
         case .couldNotBackUp: "We couldn't back up to iCloud."
@@ -24,6 +27,7 @@ nonisolated enum BackupError: LocalizedError, Equatable {
         case .nothingToBackUp: "Finish the setup questions first."
         case .couldNotReadData: "Close the app and open it again."
         case .iCloudUnavailable: "Open Settings, tap your name and sign in to iCloud, then try again."
+        case .iCloudNotSetUp: "Check the iCloud capability and its container in the app's settings."
         case .offline: "Connect to the internet and try again."
         case .iCloudFull: "Free some iCloud storage in Settings, then try again."
         case .couldNotBackUp: "Try again in a moment."

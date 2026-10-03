@@ -9,12 +9,13 @@ struct CloudKitBackupStore: CloudBackupStoring {
     static let planRecordName = "plan"
 
     func upload(_ backup: CloudBackup) async throws(BackupError) {
-        // Without the iCloud capability or an iCloud account the token is nil. Asking for the container before the
-        // capability exists would crash the app, so this check comes first.
-        guard FileManager.default.ubiquityIdentityToken != nil else { throw .iCloudUnavailable }
         let container = CKContainer.default()
         do {
-            guard try await container.accountStatus() == .available else { throw BackupError.iCloudUnavailable }
+            switch try await container.accountStatus() {
+            case .available: break
+            case .noAccount, .restricted: throw BackupError.iCloudUnavailable
+            default: throw BackupError.couldNotBackUp
+            }
             let records = try Self.records(for: backup)
             // Without a plan the old plan record goes; deleting one that is not there is not an error.
             let gone = backup.plan == nil ? [CKRecord.ID(recordName: Self.planRecordName)] : []
@@ -57,7 +58,8 @@ struct CloudKitBackupStore: CloudBackupStoring {
 
     private static func backupError(for error: CKError) -> BackupError {
         switch error.code {
-        case .notAuthenticated, .permissionFailure, .badContainer, .missingEntitlement: .iCloudUnavailable
+        case .notAuthenticated: .iCloudUnavailable
+        case .permissionFailure, .badContainer, .missingEntitlement: .iCloudNotSetUp
         case .networkUnavailable, .networkFailure: .offline
         case .quotaExceeded: .iCloudFull
         default: .couldNotBackUp
