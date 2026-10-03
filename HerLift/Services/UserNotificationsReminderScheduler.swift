@@ -77,24 +77,26 @@ struct UserDefaultsTrainingTime: TrainingTimeStoring {
 }
 
 /// Shows a reminder as a banner even while the app is open, so a test reminder is visible, and opens today's
-/// workout when she taps the reminder or its Start workout button.
+/// workout when she taps the reminder or its Start workout button. The delegate methods run on the main actor:
+/// the system finishes a tap on the main thread and stops the app if it is finished anywhere else.
+@MainActor
 final class ReminderPresenter: NSObject, UNUserNotificationCenterDelegate {
     /// Opens today's workout in the app.
     var onOpenWorkout: () -> Void = {}
 
-    nonisolated func userNotificationCenter(
+    func userNotificationCenter(
         _ center: UNUserNotificationCenter, willPresent notification: UNNotification
     ) async -> UNNotificationPresentationOptions {
         [.banner, .sound]
     }
 
-    nonisolated func userNotificationCenter(
+    func userNotificationCenter(
         _ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse
     ) async {
         let action = response.actionIdentifier
         guard response.notification.request.content.categoryIdentifier == ReminderContent.category,
               action == UNNotificationDefaultActionIdentifier || action == ReminderContent.startActionID
         else { return }
-        await MainActor.run { onOpenWorkout() }
+        onOpenWorkout()
     }
 }
