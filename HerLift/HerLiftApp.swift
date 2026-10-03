@@ -49,7 +49,8 @@ struct HerLiftApp: App {
             )
             let loadProfile = LoadOnboardingProfileUseCase(repository: profiles)
             onboardingViewModel.load(using: loadProfile)
-            profileViewModel = ProfileViewModel(editor: onboardingViewModel, loadProfile: loadProfile, editPlan: editPlan)
+            profileViewModel = ProfileViewModel(
+                editor: onboardingViewModel, loadProfile: loadProfile, editPlan: editPlan, reminders: reminders)
             profileViewModel.refresh()
         } catch {
             fatalError("Could not prepare app repositories: \(error)")

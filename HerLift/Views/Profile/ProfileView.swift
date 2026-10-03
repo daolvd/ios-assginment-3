@@ -3,7 +3,7 @@ import SwiftUI
 /// Her answers, each opening the page where it can be changed, and Rebuild my plan.
 /// The caller supplies the NavigationStack.
 struct ProfileView: View {
-    let viewModel: ProfileViewModel
+    @Bindable var viewModel: ProfileViewModel
     let generatePlan: GeneratePlanViewModel
     /// Runs after a new plan has been built and is waiting for her decision.
     let onRebuilt: () -> Void
@@ -19,7 +19,11 @@ struct ProfileView: View {
                     row("About you", viewModel.aboutSummary) { ProfileAboutYouPage(editor: viewModel.editor) }
                     row("Your training", viewModel.trainingSummary) { ProfileTrainingPage(editor: viewModel.editor) }
                     row("Goal", viewModel.goalSummary) { ProfileGoalPage(editor: viewModel.editor) }
+                    row("Training time", viewModel.reminderSummary) { ProfileTrainingTimePage(viewModel: viewModel) }
                 }
+
+                Button("Send test reminder", action: viewModel.sendTestReminder)
+                    .font(.subheadline).frame(minHeight: 44)
 
                 if viewModel.hasUnsavedChanges {
                     Text("Your plan only changes when you rebuild it.")
@@ -97,6 +101,26 @@ struct ProfileTrainingPage: View {
             .navigationTitle("Your training")
             .navigationBarTitleDisplayMode(.large)
             .toolbar { keyboardDone($focusedField) }
+    }
+}
+
+/// The time of day she trains; the reminder comes 30 minutes before.
+struct ProfileTrainingTimePage: View {
+    @Bindable var viewModel: ProfileViewModel
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            DatePicker("Training time", selection: $viewModel.trainingTime, displayedComponents: .hourAndMinute)
+                .datePickerStyle(.wheel)
+                .labelsHidden()
+            Text("We remind you 30 minutes before, on the days you train.")
+                .font(.footnote).foregroundStyle(HerLiftTheme.secondaryText)
+            Spacer()
+        }
+        .padding(.horizontal, 20)
+        .background(HerLiftTheme.background)
+        .navigationTitle("Training time")
+        .navigationBarTitleDisplayMode(.large)
     }
 }
 
