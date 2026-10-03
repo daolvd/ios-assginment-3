@@ -17,17 +17,19 @@ final class MyPlanViewModel {
     @ObservationIgnored private let editPlan: EditWorkoutPlanUseCase
     @ObservationIgnored private let workoutSessions: WorkoutSessionUseCase
     @ObservationIgnored private let reminders: WorkoutReminderUseCase
+    @ObservationIgnored private let widget: CoachWidgetUseCase
     @ObservationIgnored let now: () -> Date
     /// One session view model per workout, so its state survives the screen being redrawn.
     @ObservationIgnored private var sessionViewModels: [Int: WorkoutSessionViewModel] = [:]
 
     init(
         editPlan: EditWorkoutPlanUseCase, workoutSessions: WorkoutSessionUseCase, goals: [Goal],
-        reminders: WorkoutReminderUseCase? = nil, now: @escaping () -> Date = { Date() }
+        reminders: WorkoutReminderUseCase? = nil, widget: CoachWidgetUseCase? = nil, now: @escaping () -> Date = { Date() }
     ) {
         self.editPlan = editPlan
         self.workoutSessions = workoutSessions
         self.reminders = reminders ?? .disabled()
+        self.widget = widget ?? .disabled()
         self.goals = goals
         self.now = now
     }
@@ -43,6 +45,29 @@ final class MyPlanViewModel {
             self.error = error
         }
         reminders.refresh(plan: plan, completedDays: completedDays, now: now())
+        ingestWidget()
+    }
+
+    /// Records what she did on the widget: a workout she started there and the sets she finished, in order. Only
+    /// today's counts. Then refreshes the widget.
+    func ingestWidget() {
+        let inbox = widget.takeInbox()
+        if let workout = todaysWorkout, let day = inbox.day, Calendar.current.isDate(day, inSameDayAs: now()) {
+            let session = sessionViewModel(for: workout)
+            if let startedAt = inbox.startedAt, session.log == nil { session.start(at: startedAt) }
+            if !inbox.sets.isEmpty { session.applyWidgetSets(inbox.sets) }
+        }
+        publishWidget()
+    }
+
+    private var todaysWorkout: PlannedWorkout? {
+        week?.days.first { Calendar.current.isDate($0.date, inSameDayAs: now()) }?.workout
+    }
+
+    private func publishWidget() {
+        let log = (try? workoutSessions.currentLog(on: now())) ?? nil
+        widget.publish(
+            plan: plan, log: log, completedDays: completedDays, now: now(), trainingMinute: reminders.trainingMinute)
     }
 
     /// Opens a day by tapping it.
@@ -69,6 +94,7 @@ final class MyPlanViewModel {
         if let existing = sessionViewModels[workout.weekday] { return existing }
         let created = WorkoutSessionViewModel(workout: workout, useCase: workoutSessions, editPlan: editPlan, now: now)
         created.load()
+        created.onChange = { [weak self] in self?.publishWidget() }
         sessionViewModels[workout.weekday] = created
         return created
     }

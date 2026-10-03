@@ -34,6 +34,8 @@ final class WorkoutSessionViewModel {
     @ObservationIgnored private let useCase: WorkoutSessionUseCase
     @ObservationIgnored private let editPlan: EditWorkoutPlanUseCase
     @ObservationIgnored private let now: () -> Date
+    /// Runs after the workout's state changed, so the widget can follow.
+    @ObservationIgnored var onChange: () -> Void = {}
 
     init(
         workout: PlannedWorkout, useCase: WorkoutSessionUseCase, editPlan: EditWorkoutPlanUseCase,
@@ -65,12 +67,14 @@ final class WorkoutSessionViewModel {
         return hasLoggedSets ? "Resume workout" : "Start workout"
     }
 
-    /// Starts today's workout, or picks up the one in progress. Returns false when it could not be started.
+    /// Starts today's workout, or picks up the one in progress. `date` is when she started, if not now, such as
+    /// on the widget. Returns false when it could not be started.
     @discardableResult
-    func start() -> Bool {
+    func start(at date: Date? = nil) -> Bool {
         do {
-            log = try useCase.start(workout, on: now())
+            log = try useCase.start(workout, on: date ?? now())
             prepareInputs()
+            onChange()
             return true
         } catch {
             self.error = error
@@ -145,6 +149,7 @@ final class WorkoutSessionViewModel {
             error = nil
             prepareInputs()
             startRest(after: set, of: current.exercise, from: step)
+            onChange()
         } catch {
             self.error = error
         }
@@ -176,6 +181,23 @@ final class WorkoutSessionViewModel {
         rest = nil
     }
 
+    /// Adds the sets she finished on the widget, in order. A set that is not the one she is on is left out, so a
+    /// set already logged here is never logged twice. She comes back to the log, not to a rest the widget ran.
+    func applyWidgetSets(_ sets: [WidgetInbox.LoggedSet]) {
+        var applied = false
+        for widgetSet in sets {
+            guard let step, let current, current.id == widgetSet.exerciseID, step.setNumber == widgetSet.setNumber
+            else { continue }
+            weightText = Self.text(widgetSet.weightKg)
+            repsText = String(widgetSet.repetitions)
+            effort = PerceivedEffort(rawValue: widgetSet.effort) ?? .good
+            let before = log?.sets.count
+            completeSet()
+            applied = applied || log?.sets.count != before
+        }
+        if applied { rest = nil }
+    }
+
     /// Rests for as long as the exercise says. There is no rest after the last set, and a suggestion is only made
     /// when the next set is of the same exercise.
     private func startRest(after set: LoggedSet, of exercise: Exercise, from step: WorkoutStep) {
@@ -200,6 +222,7 @@ final class WorkoutSessionViewModel {
             let summary = WorkoutFeedback.summary(of: workout, log: finished)
             self.summary = summary
             saveStartingWeights(summary.startingWeights)
+            onChange()
             return true
         } catch {
             self.error = error

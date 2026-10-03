@@ -17,6 +17,7 @@ struct HerLiftApp: App {
     private let myPlanViewModel: MyPlanViewModel
     private let reminderPresenter = ReminderPresenter()
     private let profileViewModel: ProfileViewModel
+    @Environment(\.scenePhase) private var scenePhase
 
     init() {
         do {
@@ -40,7 +41,8 @@ struct HerLiftApp: App {
             let reminders = WorkoutReminderUseCase(
                 scheduler: UserNotificationsReminderScheduler(), time: UserDefaultsTrainingTime())
             myPlanViewModel = MyPlanViewModel(
-                editPlan: editPlan, workoutSessions: workoutSessions, goals: goals.goals, reminders: reminders)
+                editPlan: editPlan, workoutSessions: workoutSessions, goals: goals.goals, reminders: reminders,
+                widget: CoachWidgetUseCase(sync: AppGroupCoachWidgetSync()))
             generatePlanViewModel.restore()
             myPlanViewModel.load()
             onboardingViewModel = OnboardingViewModel(
@@ -85,6 +87,9 @@ struct HerLiftApp: App {
                 myPlanViewModel: myPlanViewModel, profileViewModel: profileViewModel)
                 .environment(exerciseGuideViewModel)
                 .tint(HerLiftTheme.primary)
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { myPlanViewModel.ingestWidget() }
         }
         .modelContainer(sharedModelContainer)
     }
