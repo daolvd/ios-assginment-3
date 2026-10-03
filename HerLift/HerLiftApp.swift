@@ -47,11 +47,14 @@ struct HerLiftApp: App {
             let workoutSessions = WorkoutSessionUseCase(
                 sessions: SwiftDataWorkoutSessionRepository(modelContext: sharedModelContainer.mainContext))
             UNUserNotificationCenter.current().delegate = reminderPresenter
+            UserNotificationsReminderScheduler.registerCategory()
             let reminders = WorkoutReminderUseCase(
                 scheduler: UserNotificationsReminderScheduler(), time: UserDefaultsTrainingTime())
             myPlanViewModel = MyPlanViewModel(
                 editPlan: editPlan, workoutSessions: workoutSessions, goals: goals.goals, reminders: reminders,
                 widget: CoachWidgetUseCase(sync: AppGroupCoachWidgetSync()))
+            let openWorkout = myPlanViewModel
+            reminderPresenter.onOpenWorkout = { openWorkout.openTodaysWorkout() }
             generatePlanViewModel.restore()
             myPlanViewModel.load()
             onboardingViewModel = OnboardingViewModel(

@@ -5,6 +5,8 @@ nonisolated struct WorkoutReminder: Equatable, Sendable {
     let fireDate: Date
     let title: String
     let body: String
+    /// What the reminder's own view shows; nil for a reminder with no workout behind it.
+    var content: ReminderContent? = nil
 }
 
 /// When and what to remind: 30 minutes before her training time on her next training day, unless that
@@ -49,12 +51,16 @@ nonisolated enum WorkoutReminderRule {
         return reminder(for: workout, at: fireDate)
     }
 
-    /// The title, how long it takes and the first three exercises.
+    /// The title, how long it takes and the first three exercises; the reminder's own view gets the muscle groups,
+    /// the start time and the minutes.
     private static func reminder(for workout: PlannedWorkout, at fireDate: Date) -> WorkoutReminder {
         let groups = workout.categoryIDs.map(\.capitalized).joined(separator: " · ")
         let exercises = workout.exercises.prefix(3).map(\.exercise.name).joined(separator: ", ")
+        let content = ReminderContent(
+            title: groups, minutes: workout.estimatedMinutes,
+            startsAt: fireDate.addingTimeInterval(Double(leadMinutes * 60)))
         return WorkoutReminder(
             fireDate: fireDate, title: "Workout in \(leadMinutes) minutes",
-            body: "\(groups) · about \(workout.estimatedMinutes) min\n\(exercises)")
+            body: "\(groups) · about \(workout.estimatedMinutes) min\n\(exercises)", content: content)
     }
 }

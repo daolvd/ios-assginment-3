@@ -7,8 +7,15 @@ import UserNotifications
 final class UserNotificationsReminderScheduler: WorkoutReminderScheduling {
     static let reminderID = "herlift.workout-reminder"
     static let testID = "herlift.workout-reminder.test"
-    /// The category the notification extension will recognise.
-    static let category = "HERLIFT_WORKOUT_REMINDER"
+    /// Registers the reminder's category, with Start workout as its button. The reminder's own view is shown for
+    /// this category.
+    static func registerCategory() {
+        let start = UNNotificationAction(
+            identifier: ReminderContent.startActionID, title: "Start workout", options: [.foreground])
+        let category = UNNotificationCategory(
+            identifier: ReminderContent.category, actions: [start], intentIdentifiers: [], options: [])
+        UNUserNotificationCenter.current().setNotificationCategories([category])
+    }
 
     private let center = UNUserNotificationCenter.current()
     private let calendar = Calendar.current
@@ -39,7 +46,8 @@ final class UserNotificationsReminderScheduler: WorkoutReminderScheduling {
         content.title = reminder.title
         content.body = reminder.body
         content.sound = .default
-        content.categoryIdentifier = Self.category
+        content.categoryIdentifier = ReminderContent.category
+        if let workout = reminder.content { content.userInfo = workout.userInfo() }
         return UNNotificationRequest(identifier: id, content: content, trigger: trigger)
     }
 
@@ -68,11 +76,25 @@ struct UserDefaultsTrainingTime: TrainingTimeStoring {
     }
 }
 
-/// Shows a reminder as a banner even while the app is open, so a test reminder is visible.
+/// Shows a reminder as a banner even while the app is open, so a test reminder is visible, and opens today's
+/// workout when she taps the reminder or its Start workout button.
 final class ReminderPresenter: NSObject, UNUserNotificationCenterDelegate {
+    /// Opens today's workout in the app.
+    var onOpenWorkout: () -> Void = {}
+
     nonisolated func userNotificationCenter(
         _ center: UNUserNotificationCenter, willPresent notification: UNNotification
     ) async -> UNNotificationPresentationOptions {
         [.banner, .sound]
+    }
+
+    nonisolated func userNotificationCenter(
+        _ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse
+    ) async {
+        let action = response.actionIdentifier
+        guard response.notification.request.content.categoryIdentifier == ReminderContent.category,
+              action == UNNotificationDefaultActionIdentifier || action == ReminderContent.startActionID
+        else { return }
+        await MainActor.run { onOpenWorkout() }
     }
 }

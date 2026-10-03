@@ -88,6 +88,36 @@ struct WorkoutReminderTests {
         #expect(!reminder.body.contains(try JSONExerciseRepository().exercises[3].name))
     }
 
+    @Test func theReminderCarriesWhatTheWorkoutIsAndWhenItStartsForItsOwnView() throws {
+        let reminder = try #require(next(plan(), now: time(9, 28, 8)))
+        let content = try #require(reminder.content)
+
+        #expect(content.title == "Legs")
+        #expect(content.startsAt == time(9, 28, 18))
+        #expect(content.minutes == plan().workouts[0].estimatedMinutes)
+        #expect(content.durationLine == "About \(content.minutes) min")
+    }
+
+    @Test func theWorkoutStartsAtHerTrainingTimeWhileTheNotificationComesHalfAnHourBefore() throws {
+        let reminder = try #require(next(plan(), now: time(9, 28, 5), trainingMinute: 6 * 60 + 45))
+
+        #expect(reminder.fireDate == time(9, 28, 6, 15))
+        #expect(reminder.content?.startsAt == time(9, 28, 6, 45))
+    }
+
+    @Test func theWorkoutSurvivesTheTripThroughTheNotification() throws {
+        let content = try #require(next(plan(), now: time(9, 28, 8))?.content)
+
+        #expect(ReminderContent(userInfo: content.userInfo()) == content)
+        #expect(ReminderContent(userInfo: [:]) == nil)
+        #expect(ReminderContent(userInfo: ["herlift.reminder": "not a workout"]) == nil)
+    }
+
+    @Test func theReminderIsSentForTheCategoryItsOwnViewIsRegisteredFor() {
+        #expect(ReminderContent.category == "HERLIFT_WORKOUT_REMINDER")
+        #expect(ReminderContent.startActionID == "herlift.reminder.start")
+    }
+
     @Test func aTestReminderFiresShortlyFromNow() {
         let reminder = WorkoutReminderRule.test(for: plan(), now: time(9, 28, 8))
 
