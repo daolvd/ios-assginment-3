@@ -31,7 +31,8 @@ struct HerLiftApp: App {
             let editPlan = EditWorkoutPlanUseCase(plans: plans, exercises: exercises)
             generatePlanViewModel = GeneratePlanViewModel(
                 createPlan: CreateWorkoutPlanUseCase(
-                    patterns: try JSONTrainingPatternRepository(), exercises: exercises, plans: plans),
+                    patterns: try JSONTrainingPatternRepository(), exercises: exercises, plans: plans,
+                    startingWeights: try JSONStartingWeightRepository()),
                 editPlan: editPlan,
                 goals: goals.goals
             )

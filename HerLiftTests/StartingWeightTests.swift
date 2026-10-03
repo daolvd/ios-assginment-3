@@ -94,3 +94,43 @@ struct StartingWeightTableTests {
         #expect(table.kg(for: exercise("leg-press"), user: unknown) == 30)
     }
 }
+
+// MARK: - A new plan starts with these weights
+
+@MainActor
+struct PlanStartingWeightTests {
+    @Test func aNewPlanGivesEveryWeightedExerciseItsStartingWeight() throws {
+        let exercises = try JSONExerciseRepository()
+        let startingWeights = try JSONStartingWeightRepository()
+        let useCase = CreateWorkoutPlanUseCase(
+            patterns: try JSONTrainingPatternRepository(), exercises: exercises, plans: PlanStoreStub(),
+            startingWeights: startingWeights)
+        let user = UserPlanningProfile(
+            level: .beginner, goalID: "buildMuscle", trainingDays: [1, 3, 5], sessionMinutes: 60, age: 29,
+            weightKg: 60, heightCm: 165)
+
+        let plan = try useCase.execute(for: user)
+
+        let planned = plan.workouts.flatMap(\.exercises)
+        #expect(!planned.isEmpty)
+        for item in planned {
+            if item.exercise.loadType == "bodyweight" {
+                #expect(item.targetWeightKg == nil)
+            } else {
+                #expect(item.targetWeightKg == startingWeights.table.kg(for: item.exercise, user: user))
+                #expect(item.targetWeightKg != nil)
+            }
+        }
+    }
+
+    @Test func withoutTheTableExercisesStartWithoutAWeight() throws {
+        let useCase = CreateWorkoutPlanUseCase(
+            patterns: try JSONTrainingPatternRepository(), exercises: try JSONExerciseRepository(),
+            plans: PlanStoreStub())
+        let user = UserPlanningProfile(level: .beginner, goalID: "buildMuscle", trainingDays: [1, 3, 5], sessionMinutes: 60)
+
+        let plan = try useCase.execute(for: user)
+
+        #expect(plan.workouts.flatMap(\.exercises).allSatisfy { $0.targetWeightKg == nil })
+    }
+}
