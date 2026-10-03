@@ -13,7 +13,8 @@ struct ProfileView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                Text("Stays on your phone.").font(.subheadline).foregroundStyle(HerLiftTheme.secondaryText)
+                Text("Your answers and plan are backed up to your own iCloud.")
+                    .font(.subheadline).foregroundStyle(HerLiftTheme.secondaryText)
 
                 HLGroup {
                     row("About you", viewModel.aboutSummary) { ProfileAboutYouPage(editor: viewModel.editor) }
@@ -21,6 +22,8 @@ struct ProfileView: View {
                     row("Goal", viewModel.goalSummary) { ProfileGoalPage(editor: viewModel.editor) }
                     row("Training time", viewModel.reminderSummary) { ProfileTrainingTimePage(viewModel: viewModel) }
                 }
+
+                backupSection
 
                 Button("Send test reminder", action: viewModel.sendTestReminder)
                     .font(.subheadline).frame(minHeight: 44)
@@ -59,6 +62,33 @@ struct ProfileView: View {
         } message: {
             Text([viewModel.editor.error?.errorDescription, viewModel.editor.error?.recoverySuggestion]
                 .compactMap { $0 }.joined(separator: "\n"))
+        }
+    }
+
+    /// The backup, which runs by itself after every change, and Back up now to do it straight away.
+    private var backupSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Button {
+                Task { await viewModel.backUpNow() }
+            } label: {
+                HStack(spacing: 8) {
+                    if viewModel.backupState == .backingUp { ProgressView() }
+                    Text("Back up now")
+                }
+                .font(.subheadline.weight(.medium)).frame(minHeight: 44)
+            }
+            .disabled(viewModel.backupState == .backingUp)
+
+            switch viewModel.backupState {
+            case .done(let date):
+                Text("Backed up to iCloud at \(date.formatted(date: .omitted, time: .shortened)).")
+                    .font(.footnote).foregroundStyle(HerLiftTheme.secondaryText)
+            case .failed(let error):
+                HLInlineError(error)
+            case .idle, .backingUp:
+                Text("Saved automatically whenever your answers or plan change.")
+                    .font(.footnote).foregroundStyle(HerLiftTheme.secondaryText)
+            }
         }
     }
 
