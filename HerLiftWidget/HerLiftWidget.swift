@@ -9,12 +9,11 @@ struct CoachEntry: TimelineEntry {
 }
 
 struct CoachProvider: TimelineProvider {
-    func placeholder(in context: Context) -> CoachEntry {
-        CoachEntry(date: Date(), snapshot: nil, inbox: WidgetInbox())
-    }
+    func placeholder(in context: Context) -> CoachEntry { galleryEntry() }
 
+    /// The widget gallery shows today's workout with Start workout; anywhere else it shows the real state.
     func getSnapshot(in context: Context, completion: @escaping (CoachEntry) -> Void) {
-        completion(entry(at: Date()))
+        completion(context.isPreview ? galleryEntry() : entry(at: Date()))
     }
 
     /// The widget changes when the app publishes and when she taps a button; on its own it only changes when a
@@ -32,6 +31,35 @@ struct CoachProvider: TimelineProvider {
 
     private func entry(at date: Date) -> CoachEntry {
         CoachEntry(date: date, snapshot: CoachFiles.readSnapshot(), inbox: CoachFiles.readInbox())
+    }
+
+    /// A sample day for the gallery and the placeholder: a Chest · Core workout at 6:00 PM that has not started,
+    /// the next workout on Legs, and this week with Monday, Wednesday and today as training days.
+    private func galleryEntry() -> CoachEntry {
+        let calendar = Calendar.current
+        let now = Date()
+        let today = calendar.startOfDay(for: now)
+        func at(_ days: Int) -> Date {
+            let day = calendar.date(byAdding: .day, value: days, to: today)!
+            return calendar.date(byAdding: .minute, value: 18 * 60, to: day)!
+        }
+        let todayIndex = (calendar.component(.weekday, from: today) + 5) % 7
+        let monday = calendar.date(byAdding: .day, value: -todayIndex, to: today)!
+        let week = (0..<7).map { offset -> CoachSnapshot.Day in
+            let date = calendar.date(byAdding: .day, value: offset, to: monday)!
+            let isTraining = [0, 2, todayIndex].contains(offset)
+            return CoachSnapshot.Day(date: date, isTraining: isTraining, isDone: isTraining && date < today)
+        }
+        let step = CoachSnapshot.Step(
+            exerciseID: "machine-chest-press", exerciseName: "Machine Chest Press", exerciseNumber: 1,
+            exerciseCount: 2, setNumber: 1, setCount: 3, weightKg: 20, isBodyweight: false, minimumReps: 10,
+            maximumReps: 12, restSeconds: 90)
+        let snapshot = CoachSnapshot(
+            phase: .ready, day: today,
+            today: CoachSnapshot.Workout(title: "Chest · Core", minutes: 40, startsAt: at(0)),
+            next: CoachSnapshot.Workout(title: "Legs", minutes: 45, startsAt: at(4)),
+            week: week, steps: [step], loggedSetCount: 0, startedAt: nil, summary: nil, updatedAt: now)
+        return CoachEntry(date: now, snapshot: snapshot, inbox: WidgetInbox(day: today))
     }
 }
 
