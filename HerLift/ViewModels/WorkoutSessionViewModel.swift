@@ -56,6 +56,8 @@ final class WorkoutSessionViewModel {
     }
 
     var isFinished: Bool { log?.status == .completed }
+    /// The workout has been started and not finished.
+    var isInProgress: Bool { log?.status == .inProgress }
     var hasLoggedSets: Bool { !(log?.sets.isEmpty ?? true) }
 
     var buttonTitle: String {

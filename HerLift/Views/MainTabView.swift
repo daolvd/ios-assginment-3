@@ -8,20 +8,29 @@ struct MainTabView: View {
     /// Runs after a rebuilt plan is waiting for her decision.
     let onRebuilt: () -> Void
 
+    private enum Page { case myPlan, guide, profile }
+
+    @State private var page = Page.myPlan
+
     var body: some View {
-        TabView {
-            Tab("My Plan", systemImage: "calendar") {
+        TabView(selection: $page) {
+            Tab("My Plan", systemImage: "calendar", value: Page.myPlan) {
                 NavigationStack { MyPlanView(viewModel: myPlanViewModel) }
             }
-            Tab("Guide", systemImage: "figure.strengthtraining.traditional") {
+            Tab("Guide", systemImage: "figure.strengthtraining.traditional", value: Page.guide) {
                 NavigationStack { ExerciseGuideView() }
             }
-            Tab("Profile", systemImage: "person.crop.circle") {
+            Tab("Profile", systemImage: "person.crop.circle", value: Page.profile) {
                 NavigationStack {
                     ProfileView(viewModel: profileViewModel, generatePlan: generatePlanViewModel, onRebuilt: onRebuilt)
                 }
             }
         }
         .tint(HerLiftTheme.primary)
+        .onOpenURL { url in
+            guard url == WorkoutLink.today else { return }
+            page = .myPlan
+            myPlanViewModel.openTodaysWorkout()
+        }
     }
 }

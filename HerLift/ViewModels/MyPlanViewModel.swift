@@ -10,6 +10,10 @@ final class MyPlanViewModel {
     private(set) var completedDays: Set<Date> = []
     var error: WorkoutPlanError?
     let goals: [Goal]
+    /// The workout day that is open, by weekday.
+    var openedWeekday: Int?
+    /// The open workout day goes straight to its log, because the workout was already started.
+    private(set) var opensLog = false
     @ObservationIgnored private let editPlan: EditWorkoutPlanUseCase
     @ObservationIgnored private let workoutSessions: WorkoutSessionUseCase
     @ObservationIgnored private let reminders: WorkoutReminderUseCase
@@ -39,6 +43,21 @@ final class MyPlanViewModel {
             self.error = error
         }
         reminders.refresh(plan: plan, completedDays: completedDays, now: now())
+    }
+
+    /// Opens a day by tapping it.
+    func open(weekday: Int) {
+        opensLog = false
+        openedWeekday = weekday
+    }
+
+    /// Opens today's workout, straight to its log when it was already started. Does nothing on a rest day.
+    func openTodaysWorkout() {
+        load()
+        guard let day = week?.days.first(where: { Calendar.current.isDate($0.date, inSameDayAs: now()) }),
+              let workout = day.workout else { return }
+        opensLog = sessionViewModel(for: workout).isInProgress
+        openedWeekday = day.weekday
     }
 
     var week: PlanWeek? {

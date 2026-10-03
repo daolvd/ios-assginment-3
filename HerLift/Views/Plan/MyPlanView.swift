@@ -3,9 +3,7 @@ import SwiftUI
 /// Home: the week's seven days, with today's workout ready to start and the goal at the bottom.
 /// The caller supplies the NavigationStack; the Guide is a tab of its own.
 struct MyPlanView: View {
-    let viewModel: MyPlanViewModel
-
-    @State private var openedWeekday: Int?
+    @Bindable var viewModel: MyPlanViewModel
 
     var body: some View {
         Group {
@@ -19,14 +17,15 @@ struct MyPlanView: View {
         .navigationTitle("My Plan")
         .navigationBarTitleDisplayMode(.large)
         .navigationDestination(isPresented: Binding(
-            get: { openedWeekday != nil }, set: { if !$0 { openedWeekday = nil } }
+            get: { viewModel.openedWeekday != nil }, set: { if !$0 { viewModel.openedWeekday = nil } }
         )) {
-            if let day = viewModel.week?.days.first(where: { $0.weekday == openedWeekday }), let workout = day.workout {
+            if let day = viewModel.week?.days.first(where: { $0.weekday == viewModel.openedWeekday }), let workout = day.workout {
                 WorkoutDayView(
                     workout: workout,
                     session: Calendar.current.isDateInToday(day.date) ? viewModel.sessionViewModel(for: workout) : nil,
+                    opensLog: viewModel.opensLog,
                     onFinished: {
-                        openedWeekday = nil
+                        viewModel.openedWeekday = nil
                         viewModel.load()
                     })
             }
@@ -56,10 +55,10 @@ struct MyPlanView: View {
             title: day.workout.map(PlanFormatting.categories) ?? "",
             meta: meta(for: day),
             state: rowState(day.state),
-            onStart: { openedWeekday = day.weekday }
+            onStart: { viewModel.open(weekday: day.weekday) }
         )
         .contentShape(Rectangle())
-        .onTapGesture { if day.workout != nil { openedWeekday = day.weekday } }
+        .onTapGesture { if day.workout != nil { viewModel.open(weekday: day.weekday) } }
     }
 
     private func meta(for day: PlanWeek.Day) -> String {

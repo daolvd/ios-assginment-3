@@ -200,3 +200,64 @@ struct MyPlanViewModelTests {
             goals: goals)
     }
 }
+
+// MARK: - Opening today's workout from a link
+
+@MainActor
+struct OpenTodaysWorkoutTests {
+    private let calendar = Calendar.current
+    /// Saturday 3 October 2026, 14:00 in the device's time zone.
+    private var saturday: Date { calendar.date(from: DateComponents(year: 2026, month: 10, day: 3, hour: 14))! }
+
+    private func makeMyPlan(weekdays: [PlannedWorkout]? = nil, store: SessionStoreStub? = nil) throws -> MyPlanViewModel {
+        let store = store ?? SessionStoreStub()
+        let plans = PlanStoreStub(plan: WorkoutPlan(
+            goalID: "buildMuscle", workouts: weekdays ?? [workout()], status: .active, startedOn: calendar.startOfDay(for: saturday)))
+        let now = saturday
+        return MyPlanViewModel(
+            editPlan: EditWorkoutPlanUseCase(plans: plans, exercises: try JSONExerciseRepository()),
+            workoutSessions: WorkoutSessionUseCase(sessions: store), goals: [], now: { now })
+    }
+
+    @Test func aWorkoutNotStartedYetOpensItsDay() throws {
+        let myPlan = try makeMyPlan()
+
+        myPlan.openTodaysWorkout()
+
+        #expect(myPlan.openedWeekday == 6)
+        #expect(!myPlan.opensLog)
+    }
+
+    @Test func aWorkoutInProgressOpensStraightToItsLog() throws {
+        let store = SessionStoreStub()
+        let day = calendar.startOfDay(for: saturday)
+        store.logs[day] = WorkoutLog(date: day, weekday: 6, status: .inProgress, sets: [])
+        let myPlan = try makeMyPlan(store: store)
+
+        myPlan.openTodaysWorkout()
+
+        #expect(myPlan.openedWeekday == 6)
+        #expect(myPlan.opensLog)
+    }
+
+    @Test func tappingADayAfterwardsDoesNotSkipItsLog() throws {
+        let store = SessionStoreStub()
+        let day = calendar.startOfDay(for: saturday)
+        store.logs[day] = WorkoutLog(date: day, weekday: 6, status: .inProgress, sets: [])
+        let myPlan = try makeMyPlan(store: store)
+        myPlan.openTodaysWorkout()
+
+        myPlan.open(weekday: 6)
+
+        #expect(!myPlan.opensLog)
+    }
+
+    @Test func aRestDayOpensNothing() throws {
+        let sunday = PlannedWorkout(weekday: 7, categoryIDs: workout().categoryIDs, exercises: workout().exercises)
+        let myPlan = try makeMyPlan(weekdays: [sunday])
+
+        myPlan.openTodaysWorkout()
+
+        #expect(myPlan.openedWeekday == nil)
+    }
+}

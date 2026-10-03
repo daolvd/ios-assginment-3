@@ -6,10 +6,13 @@ struct WorkoutDayView: View {
     let workout: PlannedWorkout
     /// Only today's workout can be started, so only today's has a session.
     var session: WorkoutSessionViewModel?
+    /// Goes straight to the log when the day opens, because the workout was already started.
+    var opensLog = false
     /// Runs once the workout has been finished.
     var onFinished: () -> Void = {}
 
     @State private var showsLogging = false
+    @State private var hasOpenedLog = false
 
     var body: some View {
         ScrollView {
@@ -52,6 +55,11 @@ struct WorkoutDayView: View {
                 .padding(.horizontal, 20).padding(.bottom, 12).padding(.top, 8)
                 .background(HerLiftTheme.background)
             }
+        }
+        .onAppear {
+            guard opensLog, !hasOpenedLog, session?.isInProgress == true else { return }
+            hasOpenedLog = true
+            showsLogging = true
         }
         .navigationDestination(isPresented: $showsLogging) {
             if let session { LogSetView(viewModel: session, onFinished: onFinished) }
