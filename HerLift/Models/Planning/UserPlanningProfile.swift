@@ -25,7 +25,9 @@ nonisolated struct UserPlanningProfile: Equatable, Sendable {
     /// She wrote something in the health box. The text itself never reaches the planner.
     var reportsHealthConcern = false
     var clearedByDoctor = false
-    /// Body measurements and the fat-loss target stay on the device; they only feed the forecast.
+    /// Body measurements, age and the fat-loss target stay on the device; they only feed the forecast and the
+    /// starting weights.
+    var age: Int?
     var weightKg: Double?
     var heightCm: Double?
     var targetWeightKg: Double?
@@ -43,6 +45,7 @@ nonisolated extension UserPlanningProfile {
             sessionMinutes: profile.sessionMinutes,
             reportsHealthConcern: !(profile.healthNote?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true),
             clearedByDoctor: profile.clearedByDoctor,
+            age: profile.age,
             weightKg: profile.weightKg,
             heightCm: profile.heightCm,
             targetWeightKg: targetWeightKg

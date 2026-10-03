@@ -106,6 +106,10 @@ final class WorkoutSessionViewModel {
 
     var cue: String? { current?.exercise.coachingCues.first }
 
+    /// The weight is only typed while none is known, such as in a plan made before starting weights existed.
+    /// Otherwise the set shows the weight to lift, and it changes only through the suggestion after a set.
+    var weightIsEditable: Bool { showsWeightField && targetKg == nil }
+
     /// Until a weight is known for the exercise, she is asked to find one: not too heavy, about fifteen reps.
     var weightHint: String? {
         guard current != nil, showsWeightField, targetKg == nil else { return nil }

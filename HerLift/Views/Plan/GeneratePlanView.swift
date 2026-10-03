@@ -141,7 +141,9 @@ private func previewGeneratePlan(ready: Bool) -> GeneratePlanViewModel {
     let exercises = try! JSONExerciseRepository()
     let store = PreviewPlanStore()
     let viewModel = GeneratePlanViewModel(
-        createPlan: CreateWorkoutPlanUseCase(patterns: try! JSONTrainingPatternRepository(), exercises: exercises, plans: store),
+        createPlan: CreateWorkoutPlanUseCase(
+            patterns: try! JSONTrainingPatternRepository(), exercises: exercises, plans: store,
+            startingWeights: try! JSONStartingWeightRepository()),
         editPlan: EditWorkoutPlanUseCase(plans: store, exercises: exercises), goals: previewGoals())
     if ready { viewModel.generate(profile: previewProfile, goalID: "loseFat", targetWeightKg: 62) }
     return viewModel

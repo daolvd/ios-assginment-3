@@ -1,20 +1,27 @@
 import SwiftUI
 
-/// A big number box with its label above and its unit at the end, for weights and reps.
+/// A big number box with its label above and its unit at the end, for weights and reps. When it is not editable
+/// it only shows the number.
 struct HLLargeNumberField: View {
     let title: String
     @Binding var text: String
     let unit: String
     var hasError = false
     var keyboard: UIKeyboardType = .decimalPad
+    var isEditable = true
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title).font(.footnote.weight(.medium)).foregroundStyle(HerLiftTheme.secondaryText)
             HStack(alignment: .firstTextBaseline, spacing: 6) {
-                TextField("", text: $text, prompt: Text("0").foregroundStyle(HerLiftTheme.secondaryText))
-                    .font(.largeTitle.bold().monospacedDigit()).foregroundStyle(HerLiftTheme.text)
-                    .keyboardType(keyboard)
+                if isEditable {
+                    TextField("", text: $text, prompt: Text("0").foregroundStyle(HerLiftTheme.secondaryText))
+                        .font(.largeTitle.bold().monospacedDigit()).foregroundStyle(HerLiftTheme.text)
+                        .keyboardType(keyboard)
+                } else {
+                    Text(text).font(.largeTitle.bold().monospacedDigit()).foregroundStyle(HerLiftTheme.text)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
                 Text(unit).font(.subheadline).foregroundStyle(HerLiftTheme.secondaryText)
             }
             .padding(.horizontal, 16).frame(minHeight: 72)
@@ -38,6 +45,16 @@ struct HLLargeNumberField: View {
     HStack(spacing: 12) {
         HLLargeNumberField(title: "Weight", text: $weight, unit: "kg")
         HLLargeNumberField(title: "Reps", text: $reps, unit: "reps", hasError: true)
+    }
+    .padding(20).background(HerLiftTheme.background)
+}
+
+#Preview("Large number field · display only") {
+    @Previewable @State var weight = "30"
+    @Previewable @State var reps = "12"
+    HStack(spacing: 12) {
+        HLLargeNumberField(title: "Weight", text: $weight, unit: "kg", isEditable: false)
+        HLLargeNumberField(title: "Reps", text: $reps, unit: "reps", isEditable: false)
     }
     .padding(20).background(HerLiftTheme.background)
 }

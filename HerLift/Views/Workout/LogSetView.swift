@@ -12,7 +12,7 @@ struct LogSetView: View {
     @State private var showsHowTo = false
     @FocusState private var focusedField: Field?
 
-    private enum Field { case weight, reps }
+    private enum Field { case weight }
 
     var body: some View {
         Group {
@@ -90,15 +90,12 @@ struct LogSetView: View {
                     if viewModel.showsWeightField {
                         HLLargeNumberField(
                             title: "Weight", text: $viewModel.weightText, unit: "kg",
-                            hasError: viewModel.weightMessage != nil)
+                            hasError: viewModel.weightMessage != nil, isEditable: viewModel.weightIsEditable)
                             .focused($focusedField, equals: .weight)
                     }
-                    HLLargeNumberField(
-                        title: "Reps", text: $viewModel.repsText, unit: "reps",
-                        hasError: viewModel.repsMessage != nil, keyboard: .numberPad)
-                        .focused($focusedField, equals: .reps)
+                    HLLargeNumberField(title: "Reps", text: $viewModel.repsText, unit: "reps", isEditable: false)
                 }
-                if let message = viewModel.repsMessage ?? viewModel.weightMessage { HLInlineError(message) }
+                if let message = viewModel.weightMessage { HLInlineError(message) }
 
                 Text("How did it feel?").font(.headline).foregroundStyle(HerLiftTheme.text)
                 effortPicker
