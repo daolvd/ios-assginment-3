@@ -181,7 +181,7 @@ struct AcceptPlanTests {
     @Test func statusForecastAndStartDateSurviveTheSwiftDataStore() throws {
         let schema = Schema([TrainingPlan.self, WorkoutDay.self, PlannedExercise.self])
         let container = try ModelContainer(
-            for: schema, configurations: ModelConfiguration(schema: schema, isStoredInMemoryOnly: true))
+            for: schema, configurations: ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none))
         let repository = SwiftDataWorkoutPlanRepository(
             modelContext: ModelContext(container), exercises: try JSONExerciseRepository())
         var plan = draftPlan()

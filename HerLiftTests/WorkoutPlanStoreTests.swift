@@ -150,7 +150,7 @@ struct SwiftDataWorkoutPlanRepositoryTests {
     private func makeRepository() throws -> (SwiftDataWorkoutPlanRepository, ModelContext) {
         let schema = Schema([TrainingPlan.self, WorkoutDay.self, PlannedExercise.self])
         let container = try ModelContainer(
-            for: schema, configurations: ModelConfiguration(schema: schema, isStoredInMemoryOnly: true))
+            for: schema, configurations: ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none))
         let context = ModelContext(container)
         keepAlive.append(container)
         return (SwiftDataWorkoutPlanRepository(modelContext: context, exercises: ExerciseCatalogueStub(exercises: catalogue)), context)

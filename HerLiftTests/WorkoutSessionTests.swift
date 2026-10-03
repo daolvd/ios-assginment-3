@@ -252,7 +252,7 @@ struct SwiftDataWorkoutSessionRepositoryTests {
     private func makeRepository() throws -> SwiftDataWorkoutSessionRepository {
         let schema = Schema([WorkoutSession.self, ExerciseSet.self])
         let container = try ModelContainer(
-            for: schema, configurations: ModelConfiguration(schema: schema, isStoredInMemoryOnly: true))
+            for: schema, configurations: ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none))
         sessionContainers.append(container)
         return SwiftDataWorkoutSessionRepository(modelContext: ModelContext(container))
     }

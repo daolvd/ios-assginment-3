@@ -152,7 +152,7 @@ struct TargetWeightTests {
     @Test func targetWeightsSurviveTheSwiftDataStore() throws {
         let schema = Schema([TrainingPlan.self, WorkoutDay.self, PlannedExercise.self])
         let container = try ModelContainer(
-            for: schema, configurations: ModelConfiguration(schema: schema, isStoredInMemoryOnly: true))
+            for: schema, configurations: ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none))
         let repository = SwiftDataWorkoutPlanRepository(modelContext: ModelContext(container), exercises: try JSONExerciseRepository())
         var withWeights = plan()
         var exercises = withWeights.workouts[0].exercises
@@ -168,7 +168,7 @@ struct TargetWeightTests {
     @Test func aWorkoutLogKeepsItsStartAndFinishTimes() throws {
         let schema = Schema([WorkoutSession.self, ExerciseSet.self])
         let container = try ModelContainer(
-            for: schema, configurations: ModelConfiguration(schema: schema, isStoredInMemoryOnly: true))
+            for: schema, configurations: ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none))
         let repository = SwiftDataWorkoutSessionRepository(modelContext: ModelContext(container))
         let day = Date(timeIntervalSince1970: 1_790_000_000)
         let log = WorkoutLog(
