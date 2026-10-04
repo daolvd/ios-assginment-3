@@ -78,7 +78,7 @@ struct ForecastCalculatorTests {
 
     @Test func theDisclaimerIsTheApprovedWording() {
         #expect(ForecastCalculator.disclaimer
-            == "Dự đoán — giả định bạn tập đều theo kế hoạch và kiểm soát ăn uống. Kết quả thực tế có thể khác.")
+            == "A forecast, not a promise: it assumes you follow the plan and watch what you eat. Real results may differ.")
     }
 }
 
