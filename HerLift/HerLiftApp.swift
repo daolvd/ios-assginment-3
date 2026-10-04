@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import UserNotifications
 
 @main
 struct HerLiftApp: App {
@@ -14,7 +15,10 @@ struct HerLiftApp: App {
     private let exerciseGuideViewModel: ExerciseGuideViewModel
     private let generatePlanViewModel: GeneratePlanViewModel
     private let myPlanViewModel: MyPlanViewModel
+    private let reminderPresenter = ReminderPresenter()
     private let profileViewModel: ProfileViewModel
+    private let backupViewModel: BackupViewModel
+    @Environment(\.scenePhase) private var scenePhase
 
     init() {
         do {
@@ -23,18 +27,34 @@ struct HerLiftApp: App {
             exerciseGuideViewModel = ExerciseGuideViewModel(
                 browse: BrowseExerciseGuideUseCase(repository: exercises)
             )
-            let profiles = try SwiftDataUserProfileRepository(modelContext: sharedModelContainer.mainContext)
-            let plans = SwiftDataWorkoutPlanRepository(modelContext: sharedModelContainer.mainContext, exercises: exercises)
+            let storedProfiles = try SwiftDataUserProfileRepository(modelContext: sharedModelContainer.mainContext)
+            let storedPlans = SwiftDataWorkoutPlanRepository(
+                modelContext: sharedModelContainer.mainContext, exercises: exercises)
+            // Her answers and her plan are copied to her iCloud after every change; her workouts stay on the phone.
+            let backupViewModel = BackupViewModel(
+                backup: BackupUseCase(profiles: storedProfiles, plans: storedPlans, cloud: CloudKitBackupStore()))
+            self.backupViewModel = backupViewModel
+            let profiles = BackingUpProfileRepository(storedProfiles, profileChanged: { backupViewModel.scheduleBackup() })
+            let plans = BackingUpWorkoutPlanRepository(storedPlans, planChanged: { backupViewModel.scheduleBackup() })
             let editPlan = EditWorkoutPlanUseCase(plans: plans, exercises: exercises)
             generatePlanViewModel = GeneratePlanViewModel(
                 createPlan: CreateWorkoutPlanUseCase(
-                    patterns: try JSONTrainingPatternRepository(), exercises: exercises, plans: plans),
+                    patterns: try JSONTrainingPatternRepository(), exercises: exercises, plans: plans,
+                    startingWeights: try JSONStartingWeightRepository()),
                 editPlan: editPlan,
                 goals: goals.goals
             )
             let workoutSessions = WorkoutSessionUseCase(
                 sessions: SwiftDataWorkoutSessionRepository(modelContext: sharedModelContainer.mainContext))
-            myPlanViewModel = MyPlanViewModel(editPlan: editPlan, workoutSessions: workoutSessions, goals: goals.goals)
+            UNUserNotificationCenter.current().delegate = reminderPresenter
+            UserNotificationsReminderScheduler.registerCategory()
+            let reminders = WorkoutReminderUseCase(
+                scheduler: UserNotificationsReminderScheduler(), time: UserDefaultsTrainingTime())
+            myPlanViewModel = MyPlanViewModel(
+                editPlan: editPlan, workoutSessions: workoutSessions, goals: goals.goals, reminders: reminders,
+                widget: CoachWidgetUseCase(sync: AppGroupCoachWidgetSync()))
+            let openWorkout = myPlanViewModel
+            reminderPresenter.onOpenWorkout = { openWorkout.openTodaysWorkout() }
             generatePlanViewModel.restore()
             myPlanViewModel.load()
             onboardingViewModel = OnboardingViewModel(
@@ -43,8 +63,11 @@ struct HerLiftApp: App {
             )
             let loadProfile = LoadOnboardingProfileUseCase(repository: profiles)
             onboardingViewModel.load(using: loadProfile)
-            profileViewModel = ProfileViewModel(editor: onboardingViewModel, loadProfile: loadProfile, editPlan: editPlan)
+            profileViewModel = ProfileViewModel(
+                editor: onboardingViewModel, loadProfile: loadProfile, editPlan: editPlan, reminders: reminders,
+                backup: backupViewModel)
             profileViewModel.refresh()
+            backupViewModel.scheduleBackup()
         } catch {
             fatalError("Could not prepare app repositories: \(error)")
         }
@@ -78,6 +101,12 @@ struct HerLiftApp: App {
                 myPlanViewModel: myPlanViewModel, profileViewModel: profileViewModel)
                 .environment(exerciseGuideViewModel)
                 .tint(HerLiftTheme.primary)
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active {
+                myPlanViewModel.ingestWidget()
+                backupViewModel.retryIfFailed()
+            }
         }
         .modelContainer(sharedModelContainer)
     }

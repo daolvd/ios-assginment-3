@@ -3,7 +3,7 @@ import Foundation
 /// The numbers behind a plan's forecast. Deterministic: the same answers always give the same weeks.
 nonisolated enum ForecastCalculator {
     static let loseFatGoalID = "loseFat"
-    static let disclaimer = "Dự đoán — giả định bạn tập đều theo kế hoạch và kiểm soát ăn uống. Kết quả thực tế có thể khác."
+    static let disclaimer = "A forecast, not a promise: it assumes you follow the plan and watch what you eat. Real results may differ."
 
     /// A target weight below this body mass index is never offered.
     static let minimumHealthyBMI = 18.5

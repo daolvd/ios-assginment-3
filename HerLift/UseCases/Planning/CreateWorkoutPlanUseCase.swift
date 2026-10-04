@@ -2,7 +2,8 @@ import Foundation
 
 /// Builds a week of workouts from the training pattern and the exercise catalogue:
 /// pattern → one muscle-group session per training day → cover every muscle group in the week →
-/// eligible exercises → fill the time with sets → validate → save as the current plan, waiting for her to accept it.
+/// eligible exercises → fill the time with sets → starting weights → validate → save as the current plan, waiting
+/// for her to accept it.
 @MainActor
 struct CreateWorkoutPlanUseCase {
     /// Monday = 1 … Sunday = 7.
@@ -14,6 +15,8 @@ struct CreateWorkoutPlanUseCase {
     let patterns: any TrainingPatternRepository
     let exercises: any ExerciseRepository
     let plans: any WorkoutPlanRepository
+    /// Without it, exercises start without a weight and her first workout finds one.
+    var startingWeights: (any StartingWeightRepository)? = nil
     var validator = WorkoutPlanValidator()
 
     func execute(for user: UserPlanningProfile) throws(PlanningError) -> WorkoutPlan {
@@ -33,6 +36,7 @@ struct CreateWorkoutPlanUseCase {
             workouts.append(makeWorkout(weekday: weekday, categoryIDs: categoryIDs, eligible: eligible,
                                         maxMinutes: user.sessionMinutes))
         }
+        workouts = workouts.map { withStartingWeights($0, for: user) }
 
         let plan = WorkoutPlan(goalID: user.goalID, workouts: workouts, status: .draft, weightForecast: weightForecast)
         try validator.validate(plan, for: user)
@@ -76,6 +80,17 @@ struct CreateWorkoutPlanUseCase {
         var covered = groups
         covered[covered.count - 1].append(Category.coreID)
         return covered
+    }
+
+    /// Gives every exercise with an external load the weight from the starting-weight table for her.
+    private func withStartingWeights(_ workout: PlannedWorkout, for user: UserPlanningProfile) -> PlannedWorkout {
+        guard let table = startingWeights?.table else { return workout }
+        let exercises = workout.exercises.map { planned in
+            var updated = planned
+            updated.targetWeightKg = table.kg(for: planned.exercise, user: user)
+            return updated
+        }
+        return PlannedWorkout(weekday: workout.weekday, categoryIDs: workout.categoryIDs, exercises: exercises)
     }
 
     private func makeWorkout(

@@ -66,7 +66,7 @@ struct OnboardingTests {
     @Test func savingTwiceUpdatesOneProfileAndCanReadItBack() throws {
         let schema = Schema([UserProfile.self])
         let container = try ModelContainer(
-            for: schema, configurations: ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+            for: schema, configurations: ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)
         )
         let repository = try SwiftDataUserProfileRepository(modelContext: ModelContext(container))
         let save = SaveOnboardingProfileUseCase(repository: repository)

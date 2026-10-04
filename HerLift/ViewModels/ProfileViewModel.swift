@@ -11,14 +11,48 @@ final class ProfileViewModel {
     private(set) var planningError: PlanningError?
     @ObservationIgnored private let loadProfile: LoadOnboardingProfileUseCase
     @ObservationIgnored private let editPlan: EditWorkoutPlanUseCase
+    @ObservationIgnored private var reminders: WorkoutReminderUseCase
+    @ObservationIgnored private let backup: BackupViewModel?
     /// The answers as last saved; anything different is an unsaved change.
     private var baseline: OnboardingInput
+    /// The time of day she trains. Her reminder comes 30 minutes before it. Changing it does not change the plan.
+    var trainingTime: Date {
+        didSet { reminders.setTrainingMinute(Self.minute(of: trainingTime)) }
+    }
 
-    init(editor: OnboardingViewModel, loadProfile: LoadOnboardingProfileUseCase, editPlan: EditWorkoutPlanUseCase) {
+    init(
+        editor: OnboardingViewModel, loadProfile: LoadOnboardingProfileUseCase, editPlan: EditWorkoutPlanUseCase,
+        reminders: WorkoutReminderUseCase? = nil, backup: BackupViewModel? = nil
+    ) {
         self.editor = editor
         self.loadProfile = loadProfile
         self.editPlan = editPlan
+        let reminders = reminders ?? .disabled()
+        self.reminders = reminders
+        self.backup = backup
+        trainingTime = Self.date(atMinute: reminders.trainingMinute)
         baseline = editor.input
+    }
+
+    /// Where the copy of her answers and plan in iCloud stands.
+    var backupState: BackupViewModel.State { backup?.state ?? .idle }
+
+    /// Backs up straight away instead of waiting for the next change.
+    func backUpNow() async { await backup?.backUpNow() }
+
+    /// Sends a reminder in a few seconds, to show how it looks.
+    func sendTestReminder() {
+        reminders.sendTest(plan: try? editPlan.currentPlan(), now: Date())
+    }
+
+    private static func minute(of date: Date) -> Int {
+        let parts = Calendar.current.dateComponents([.hour, .minute], from: date)
+        return (parts.hour ?? 0) * 60 + (parts.minute ?? 0)
+    }
+
+    private static func date(atMinute minute: Int) -> Date {
+        let today = Calendar.current.startOfDay(for: Date())
+        return Calendar.current.date(byAdding: .minute, value: minute, to: today) ?? today
     }
 
     /// Reads the saved answers and the goal of the stored plan. Changes she has not applied are kept.
@@ -63,6 +97,10 @@ final class ProfileViewModel {
         let names = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
         let days = editor.input.trainingDays.sorted().compactMap { names.indices.contains($0 - 1) ? names[$0 - 1] : nil }
         return "\(days.joined(separator: ", ")) · \(editor.input.minutes) min"
+    }
+
+    var reminderSummary: String {
+        "\(trainingTime.formatted(date: .omitted, time: .shortened)) · reminder 30 min before"
     }
 
     var goalSummary: String {

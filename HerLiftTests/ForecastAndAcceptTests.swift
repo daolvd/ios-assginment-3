@@ -78,7 +78,7 @@ struct ForecastCalculatorTests {
 
     @Test func theDisclaimerIsTheApprovedWording() {
         #expect(ForecastCalculator.disclaimer
-            == "Dự đoán — giả định bạn tập đều theo kế hoạch và kiểm soát ăn uống. Kết quả thực tế có thể khác.")
+            == "A forecast, not a promise: it assumes you follow the plan and watch what you eat. Real results may differ.")
     }
 }
 
@@ -181,7 +181,7 @@ struct AcceptPlanTests {
     @Test func statusForecastAndStartDateSurviveTheSwiftDataStore() throws {
         let schema = Schema([TrainingPlan.self, WorkoutDay.self, PlannedExercise.self])
         let container = try ModelContainer(
-            for: schema, configurations: ModelConfiguration(schema: schema, isStoredInMemoryOnly: true))
+            for: schema, configurations: ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none))
         let repository = SwiftDataWorkoutPlanRepository(
             modelContext: ModelContext(container), exercises: try JSONExerciseRepository())
         var plan = draftPlan()

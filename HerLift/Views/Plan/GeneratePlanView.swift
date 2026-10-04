@@ -104,3 +104,47 @@ struct GeneratePlanView: View {
         .padding(.horizontal, 20).padding(.top, 4)
     }
 }
+
+#Preview("Plan ready") {
+    NavigationStack { GeneratePlanView(viewModel: previewGeneratePlan(ready: true), onAccepted: {}, onChangeAnswers: {}) }
+        .environment(previewGuide())
+        .tint(HerLiftTheme.primary)
+}
+
+// MARK: - Preview data
+
+/// The goals from the bundled catalogue.
+@MainActor
+private func previewGoals() -> [Goal] { (try? JSONGoalRepository().goals) ?? [] }
+
+@MainActor
+private func previewGuide() -> ExerciseGuideViewModel {
+    ExerciseGuideViewModel(browse: BrowseExerciseGuideUseCase(repository: try! JSONExerciseRepository()))
+}
+
+private let previewProfile = OnboardingProfile(
+    age: 29, heightCm: 165, weightKg: 68, experience: .beginner, trainingWeekdays: [1, 3, 6],
+    sessionMinutes: 45, healthNote: nil, clearedByDoctor: false)
+
+/// The plan kept in memory.
+@MainActor
+private final class PreviewPlanStore: WorkoutPlanRepository {
+    private var plan: WorkoutPlan?
+    init(_ plan: WorkoutPlan? = nil) { self.plan = plan }
+    func loadPlan() throws -> WorkoutPlan? { plan }
+    func savePlan(_ plan: WorkoutPlan) throws { self.plan = plan }
+    func deletePlan() throws { plan = nil }
+}
+
+@MainActor
+private func previewGeneratePlan(ready: Bool) -> GeneratePlanViewModel {
+    let exercises = try! JSONExerciseRepository()
+    let store = PreviewPlanStore()
+    let viewModel = GeneratePlanViewModel(
+        createPlan: CreateWorkoutPlanUseCase(
+            patterns: try! JSONTrainingPatternRepository(), exercises: exercises, plans: store,
+            startingWeights: try! JSONStartingWeightRepository()),
+        editPlan: EditWorkoutPlanUseCase(plans: store, exercises: exercises), goals: previewGoals())
+    if ready { viewModel.generate(profile: previewProfile, goalID: "loseFat", targetWeightKg: 62) }
+    return viewModel
+}

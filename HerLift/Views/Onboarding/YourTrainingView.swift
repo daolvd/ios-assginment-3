@@ -96,3 +96,15 @@ struct YourTrainingView: View {
         .accessibilityHint("Opens the minutes picker")
     }
 }
+
+#Preview("Your training") {
+    @Previewable @State var days: Set<Int> = [1, 3, 6]
+    @Previewable @State var minutes = 45
+    @Previewable @State var healthNote = ""
+    @Previewable @State var cleared = false
+    @Previewable @FocusState var focus: OnboardingField?
+    YourTrainingView(
+        trainingDays: $days, minutes: $minutes, healthNote: $healthNote, clearedByDoctor: $cleared,
+        focusedField: $focus)
+        .tint(HerLiftTheme.primary)
+}

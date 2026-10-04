@@ -174,16 +174,17 @@ struct WorkoutSessionUseCaseTests {
     }
 }
 
-/// Saturday's workout: machine chest press (3 sets) and reverse crunch (2 sets, bodyweight).
+/// Saturday's workout: machine chest press (3 sets) and reverse crunch (2 sets, bodyweight). `target` is the
+/// chest press's target weight.
 @MainActor
-func workout() -> PlannedWorkout {
+func workout(target: Double? = nil) -> PlannedWorkout {
     let catalogue = try! JSONExerciseRepository().exercises
-    func planned(_ id: String, sets: Int) -> WorkoutExercise {
-        WorkoutExercise(exercise: catalogue.first { $0.id == id }!, sets: sets)
+    func planned(_ id: String, sets: Int, kg: Double? = nil) -> WorkoutExercise {
+        WorkoutExercise(exercise: catalogue.first { $0.id == id }!, sets: sets, targetWeightKg: kg)
     }
     return PlannedWorkout(
         weekday: 6, categoryIDs: ["chest", "core"],
-        exercises: [planned("machine-chest-press", sets: 3), planned("reverse-crunch", sets: 2)])
+        exercises: [planned("machine-chest-press", sets: 3, kg: target), planned("reverse-crunch", sets: 2)])
 }
 
 @MainActor
@@ -251,7 +252,7 @@ struct SwiftDataWorkoutSessionRepositoryTests {
     private func makeRepository() throws -> SwiftDataWorkoutSessionRepository {
         let schema = Schema([WorkoutSession.self, ExerciseSet.self])
         let container = try ModelContainer(
-            for: schema, configurations: ModelConfiguration(schema: schema, isStoredInMemoryOnly: true))
+            for: schema, configurations: ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none))
         sessionContainers.append(container)
         return SwiftDataWorkoutSessionRepository(modelContext: ModelContext(container))
     }
@@ -268,6 +269,37 @@ struct WorkoutSessionViewModelTests {
         return calendar
     }()
     private var saturday: Date { calendar.date(from: DateComponents(year: 2026, month: 10, day: 3, hour: 14))! }
+
+    @Test func theWeightAndRepsAreShownNotTypedWhenThePlanKnowsTheWeight() {
+        let viewModel = makeViewModel(SessionStoreStub(), workout: workout(target: 20))
+        viewModel.start()
+
+        #expect(viewModel.weightText == "20")
+        #expect(viewModel.repsText == "12")
+        #expect(!viewModel.weightIsEditable)
+    }
+
+    @Test func theWeightCanBeTypedOnlyWhileNoneIsKnown() {
+        let viewModel = makeViewModel(SessionStoreStub())
+        viewModel.start()
+        #expect(viewModel.weightIsEditable)
+
+        viewModel.weightText = "15"
+        viewModel.completeSet()
+
+        #expect(!viewModel.weightIsEditable)
+        #expect(viewModel.weightText == "15")
+    }
+
+    @Test func aBodyweightExerciseHasNoWeightBoxToType() {
+        let viewModel = makeViewModel(SessionStoreStub())
+        viewModel.start()
+        viewModel.weightText = "20"
+        for _ in 1...3 { viewModel.completeSet() }
+
+        #expect(viewModel.current?.exercise.loadType == "bodyweight")
+        #expect(!viewModel.weightIsEditable)
+    }
 
     @Test func startingPutsHerOnTheFirstSetWithFreshInputs() {
         let viewModel = makeViewModel(SessionStoreStub())
@@ -408,9 +440,9 @@ struct WorkoutSessionViewModelTests {
         #expect(myPlan.sessionViewModel(for: workout()) === myPlan.sessionViewModel(for: workout()))
     }
 
-    private func makeViewModel(_ store: SessionStoreStub) -> WorkoutSessionViewModel {
+    private func makeViewModel(_ store: SessionStoreStub, workout planned: PlannedWorkout? = nil) -> WorkoutSessionViewModel {
         WorkoutSessionViewModel(
-            workout: workout(), useCase: WorkoutSessionUseCase(sessions: store, calendar: calendar),
+            workout: planned ?? workout(), useCase: WorkoutSessionUseCase(sessions: store, calendar: calendar),
             editPlan: EditWorkoutPlanUseCase(
                 plans: PlanStoreStub(plan: WorkoutPlan(goalID: "buildMuscle", workouts: [workout()], status: .active)),
                 exercises: try! JSONExerciseRepository()),
